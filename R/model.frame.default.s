@@ -1,3 +1,5 @@
+## $Id: model.frame.default.s,v 1.2 2004/06/01 02:31:46 harrelfe Exp $
+		
 "[.factor" <- function(x, i, drop=TRUE) {  ## was ... 4nov02
 ## Jens Oehlschlaegel generalized to handle drop 12Oct97
   atx <- attributes(x)
@@ -46,8 +48,6 @@ if(!exists('oldClass<-'))
   }
 if(!exists('logb'))        logb        <- log
 
-if(!exists('existsFunction')) existsFunction <- function(...)
-  exists(..., mode='function')
 if(!exists('getFunction')) getFunction <- function(...)
   get(..., mode='function')
 
