@@ -89,8 +89,10 @@ popower(p, 1.2, 1000)   # OR=1.2, total n=1000
 posamsize(p, 1.2)
 popower(p, 1.2, 3148)
 }
-\keyword{power}
 \keyword{htest}
-\keyword{dstudy}
 \keyword{category}
-% Converted by Sd2Rd version 1.21.
+\concept{power}
+\concept{study design}
+\concept{ordinal logistic model}
+\concept{ordinal response}
+\concept{proportional odds model}

@@ -22,6 +22,7 @@
 \alias{fillin}
 \alias{formatCats}
 \alias{formatCons}
+\alias{formatDateTime}
 \alias{formatTestStats}
 \alias{format.timePOSIXt}
 \alias{ftuss}
@@ -31,7 +32,6 @@
 \alias{groupn}
 \alias{gView}
 \alias{is.category}
-\alias{isChron}
 \alias{is.present}
 \alias{mask}
 \alias{nafitted.delete}
@@ -49,6 +49,7 @@
 \alias{pasteFit}
 \alias{print.substi}
 \alias{print.timePOSIXt}
+\alias{read.xportDataload}
 \alias{recode}
 \alias{rowsumFast}
 \alias{sas.get.macro}
@@ -56,6 +57,7 @@
 \alias{stepfun.eval}
 \alias{[.terms}
 \alias{termsDrop}
+\alias{testDateTime}
 \alias{uncbind}
 \alias{untangle.specials}
 \alias{var.inner}

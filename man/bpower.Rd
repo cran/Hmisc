@@ -157,8 +157,7 @@ pow <- outer(p1, n, function(p1,n) bpower(p1, n=n, odds.ratio=.8))
 # This forms a length(p1)*length(n) matrix of power estimates
 contour(p1, n, pow)
 }
-\keyword{power}
 \keyword{htest}
-\keyword{dstudy}
 \keyword{category}
-% Converted by Sd2Rd version 1.15.2.3.
+\concept{power}
+\concept{study design}

@@ -82,13 +82,23 @@ that contained psfrag LaTeX strings, by building a small LaTeX script
 and running latex and dvips.
 }
 \usage{
-ps.slide(file, background="navy blue", foreground='yellow',
-         font, pointsize, hor=TRUE,    
-         lwd, mgp, mar, 
-         pch=202, view=FALSE, pcx=FALSE, tiff=FALSE,
-         close=view | pcx, bty="l", type=2, 
-         height, width, tck, las, eps=FALSE, \dots)
-
+ps.slide(file, background = if (type != 2) "white" else "navy blue",
+         foreground = if (type == 2) "yellow" else
+                     (if(background == "white") "black" else "white"),
+         font = "Helvetica", pointsize = c(24, 28, 14, 14)[type],
+         hor = type != 4, lwd = c(2, 5, 2, 4)[type],
+         mgp = if(under.unix) list(c(1.8, 0.4, 0), c(1.5, 0.2, 0),
+                 c(2, 0.4, 0), c(1.5, 0.2, 0))[[type]] else
+                 list(c(1.8, 0.5, 0), c(1.5, 0.4, 0), c(2, 0.5, 0),
+                 c(1.5, 0.4, 0))[[type]],
+         mar = list(c(4, 3, 2, 1) + 0.1, c(5, 4, 2.25, 2) + 0.1,
+                 c(3, 3, 1, 1) + 0.1, c(5, 4, 2.25, 2) + 0.1)[[type]],
+         pch = 202, view = FALSE, pcx = FALSE, tiff = FALSE,
+         close = view | pcx | tiff, bty = "l",
+         type = 2, height = switch(type, NULL, NULL, 5, 8),
+         width = switch(type, NULL, NULL, 7, 7),
+         tck = if (type == 3 || !under.unix) -0.013 else par("tck"),
+         las = if (type == 3) 1 else 0, eps =  FALSE, ...)
 
 setps(filename, w=0, h=3, pointsize=10, sublines=0, toplines=0,
       type="symbol", lwd=2, font="Helvetica",
@@ -359,7 +369,5 @@ dev.off()
 }
 \keyword{hplot}
 \keyword{device}
-\keyword{trellis}
-% Converted by Sd2Rd version 1.21.
-
-
+\concept{trellis}
+\concept{lattice}

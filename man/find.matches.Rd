@@ -255,13 +255,7 @@ describe(ors)
 \keyword{math}
 \keyword{multivariate}
 \keyword{htest}
-\keyword{bootstrap}
-% Converted by Sd2Rd version 1.21.
-
-
-
-
-
-
-
-
+\concept{bootstrap}
+\concept{matching}
+\concept{epidemiology}
+\concept{case-control}

@@ -64,7 +64,6 @@ inflation <- (1/.95)**2
 print(round(N1*inflation+.5,0))
 }
 \keyword{htest}
-\keyword{dstudy}
-\keyword{power}
 \keyword{category}
-% Converted by Sd2Rd version 1.15.2.3.
+\concept{study design}
+\concept{power}

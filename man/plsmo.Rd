@@ -217,7 +217,7 @@ lines(wtd.loess.noiter(c(x,rep(x[51],99)),c(y,rep(y[51],99)),
 \keyword{smooth}
 \keyword{nonparametric}
 \keyword{hplot}
-\keyword{trellis}
-% Converted by Sd2Rd version 1.21.
+\concept{trellis}
+\concept{lattice}
 
 

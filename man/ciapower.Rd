@@ -91,8 +91,7 @@ for(nonwhite.reduction in c(0,-5)) {
   cat("\n\nPower:",format(pow),"\n")
 }
 }
-\keyword{power}
-\keyword{dstudy}
 \keyword{survival}
 \keyword{htest}
-% Converted by Sd2Rd version 1.15.2.3.
+\concept{power}
+\concept{study design}

@@ -43,6 +43,9 @@ n, x, and y.
 # xy.group(x, y, m=100, result="matrix")	#Print table, 100 obs/group
 }
 \keyword{category}
-\keyword{grouping}
 \keyword{nonparametric}
-% Converted by Sd2Rd version 1.21.
+\concept{grouping}
+\concept{stratification}
+\concept{aggregation}
+\concept{discretization}
+

@@ -72,6 +72,5 @@ quantile(med.female-med.male, c(.025,.975), na.rm=TRUE)
 # longer survival times
 }
 \keyword{survival}
-\keyword{bootstrap}
 \keyword{nonparametric}
-% Converted by Sd2Rd version 1.21.
+\concept{bootstrap}

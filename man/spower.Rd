@@ -224,6 +224,9 @@ clinical trials.  Biometrics 44:229--241 (Correction 44:923).
 
 Cuzick J, Edwards R, Segnan N (1997): Adjusting for non-compliance and 
 contamination in randomized clinical trials. Stat in Med 16:1017--1029.
+
+Cook, T (2003): Methods for mid-course corrections in clinical trials
+with survival outcomes.  Stat in Med 22:3431--3447.
 }
 \seealso{
 \code{\link{cpower}}, \code{\link{ciapower}}, \code{\link{bpower}}, \code{\link[Design]{cph}}, \code{\link[survival]{coxph}}, \code{\link{labcurve}}
@@ -309,8 +312,7 @@ spower(rcontrol, rinterv, rcens, nc=350, ni=350,
        test=logrank, nsim=50)  # normally nsim=500 or more
 par(mfrow=c(1,1))
 }
-\keyword{power}
 \keyword{htest}
-\keyword{dstudy}
 \keyword{survival}
-% Converted by Sd2Rd version 1.21.
+\concept{power}
+\concept{study design}

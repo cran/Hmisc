@@ -15,7 +15,7 @@ If a component \code{x$x} is a matrix, then do all columns the same.
 \usage{
 format.df(x,
           digits, dec=NULL, rdec=NULL, cdec=NULL,
-          numeric.dollar=FALSE,
+          numeric.dollar=cdot,
           na.blank=FALSE, na.dot=FALSE, blank.dot=FALSE,
           col.just=NULL, cdot=FALSE, dcolumn=FALSE, matrix.sep=' ', 
           scientific=c(-4,4), \dots)

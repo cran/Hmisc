@@ -41,8 +41,6 @@ blood.pressure <- rnorm(1000, 120, 15)
 clinic <- sample(letters, 1000, replace=TRUE)
 deff(blood.pressure, clinic)
 }
-\keyword{sampling}
-\keyword{dstudy}
 \keyword{htest}
-
-
+\concept{study design}
+\concept{cluster sampling}

@@ -179,7 +179,8 @@ u
 reShape(w, base=c('sbp','dbp'), reps=3, timevar='week', times=c(0,3,12))
 }
 \keyword{manip}
-\keyword{trellis}
-\keyword{rm}
 \keyword{array}
-% Converted by Sd2Rd version 1.21.
+\concept{trellis}
+\concept{lattice}
+\concept{repeated measures}
+\concept{longitudinal data}

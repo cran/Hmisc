@@ -165,8 +165,7 @@ lines(red, samsiz, lwd=2)
 title('Sample Size for Power=0.80\nDrop-in 15\%, Non-adherence 25\%')
 title(sub='alpha=0.05, 2-tailed', adj=0)
 }
-\keyword{power}
 \keyword{htest}
-\keyword{dstudy}
 \keyword{survival}
-% Converted by Sd2Rd version 1.21.
+\concept{power}
+\concept{study design}

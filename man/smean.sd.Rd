@@ -92,7 +92,4 @@ smedian.hilow(x, conf.int=.5)  # 25th and 75th percentiles
 }
 \keyword{nonparametric}
 \keyword{htest}
-\keyword{bootstrap}
-
-
-
+\concept{bootstrap}

@@ -66,6 +66,7 @@ confbar         \tab Draws confidence bars on an existing plot using multiple\cr
 contents        \tab Print the contents (variables, labels, etc.) of a data frame\cr
 cpower          \tab Power of Cox 2-sample test allowing for noncompliance\cr
 Cs              \tab Vector of character strings from list of unquoted names\cr
+csv.get         \tab Enhanced importing of comma separated files labels\cr
 cut2            \tab Like cut with better endpoint label construction and allows\cr
                 \tab     construction of quantile groups or groups with given n\cr
 datadensity     \tab Snapshot graph of distributions of all variables in\cr
@@ -109,6 +110,7 @@ gbayes          \tab Bayesian posterior and predictive distributions when both\c
 getHdata        \tab Fetch and list datasets on our web site\cr
 gs.slide        \tab Sets nice defaults for graph sheets for S-Plus 2000 for\cr
                 \tab copying graphs into Microsoft applications\cr
+hdquantile      \tab Harrell-Davis nonparametric quantile estimator with s.e.\cr
 histbackback    \tab Back-to-back histograms (Pat Burns, Salomon Smith\cr
                 \tab     Barney, London, \email{pburns@dorado.sbi.com})\cr
 hist.data.frame \tab Matrix of histograms for all numeric vars. in data frame\cr
@@ -346,4 +348,5 @@ Vanderbilt University School of Medicine\cr
 Nashville, Tennessee\cr
 \email{f.harrell@vanderbilt.edu}
 }
-\keyword{overview}
+\keyword{misc}
+\concept{overview}

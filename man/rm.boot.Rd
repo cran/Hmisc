@@ -528,10 +528,10 @@ for(i in 1:1000) {
 # fully contained the horizontal line at zero
 }
 }
-\keyword{rm}
-\keyword{bootstrap}
 \keyword{regression}
 \keyword{multivariate}
 \keyword{htest}
 \keyword{hplot}
-% Converted by Sd2Rd version 1.21.
+\concept{bootstrap}
+\concept{repeated measures}
+\concept{longitudinal data}

@@ -23,10 +23,10 @@ runs \code{html.data.frame}.
 html(object, \dots)
 \method{html}{latex}(object, ...)
 \method{html}{data.frame}(object,
-  file=paste(first.word(deparse(substitute(object))),'html',sep='.', \dots),
+  file=paste(first.word(deparse(substitute(object))),'html',sep='.'),
      append=FALSE, link=NULL, linkCol=1, linkType=c('href','name'), \dots)
 \method{html}{default}(object,
-     file=paste(first.word(deparse(substitute(object))),'html',sep='.', \dots),
+     file=paste(first.word(deparse(substitute(object))),'html',sep='.'),
      append=FALSE, link=NULL, linkCol=1, linkType=c('href','name'), \dots)
 \method{print}{html}(x, ...)
 \method{show}{html}(object)

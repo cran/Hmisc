@@ -513,10 +513,9 @@ c(756,618,706,422,356,578,289,333,
 # method, then sex, and what.
 }
 }
-\keyword{overview}
 \keyword{data}
 \keyword{manip}
 \keyword{programming}
 \keyword{interface}
 \keyword{htest}
-% Converted by Sd2Rd version 1.21.
+\concept{overview}

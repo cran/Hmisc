@@ -67,8 +67,7 @@ f <- lm(log(y) ~ x1 + poly(x2,3), y=TRUE)
 abs.error.pred(lp=exp(fitted(f)), y=y)
 rm(x1,x2,y,f)
 }
-\keyword{accuracy}
 \keyword{robust}
 \keyword{regression}
 \keyword{models}
-
+\concept{predictive accuracy}

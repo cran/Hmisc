@@ -20,7 +20,8 @@ printed output to parse dataset labels, assuming that \code{PROC
 CONTENTS} was run on an entire library.
 }
 \usage{
-sasxport.get(file, force.single = TRUE)
+sasxport.get(file, force.single = TRUE,
+             method=c('read.xport','dataload'), formats=NULL)
 
 sasdsLabels(file)
 }
@@ -33,6 +34,14 @@ sasdsLabels(file)
   \item{force.single}{set to \code{FALSE} to keep integer-valued
 	variables not exceeding \eqn{2^31-1} in value from being converted to
 	\code{integer} storage mode}
+  \item{method}{set to \code{"dataload"} if you have the \code{dataload}
+	executable installed and want to use it instead of
+	\code{read.xport}.  This seems to correct some errors in which
+	rarely some factor variables are always missing when read by
+	\code{read.xport} when in fact they have some non-missing values.}
+  \item{formats}{a data frame or list (like that created by
+	\code{read.xport}) containing \code{PROC FORMAT}
+	output, if such output is not stored in the main transport file.}
 }
 \value{
   If there is more than one dataset in the transport file other than the

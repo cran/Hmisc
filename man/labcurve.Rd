@@ -99,16 +99,14 @@ empty part of an existing plot.
 }
 \usage{
 labcurve(curves, labels=names(curves),
-         method=c("offset","on top","arrow",
-                  "mouse","locator","none"),
-         keys, keyloc=c("auto","none"),
+         method=NULL, keys=NULL, keyloc=c("auto","none"),
          type="l", step.type=c("left", "right"), 
          xmethod=if(any(type=="s")) "unique" else "grid", 
-         offset, xlim,
-         tilt=FALSE, window, npts=100, cex, 
+         offset=NULL, xlim=NULL,
+         tilt=FALSE, window=NULL, npts=100, cex=NULL, 
          adj="auto", angle.adj.auto=30,
-         lty, lwd, col., transparent=TRUE,
-         arrow.factor=1, point.inc, opts, key.opts,
+         lty=pr$lty, lwd=pr$lwd, col.=pr$col, transparent=TRUE,
+         arrow.factor=1, point.inc=NULL, opts=NULL, key.opts=NULL,
          empty.method=c('area','maxdim'), numbins=25, 
          pl=!missing(add), add=FALSE, 
          ylim=NULL, xlab="", ylab="",
@@ -125,7 +123,7 @@ putKeyEmpty(x, y, labels, type=NULL,
             transparent=TRUE, plot=TRUE, key.opts=NULL,
             empty.method=c('area','maxdim'), 
             numbins=25, 
-            xlim=par('usr')[1:2], ylim=par('usr')[3:4], grid=FALSE)
+            xlim=pr$usr[1:2], ylim=pr$usr[3:4], grid=FALSE)
 
 drawPlot(\dots, xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
          ticks=c('none','x','y','xy'),
@@ -143,11 +141,11 @@ drawPlot(\dots, xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
 # Abline(\dots)
 
 \method{plot}{drawPlot}(x, file, xlab, ylab, ticks,
-     key=obj$key, keyloc=obj$keyloc, \dots)
+     key=x$key, keyloc=x$keyloc, \dots)
 
 largest.empty(x, y, width, height, 
               numbins=25, method=c('area','maxdim'),
-              xlim=par('usr')[1:2], ylim=par('usr')[3:4],
+              xlim=pr$usr[1:2], ylim=pr$usr[3:4],
               pl=FALSE, grid=FALSE)
 }
 \arguments{

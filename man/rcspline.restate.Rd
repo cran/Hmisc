@@ -13,7 +13,7 @@ and a LaTeX character representation of the function.
 rcspline.restate(knots, coef,
                  type=c("ordinary","integral"),
                  x="X", lx=nchar(x),
-                 norm=2, columns=65, before="& &", after="\\\\",
+                 norm=2, columns=65, before="& &", after="\\",
                  begin="", nbegin=0, digits=max(8, .Options$digits))
 }
 \arguments{

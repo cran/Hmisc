@@ -57,9 +57,9 @@ Typically, \code{fit.mult.impute} will be called after \code{aregImpute}.
 }
 \usage{
 aregImpute(formula, data, subset, n.impute=5, group=NULL,
-           method=c('ace','avas'),
+           method=c('ace','avas'), type=c('pmm','regression'),
            match=c('weighted','closest'), fweighted=0.2,
-           defaultLinear=FALSE, x=FALSE, pr=TRUE)
+           defaultLinear=FALSE, x=FALSE, pr=TRUE, plotTrans=FALSE)
 \method{print}{aregImpute}(x, \dots)
 \method{plot}{aregImpute}(x, nclass=NULL, type=c('ecdf','hist'), 
      diagnostics=FALSE, maxn=10, \dots)
@@ -105,6 +105,19 @@ method (\code{"ace"}, the default, or \code{"avas"}) for modeling a variable to
 be imputed.  As \code{avas} does not allow the response variable to be
 categorical, \code{"ace"} is always used for such variables.
 }
+\item{type}{
+  The default is \code{"pmn"} for predictive mean matching,
+  which is a more nonparametric approach that will work for categorical
+  as well as continuous predictors.  Alternatively, use
+  \code{"regression"} when all variables that are sometimes missing are
+  continuous and the missingness mechanism is such that entire intervals
+  of population values are unobserved.  See the Details section for more
+  information.  For the \code{plot} method, 
+  specify \code{type="hist"} to draw histograms of imputed values with rug
+  plots at the top, or
+  \code{type="ecdf"} (the default) to draw empirical CDFs with spike
+  histograms at the bottom.
+}
 \item{match}{
   Defaults to \code{match="weighted"} to do weighted multinomial
   probability sampling using the tricube function (similar to lowess)
@@ -132,14 +145,16 @@ model.  This is recommended when the sample size is small.
 \item{pr}{
 set to \code{FALSE} to suppress printing of iteration messages
 }
+\item{plotTrans}{
+  set to \code{TRUE} to plot \code{ace} or \code{avas} transformations
+  for each variable for each of the multiple imputations.  This is
+  useful for determining whether transformations are reasonable.  If
+  transformations are too noisy or have long flat sections (resulting in
+  "lumps" in the distribution of imputed values), it may be advisable to
+  place restrictions on the transformations (monotonicity or linearity).
+  }
 \item{nclass}{
 number of bins to use in drawing histogram
-}
-\item{type}{
-Specify \code{type="hist"} to draw histograms of imputed values with rug
-plots at the top, or
-\code{type="ecdf"} (the default) to draw empirical CDFs with spike
-histograms at the bottom.
 }
 \item{diagnostics}{
 Specify \code{diagnostics=TRUE} to draw plots of imputed values against
@@ -227,7 +242,8 @@ transformation is forced).  Use this fitted semiparametric model to
 predict the target variable in all of the original observations.
 Impute each missing value of the target variable with the observed
 value whose predicted transformed value is closest to the predicted
-transformed value of the missing value (if \code{match="closest"}),
+transformed value of the missing value (if \code{match="closest"} and
+\code{type="pmm"}), 
 or use a draw from a multinomial distribution with probabilities derived
 from distance weights, if \code{match="weighted"} (the default).
 \cr
@@ -245,6 +261,26 @@ values of the target variable that are monotonically related to
 predicted values from every other bootstrap resample.  The same is true
 for Bayesian predicted values.  This causes predictive mean matching to
 always match on the same donor observation.
+
+When the missingness mechanism for a variable is so systematic that the
+distribution of observed values is truncated, predictive mean matching
+does not work.  It will only yield imputed values that are near
+observed values, so intervals in which no values are observed will not
+be populated by imputed values.  For this case, the only hope is to make
+regression assumptions and use extrapolation.  With
+\code{type="regression"}, \code{aregImpute} will use linear
+extrapolation to obtain a (hopefully) reasonable distribution of imputed
+values.  The \code{"regression"} option causes \code{aregImpute} to
+impute missing values by adding a random sample of residuals (with
+replacement if there are more \code{NA}s than measured values) on the
+scale of the \code{ace} or \code{avas} transformed target variable.
+After random residuals are added, predicted random draws are obtained on
+the original untransformed scale using reverse linear interpolation on
+the table of original and \code{ace} or \code{avas} transformed target
+values (linear extrapolation when a random residual is large enough to
+put the random draw prediction outside the range of observed values).
+The bootstrap is used as with \code{type="pmm"} to factor in the
+uncertainty of the imputation model.
 }
 \author{
 Frank Harrell
@@ -398,6 +434,8 @@ abline(h=rmse, lty=2)  # root MSE of residuals from linear regression
 \keyword{regression}
 \keyword{multivariate}
 \keyword{methods}
-\keyword{bootstrap}
 \keyword{models}
-% Converted by Sd2Rd version 1.21.
+\concept{bootstrap}
+\concept{predictive mean matching}
+\concept{imputation}
+\concept{NA}
