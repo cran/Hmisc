@@ -62,9 +62,8 @@ dead      <- sample(0:1, 200, TRUE)
 roc.area <- somers2(predicted, dead)["C"]
 }
 \keyword{nonparametric}
-\keyword{accuracy}
-\keyword{lrm}
-\keyword{sampling}
-% Converted by Sd2Rd version 1.21.
+\concept{logistic regression model}
+\concept{predictive accuracy}
+
 
 

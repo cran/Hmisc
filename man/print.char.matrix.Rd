@@ -82,4 +82,5 @@ dimnames(z) <- list(c("", "age", "sex", "Overall"),NULL)
 
 print.char.matrix(z)
 }
-\keyword{matrix dataframe stacked }
+\keyword{print}
+\keyword{array}

@@ -87,13 +87,13 @@ invoke xdvi to view the typeset document.
 latex(object, title=first.word(deparse(substitute(object))), \dots)
 
 \method{latex}{default}(object,
-    title=first.word(expr=substitute(x)),
+    title=first.word(deparse(substitute(object))),
     file=paste(title, ".tex", sep=""),
     append=FALSE, 
     label=title,
     rowlabel=title, rowlabel.just="l",
     cgroup=NULL, n.cgroup=NULL, rgroup=NULL, n.rgroup=NULL,
-    rowname=dimnames(x)[[1]], cgroup.just=rep("c",length(n.cgroup)),
+    rowname, cgroup.just=rep("c",length(n.cgroup)),
     colheads=dimnames(cx)[[2]],
     extracolheads=NULL, extracolsize='scriptsize',
     dcolumn=FALSE, numeric.dollar=!dcolumn,
@@ -107,25 +107,26 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
     where='!tbp', size=NULL,
     center=c('center','centering','none'),
     landscape=FALSE,
+    multicol=TRUE,
     \dots) # x is a matrix or data.frame
 
 \method{latex}{function}(
 	object,
-	title=first.word(expr=substitute(object)),
+	title=first.word(deparse(substitute(object))),
 	file=paste(title, ".tex", sep=""),
 	append=FALSE,
 	assignment=TRUE,  type=c('example','verbatim'), \dots)
 
 \method{latex}{list}(
            object,
-           title=first.word(expr=substitute(x)),
+           title=first.word(deparse(substitute(object))),
            file=paste(title, ".tex", sep=""),
            append=FALSE,
            label,
            caption,
            caption.lot,
            caption.loc=c('top','bottom'),
-           \dots) # x is a list. latex is called recursively for each element
+           \dots)
 
 \method{print}{latex}(x, ...)
 
@@ -133,7 +134,7 @@ latexTranslate(object, inn=NULL, out=NULL, pb=FALSE, \dots)
 
 latexSN(x)
 
-latexVerbatim(x, title=first.word(expr=substitute(x)),
+latexVerbatim(x, title=first.word(deparse(substitute(x))),
     file=paste(title, ".tex", sep=""),
     append=FALSE, size=NULL, hspace=NULL,
     width=.Options$width, length=.Options$length, \dots)
@@ -395,6 +396,11 @@ defaults of 5.5 and 7, respectively.
 set to \code{TRUE} to have \code{dvi} print, to the S-Plus session, the LaTeX .log
 file.
 }
+\item{multicol}{
+set  to \code{FALSE} to not use \code{\multicolumn} in header
+of table
+}
+
 \item{nomargins}{
 set to \code{FALSE} to use default LaTeX margins when making the .dvi file
 }

@@ -143,5 +143,4 @@ latex(bystats2(death, race, sex, fun=table))
 }
 }
 \keyword{category}
-\keyword{grouping}
-% Converted by Sd2Rd version 1.21.
+\concept{grouping}

@@ -132,7 +132,10 @@ smearingEst(transEst, inverseTrans, res,
 
 \method{print}{summary.areg.boot}(x, \dots)
 
-\method{predict}{areg.boot}(object, newdata, statistic='lp', q, \dots) 
+\method{predict}{areg.boot}(object, newdata,
+         statistic=c("lp", "median",
+                     "quantile", "mean", "fitted", "terms"),
+         q=NULL, \dots) 
 
 \method{Function}{areg.boot}(object, type=c('list','individual'),
          ytype=c('transformed','inverse'),
@@ -550,14 +553,8 @@ smearingEst(ytrans, trans.approx, res, mean)
 }
 \keyword{nonparametric}
 \keyword{smooth}
-\keyword{bootstrap}
-\keyword{validate}
 \keyword{multivariate}
 \keyword{nonlinear}
 \keyword{regression}
-\keyword{bootstrap}
-% Converted by Sd2Rd version 1.21.
-
-
-
-
+\concept{bootstrap}
+\concept{model validation}

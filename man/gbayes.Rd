@@ -89,7 +89,7 @@ gbayes(mean.prior, var.prior, m1, m2, stat, var.stat,
 gbayes2(sd, prior, delta.w=0, alpha=0.05, upper=Inf, prior.aux)
 
 gbayesMixPredNoData(mix=NA, d0=NA, v0=NA, d1=NA, v1=NA,
-                    what=c('density','distribution'))
+                    what=c('density','cdf'))
 
 gbayesMixPost(x=NA, v=NA, mix=1, d0=NA, v0=NA, d1=NA, v1=NA,
               what=c('density','cdf'))
@@ -468,6 +468,6 @@ gbayesMixPowerNP(g, 1, 0.2/2.1, interval=c(-10,12))
 # So the study will have to be 2.1 times as large as earlier thought
 }
 \keyword{htest}
-\keyword{dstudy}
-\keyword{power}
-% Converted by Sd2Rd version 1.21.
+\concept{study design}
+\concept{power}
+

@@ -62,6 +62,7 @@ table(cut2(x, g=10))      # quantile groups
 table(cut2(x, m=50))      # group x into intevals with at least 50 obs.
 }
 \keyword{category}
-\keyword{grouping}
 \keyword{nonparametric}
-% Converted by Sd2Rd version 1.21.
+\concept{grouping}
+\concept{categorization}
+\concept{discretization}

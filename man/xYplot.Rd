@@ -113,7 +113,7 @@ variable.
 \usage{
 Cbind(\dots)
 
-xYplot(formula, data = sys.frame(sys.parent()), groups = NULL,
+xYplot(formula, data = sys.frame(sys.parent()), groups,
        subset, xlab=NULL, ylab=NULL, ylim=NULL,
        panel=panel.xYplot, prepanel=prepanel.xYplot, scales=NULL,
        minor.ticks=NULL, \dots)
@@ -123,8 +123,8 @@ panel.xYplot(x, y, subscripts, groups=NULL,
                'b' else 'p',
              method=c("bars", "bands", "upper bars", "lower bars", 
                       "alt bars", "quantiles", "filled bands"), 
-             methodArgs, label.curves=TRUE, abline,
-             probs=c(.5,.25,.75), nx=min(length(x)/4, 40),
+             methodArgs=NULL, label.curves=TRUE, abline,
+             probs=c(.5,.25,.75), nx,
              cap=0.015, lty.bar=1, 
              lwd=plot.line$lwd, lty=plot.line$lty, pch=plot.symbol$pch, 
              cex=plot.symbol$cex, font=plot.symbol$font, col=NULL, 
@@ -145,7 +145,7 @@ panel.Dotplot(x, y, groups = NULL,
               col  = dot.symbol$col, cex = dot.symbol$cex, 
               font = dot.symbol$font, abline, \dots)
 
-setTrellis(strip.blank=TRUE, lty.dot.line=1, lwd.dot.line=1)
+setTrellis(strip.blank=TRUE, lty.dot.line=2, lwd.dot.line=1)
 
 numericScale(x, label=NULL, skip.weekends=FALSE, \dots)
 }
@@ -498,6 +498,6 @@ Dotplot(month ~ Cbind(y) | year, data=s)
 # This will make a matrix with 3 columns named Mean Lower Upper 
 # and with 1/3 as many rows as the original data 
 }
-\keyword{trellis}
 \keyword{hplot}
-% Converted by Sd2Rd version 1.21.
+\concept{trellis}
+\concept{lattice}

@@ -256,6 +256,8 @@ detach('dfr')
 }
 \keyword{category}
 \keyword{manip}
-\keyword{grouping}
-
+\concept{grouping}
+\concept{stratification}
+\concept{aggregation}
+\concept{cross-classification}
 

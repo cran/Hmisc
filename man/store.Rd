@@ -27,7 +27,7 @@ not already attached, so that the objects are easily available.
 }
 \usage{
 store(object, name=as.character(substitute(object)),
-      where=if(.R.)".GlobalEnv" else if(under.unix)".Data" else "_Data")
+      where=if (under.unix || .SV4.) ".Data" else "_Data")
 stores(\dots)
 storeTemp(object, name=deparse(substitute(object)))
 }

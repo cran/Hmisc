@@ -19,10 +19,7 @@ prepared using the Hmisc command \code{html(contents( ))} or to view
 }
 \usage{
 getHdata(file, what = c("data", "contents", "description", "all"),
-         where =if(.R.)"http://hesweb1.med.virginia.edu/biostat/s/data/sav"
-         else "http://hesweb1.med.virginia.edu/s/data/sdd",
-         wherehtml = "http://hesweb1.med.virginia.edu/biostat/s/data/html",
-         wheredes  = "http://hesweb1.med.virginia.edu/biostat/s/data/description")
+         where="http://biostat.mc.vanderbilt.edu/twiki/pub/Main/DataSets")
 }
 \arguments{
   \item{file}{an unquoted name of a dataset on the web site,
@@ -33,19 +30,17 @@ getHdata(file, what = c("data", "contents", "description", "all"),
 	themselves.  Specify \code{what="description"} to browse a data
 	description file if available.  Specify \code{what="all"} to
 	retrieve the data and see the metadata and description.}
-  \item{where}{URL containing the data files}
-  \item{wherehtml}{URL containing the metadata files}
-  \item{wheredes}{URL containing the description files}
+  \item{where}{URL containing the data and metadata files}
 }
 \details{
 For S-Plus, Hmisc defines a function \code{download.file} that is used
-by \code{getHdata}.  This is a stripped-down version of the R
+by \code{getHdata}.  This is a stripped-down version of the \R
 \code{download.file} function that uses the system \code{wget}
 executable for fetching files from the Internet.  For Unix and Linux
 systems, \code{wget} will be pre-installed usually.  For windows
-S-Plus systems, download
-\url{http://ftp.sunsite.dk/projects/wget/windows/wget-1.8.1b.zip} and
-unzip it.  Move \code{wget.exe} to the same Windows directory that
+S-Plus systems, get \code{wget} from
+\url{ftp://sunsite.dk/projects/wget/windows}.  Once you unzip the file
+from there, move \code{wget.exe} to the same Windows directory that
 contains \code{ftp.exe}.
 }
 \value{

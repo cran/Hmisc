@@ -44,9 +44,10 @@ observations for which the first and second variables were missing but
 the third variable was not missing.
 }
 \usage{
-varclus(x, similarity=c("spearman","pearson","hoeffding","bothpos"),
+varclus(x, similarity=c("spearman","pearson","hoeffding","bothpos","ccbothpos"),
         type=c("data.matrix","similarity.matrix"), 
-        method="compact", data, subset, na.action, minlev)
+        method=if(.R.)"complete" else "compact",
+        data, subset, na.action, minlev=0.05)
 \method{print}{varclus}(x, ...)
 \method{plot}{varclus}(x, ylab, abbrev=FALSE, legend.=FALSE, loc, maxlen, labels, \dots)
 

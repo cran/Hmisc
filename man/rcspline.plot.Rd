@@ -22,7 +22,7 @@ estimates, if desired. The smoothing uses \code{supsmu}.
 }
 \usage{
 rcspline.plot(x,y,model="logistic",xrange,event,nk=5,knots=NULL,
-             show="xbeta",adj=NULL,xlab,ylim,plim=c(0,1),plotcl=TRUE,
+             show="xbeta",adj=NULL,xlab,ylab,ylim,plim=c(0,1),plotcl=TRUE,
              showknots=TRUE,add=FALSE,subset,lty=1,noprint=FALSE,m,smooth=FALSE,bass=1,
              main="auto",statloc)
 }
@@ -62,6 +62,7 @@ optional matrix of adjustment variables
 \item{xlab}{
 \code{x}-axis label, default is \code{"label"} attribute of \code{x}
 }
+\item{ylab}{same for \code{y}}
 \item{ylim}{
 \code{y}-axis limits for logit or log hazard
 }

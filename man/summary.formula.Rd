@@ -965,7 +965,10 @@ summary(cumcategory(disease.severity) ~ age + sex)
 \keyword{interface}
 \keyword{hplot}
 \keyword{manip}
-\keyword{grouping}
-% Converted by Sd2Rd version 1.21.
+\concept{grouping}
+\concept{stratification}
+\concept{aggregation}
+\concept{cross-classification}
+
 
 

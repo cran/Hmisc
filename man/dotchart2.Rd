@@ -9,7 +9,7 @@ with several new options.
 }
 \usage{
 dotchart2(data, labels, groups, gdata, horizontal=TRUE, pch=16,
-          xlab='', ylab='', auxdata, auxgdata, auxtitle,
+          xlab='', ylab='', auxdata, auxgdata=NULL, auxtitle,
           lty=if(.R.) 1 else 2, lines=TRUE, dotsize = .8,
           cex = par("cex"), cex.labels = cex,
           cex.group.labels = cex.labels*1.25, sort.=TRUE, 

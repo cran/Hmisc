@@ -8,7 +8,7 @@ Producess side-by-side box-percentile plots from several vectors or a
 list of vectors.  
 }
 \usage{
-bpplot(\dots, name=TRUE, main="Box-percentile Plot", 
+bpplot(\dots, name=TRUE, main="Box-Percentile Plot", 
        xlab="", ylab="", srtx=0)
 }
 \arguments{

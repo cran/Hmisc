@@ -181,13 +181,13 @@ w     <- num.denom.setup(num, denom)
 w
 # attach(my.data.frame[w$subs,])
 }
-\keyword{sampling}
 \keyword{nonparametric}
 \keyword{category}
 \keyword{distribution}
 \keyword{robust}
 \keyword{loess}
 \keyword{smooth}
-\keyword{grouping}
 \keyword{manip}
-% Converted by Sd2Rd version 1.21.
+\concept{weighted sampling}
+\concept{grouping}
+\concept{weights}

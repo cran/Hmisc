@@ -52,7 +52,7 @@ panel.bpplot(x, y, box.ratio=1, means=TRUE, qref=c(.5,.25,.75),
 
 bpplt(stats, xlim, xlab='', box.ratio = 1, means=TRUE,
       qref=c(.5,.25,.75), qomit=c(.025,.975),
-      pch=16, cex.labels=par('cex'), cex.points=.5,
+      pch=16, cex.labels=par('cex'), cex.points=if(prototype)1 else 0.5,
       grid=FALSE)
 }
 \arguments{
@@ -192,8 +192,8 @@ bpplt()
 # bwplot$panel <- panel.bpplot
 # bwplot(g ~ x, nout=.05)
 }
-\keyword{trellis}
 \keyword{nonparametric}
 \keyword{hplot}
 \keyword{distribution}
-% Converted by Sd2Rd version 1.21.
+\concept{trellis}
+\concept{lattice}

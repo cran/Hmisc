@@ -30,7 +30,7 @@ contents(object, \dots)
 \method{print}{contents.data.frame}(x,
     sort=c('none','names','labels','NAs'), prlevels=TRUE, \dots) 
 \method{html}{contents.data.frame}(object,  sort=c('none','names','labels','NAs'), prlevels=TRUE,
-           file=paste('contents',obj$dfname,'html',sep='.'),
+           file=paste('contents',object$dfname,'html',sep='.'),
            append=FALSE, \dots)
 \method{contents}{list}(object, dslabels, \dots)
 \method{print}{contents.list}(x,

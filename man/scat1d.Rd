@@ -89,7 +89,7 @@ scat1d(x, side=3, frac=0.02, jitfrac=0.008, tfrac,
        eps=ifelse(preserve,0,.001),
        lwd=0.1, col=par("col"),
        y=NULL, curve=NULL,
-       bottom.align=type=='density',
+       bottom.align=FALSE,
        preserve=FALSE, fill=1/3, limit=TRUE, nhistSpike=2000, nint=100,
        type=c('proportion','count','density'), grid=FALSE, \dots)
 
@@ -108,7 +108,8 @@ datadensity(object, ...)
             n.unique=10, show.na=TRUE, nint=1, naxes,
             q, bottom.align=nint>1,
             cex.axis=sc(.5,.3), cex.var=sc(.8,.3),
-            lmgp=sc(-.2,-.625), tck=sc(-.009,-.002), ranges, labels, \dots)
+            lmgp=NULL, tck=sc(-.009,-.002),
+            ranges=NULL, labels=NULL, \dots)
 # sc(a,b) means default to a if number of axes <= 3, b if >=50, use
 # linear interpolation within 3-50
 

@@ -62,7 +62,7 @@ in weighted means, quantiles, and frequency tables.
     digits=4, weights, \dots)
 \method{print}{describe}(x, condense=TRUE, \dots)
 \method{latex}{describe}(object, title=NULL, condense=TRUE, 
-      file=paste('describe',first.word(expr=attr(d,'descript')),'tex',sep='.'),
+      file=paste('describe',first.word(expr=attr(object,'descript')),'tex',sep='.'),
       append=FALSE, size='small', tabular=TRUE, \dots)
 \method{latex}{describe.single}(object, title=NULL, condense=TRUE, vname,
       file, append=FALSE, size='small', tabular=TRUE, \dots)
@@ -230,6 +230,18 @@ describe(relig)  #Has special missing values .D .F .M .R .T
  d[sort(names(d))]       # print in alphabetic order by var. names
  d2 <- d[20:30]          # keep variables 20-30
  page(d2)                # pop-up window for these variables
+
+# Test date/time formats and suppression of times when they don't vary
+ library(chron)
+ d <- data.frame(a=chron((1:20)+.1),
+                 b=chron((1:20)+(1:20)/100),
+                 d=ISOdatetime(year=rep(2003,20),month=rep(4,20),day=1:20,
+                               hour=rep(11,20),min=rep(17,20),sec=rep(11,20)),
+                 f=ISOdatetime(year=rep(2003,20),month=rep(4,20),day=1:20,
+                               hour=1:20,min=1:20,sec=1:20),
+                 g=ISOdate(year=2001:2020,month=rep(3,20),day=1:20))
+ describe(d)
+
 }
 }
 \keyword{interface}

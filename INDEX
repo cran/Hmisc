@@ -37,6 +37,7 @@ confbar         Draws confidence bars on an existing plot using multiple
 contents        Print the contents (variables, labels, etc.) of a data frame
 cpower          Power of Cox 2-sample test allowing for noncompliance
 Cs              Vector of character strings from list of unquoted names
+csv.get         Enhanced importing of comma separated files labels
 cut2            Like cut with better endpoint label construction and allows
                     construction of quantile groups or groups with given n
 datadensity     Snapshot graph of distributions of all variables in
@@ -80,6 +81,7 @@ gbayes          Bayesian posterior and predictive distributions when both
 getHdata        Fetch and list datasets on our web site
 gs.slide        Sets nice defaults for graph sheets for S-Plus 4.0 for
                 copying graphs into Microsoft applications
+hdquantile      Harrell-Davis nonparametric quantile estimator with s.e.
 histbackback    Back-to-back histograms (Pat Burns, Salomon Smith
                     Barney, London, pburns@dorado.sbi.com)
 hist.data.frame Matrix of histograms for all numeric vars. in data frame

@@ -148,7 +148,7 @@ transcan(x, method=c("canonical","pc"),
          categorical=NULL, asis=NULL, nk, imputed=FALSE, n.impute,
          boot.method=c('approximate bayesian', 'simple'),
          trantab=FALSE, transformed=FALSE, 
-         impcat=c("score", "tree", "rpart", "multinom"),
+         impcat=c("score", "multinom", "rpart", "tree"),
          mincut=40, 
          inverse=c('linearInterp','sample'), tolInverse=.05,
          pr=TRUE, pl=TRUE, allpl=FALSE, show.na=TRUE, 
@@ -940,6 +940,6 @@ par(mfrow=c(2,2))
 \keyword{regression}
 \keyword{multivariate}
 \keyword{methods}
-\keyword{bootstrap}
 \keyword{models}
+\concept{bootstrap}
 % Converted by Sd2Rd version 1.21.

@@ -54,7 +54,7 @@ ecdf(x, \dots)
      dens.opts=NULL, lwd, \dots)
 
 
-\method{ecdf}{data.frame}(x, group=rep(1,nrow(a)), weights, normwt,
+\method{ecdf}{data.frame}(x, group=rep(1,nrows), weights, normwt,
      label.curves=TRUE, n.unique=10, na.big=FALSE, subtitles=TRUE, 
      vnames=c('labels','names'),\dots)
 
@@ -260,6 +260,6 @@ ecdf(~ch | sex, datadensity='hist', side=3)  # add spike histogram at top
 \keyword{nonparametric}
 \keyword{hplot}
 \keyword{methods}
-\keyword{trellis}
 \keyword{distribution}
-% Converted by Sd2Rd version 1.21.
+\concept{trellis}
+\concept{lattice}

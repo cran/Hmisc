@@ -31,7 +31,7 @@ ldBands(n = length(times), times = NULL, alpha = 0.05, sided = 2,
         phi=1,
         spending2=c('OBrien-Fleming','Pocock','alpha*t^phi',
                     'Hwang-Shih-DeCani'),
-        phi2=1,
+        phi2=phi,
         truncate = Inf, power = NULL, pr = TRUE)
 \method{print}{ldBands}(x, \dots)
 \method{plot}{ldBands}(x, xlab='Time', ylab='Z', actual=NULL,

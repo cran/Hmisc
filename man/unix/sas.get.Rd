@@ -39,10 +39,11 @@ There is an option to automatically uncompress (or gunzip) compressed
 SAS datasets.
 }
 \usage{
-sas.get(library, member, variables, ifs,
-     format.library=library, id, dates.,
+sas.get(library, member, variables=character(0), ifs=character(0),
+     format.library=library, id,
+     dates.=c("sas","yymmdd","yearfrac","yearfrac2"),
      keep.log=TRUE, log.file="_temp_.log", macro=sas.get.macro,
-     data.frame.out=TRUE, clean.up=FALSE, quiet=FALSE,
+     data.frame.out=existsFunction("data.frame"), clean.up=!.R., quiet=FALSE,
      temp=tempfile("SaS"), formats=TRUE, recode=formats,
      special.miss=FALSE, sasprog="sas", 
      as.is=.5, check.unique.id=TRUE, force.single=FALSE,
