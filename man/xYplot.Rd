@@ -44,13 +44,17 @@ value of the additional column variable.
 
 
 When a \code{groups} variable is present, \code{panel.xYplot} will create a function
-in frame 0 called \code{Key} that when invoked will draw a key describing the
+in frame 0 (\code{.GlobalEnv} in \R) called \code{Key} that when
+invoked will draw a key describing the 
 \code{groups} labels, point symbols, and colors. By default, the key is outside
-the graph.  If \code{Key(locator(1))} is specified, the key will appear so that
+the graph.  For S-Plus, if \code{Key(locator(1))} is specified, the key will appear so that
 its upper left corner is at the coordinates of the mouse click.  For
 R/Lattice the first two arguments of \code{Key} (\code{x} and \code{y}) are fractions
 of the page, measured from the lower left corner, and the default
-placement is at \code{x=0, y=1}.
+placement is at \code{x=0.05, y=0.95}.  For \R, an optional argument
+to \code{sKey}, \code{other}, may contain a list of arguments to pass to \code{draw.key} (see
+\code{\link[lattice]{xyplot}} for a list of possible arguments, under
+the \code{key} option).  
 
 
 When \code{method="quantile"} is specified, \code{xYplot} automatically groups the
@@ -66,6 +70,16 @@ statistic in the first column should be the measure of central tendency.
 Examples of useful \code{method} functions are those listed under the help file
 for \code{summary.formula} such as \code{smean.cl.normal}.
 
+\code{xYplot} can also produce bubble plots.  This is done when
+\code{size} is specified to \code{xYplot}.  When \code{size} is used, a
+function \code{sKey} is generated for drawing a key to the character
+sizes.  See the bubble plot example.  \code{size} can also specify a
+vector where the first character of each observation is used as the
+plotting symbol, if \code{rangeCex} is set to a single \code{cex}
+value.  An optional argument to \code{sKey}, \code{other}, may contain
+a list of arguments to pass to \code{draw.key} (see
+\code{\link[lattice]{xyplot}} for a list of possible arguments, under
+the \code{key} option).  See the bubble plot example.
 
 \code{Dotplot} is a substitute for \code{dotplot} allowing for a matrix x-variable,
 automatic superpositioning when \code{groups} is present, and creation of a
@@ -129,14 +143,15 @@ panel.xYplot(x, y, subscripts, groups=NULL,
              lwd=plot.line$lwd, lty=plot.line$lty, pch=plot.symbol$pch, 
              cex=plot.symbol$cex, font=plot.symbol$font, col=NULL, 
              lwd.bands=NULL, lty.bands=NULL, col.bands=NULL, 
-             minor.ticks=NULL, col.fill=NULL, \dots)
+             minor.ticks=NULL, col.fill=NULL,
+             size=NULL, rangeCex=c(.5,3), \dots)
 
 prepanel.xYplot(x, y, \dots)
 
 Dotplot(formula, data = sys.frame(sys.parent()), groups, subset, 
         xlab = NULL, ylab = NULL, ylim = NULL,
         panel=panel.Dotplot, prepanel=prepanel.Dotplot,
-        scales=NULL, \dots)
+        scales=NULL, xscale=NULL, \dots)
 
 prepanel.Dotplot(x, y, \dots)
 
@@ -158,9 +173,10 @@ vectors after the first two are ignored.  If drawing bars and only one
 extra variable is given in \code{\dots}, upper and lower values are
 computed as described above. If the second argument to \code{Cbind} is a
 matrix, that matrix is stored in the \code{"other"} attribute and
-arguments after the second are ignored.
+arguments after the second are ignored.  For bubble plots, name an
+argument \code{cex}.
 
-Also can be other arguments to pass to \code{labcurve} or \code{Key}.
+Also can be other arguments to pass to \code{labcurve}.
 or extra arguments sent from \code{numericScale} to \code{axis.time}
 }
 \item{formula}{
@@ -191,6 +207,8 @@ draw the main lines. For \code{Dotplot} the first argument to
   see \code{trellis.args}.  \code{xlab} and \code{ylab} get default values from
   \code{"label"} attributes.
 }
+\item{xscale}{allows one to use the default \code{scales} but specify
+  only the \code{x} component of it for \code{Dotplot}}
 \item{method}{
 defaults to \code{"bars"} to draw error-bar type plots.  See meaning of other
 values above.  \code{method} can be a function.  Specifying \code{method=quantile},
@@ -259,6 +277,20 @@ elements corresponds to the different \code{groups}, regardless of how many
 bands are drawn.  The default colors for 'filled bands' are pastel colors
 matching the default colors superpose.line$col (plot.line$col)
 }
+\item{size}{
+  a vector the same length as \code{x} giving a variable whose values
+  are a linear function of the size of the symbol drawn.  This is used
+  for example for bubble plots.
+}
+\item{rangeCex}{
+  a vector of two values specifying the range in character sizes to use
+  for the \code{size} variable (lowest first, highest second).
+  \code{size} values are linearly translated to this range, based on the
+  observed range of \code{size} when \code{x} and \code{y} coordinates
+  are not missing.  Specify a single numeric \code{cex} value for
+  \code{rangeCex} to use the first character of each observations's
+  \code{size} as the plotting symbol.
+  }
 \item{strip.blank}{
 set to \code{FALSE} to not make the panel strip backgrounds blank 
 }
@@ -283,7 +315,8 @@ see \code{axis.time}
 \code{trellis} results.
 }
 \section{Side Effects}{
-plots, and \code{panel.xYplot} creates the \code{Key} function in the session frame.
+plots, and \code{panel.xYplot} may create temporary \code{Key} and
+\code{sKey} functions in the session frame. 
 }
 \details{
 Unlike \code{xyplot}, \code{xYplot} senses the presence of a \code{groups} variable and
@@ -326,9 +359,20 @@ xYplot(sin(x+shift)^p ~ x | shift, groups=p, data=d,
 # lower left corner (for R)
 xYplot(sin(x+shift)^p ~ x | shift, groups=p, data=d, 
        type='l', label.curves=FALSE, lwd=1:3, col=1, lty=1:3) 
-Key()       # S-Plus
-Key(0,.1)   # R
+Key()
 
+# Bubble plots
+x <- y <- 1:8
+x[2] <- NA
+units(x) <- 'cm^2'
+z <- 101:108
+p <- factor(rep(c('a','b'),4))
+g <- c(rep(1,7),2)
+data.frame(p, x, y, z, g)
+xYplot(y ~ x | p, groups=g, size=z)
+ Key(other=list(title='g', cex.title=1.2))  # draw key for colors
+sKey(.2,.85,other=list(title='Z Values', cex.title=1.2))
+# draw key for character sizes
 
 # Show the median and quartiles of height given age, stratified 
 # by sex and race.  Draws 2 sets (male, female) of 3 lines per panel.
@@ -436,7 +480,7 @@ xYplot ( Cbind ( y, Lower, Upper ) ~ month, groups=year,
 xYplot ( Cbind ( y, Lower, Upper ) ~ month, groups=year, 
      method="filled bands" , data=s, label.curves=FALSE,
      type="l", col=1, col.fill = 2:3)
-Key(.35,1,col = 2:3) #use fill colors in key
+Key(.5,.8,col = 2:3) #use fill colors in key
 
 
 # A good way to check for stable variance of residuals from ols 
@@ -481,6 +525,25 @@ s <- summarize(y, llist(month,year), quantile,
                probs=c(.5,.05,.25,.75,.95), type='matrix') 
 Dotplot(month ~ Cbind(y) | year, data=s) 
 # Use factor(year) to make actual years appear in conditioning title strips
+
+# Plot proportions and their Wilson confidence limits
+set.seed(3)
+d <- expand.grid(continent=c('USA','Europe'), year=1999:2001,
+                 reps=1:100)
+# Generate binary events from a population probability of 0.2
+# of the event, same for all years and continents
+d$y <- ifelse(runif(6*100) <= .2, 1, 0)
+s <- with(d,
+          summarize(y, llist(continent,year),
+                    function(y) {
+                     n <- sum(!is.na(y))
+                     s <- sum(y, na.rm=TRUE)
+                     binconf(s, n)
+                    }, type='matrix')
+)
+
+Dotplot(year ~ Cbind(y) | continent,  data=s, ylab='Year',
+        xlab='Probability')
 
 
 # Dotplot(z ~ x | g1*g2)                 

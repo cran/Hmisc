@@ -1,4 +1,4 @@
-## $Id: labcurve.s,v 1.4 2004/05/28 18:49:13 harrelfe Exp $
+## $Id: labcurve.s,v 1.8 2004/11/21 15:47:04 harrelfe Exp $
 
 labcurve <- function(curves, labels=names(curves), 
 					 method=NULL, keys=NULL, keyloc=c('auto','none'),
@@ -96,8 +96,8 @@ labcurve <- function(curves, labels=names(curves),
 	  if(!length(xlim)) xlim <- xlm
 	  if(!length(ylim)) ylim <- ylm
 	  namcur <- names(curves[[1]])   #13Jul97
-	  if(xlab=='' && length(namcur)) xlab <- namcur[1]
-	  if(ylab=='' && length(namcur)) ylab <- namcur[2]
+	  if(!is.expression(xlab) && xlab=='' && length(namcur)) xlab <- namcur[1]
+	  if(!is.expression(ylab) && ylab=='' && length(namcur)) ylab <- namcur[2]
       if(grid) {
         stop("grid=TRUE when pl=TRUE is not yet implemented")
       } else
@@ -413,7 +413,27 @@ labcurve <- function(curves, labels=names(curves),
 # Version of legend for R that implements plot=FALSE, adds grid=TRUE
 # Also defaults lty, lwd, pch to NULL and checks for length>0 rather
 # than missing(), so it's easier to deal with non-applicable parameters
+
+# rlegendg is better to use when grid is in effect.  In R 2.0, you
+# can't use strwidth etc. after a lattice drawing has been rendered
+		
 if(.R.) {
+
+  rlegendg <- function(x, y, legend, col=pr$col[1], lty=NULL,
+	                   lwd=NULL, pch=NULL, cex=pr$cex[1], other=NULL) {
+	pr <- par()
+	if(is.list(x)) {y <- x[[2]]	;  x <- x[[1]]}
+    do.lines  <- (length(lty) && any(lty > 0)) || length(lwd)
+	do.points <- length(pch)
+	cmd <- NULL
+	if(do.lines) cmd$lines <- list(col=col, lty=lty, lwd=lwd)
+	if(do.points)cmd$points<- list(col=col, pch=pch, cex=cex)
+	cmd$text <- list(lab=legend)
+	if(length(other)) cmd <- c(cmd, other)
+	draw.key(cmd, draw=TRUE, vp=viewport(x=unit(x,'npc'),y=unit(y,'npc')))
+	invisible()
+	}
+
   rlegend <- function (x, y, legend, fill, col = "black", lty=NULL, lwd=NULL,
                        pch=NULL, angle = NULL,  
                        density = NULL, bty = "o", bg = par("bg"),
@@ -489,7 +509,8 @@ if(.R.) {
             formatC), list("\n")))
     pr  <- parGrid(grid)  ## 20Mar02 FEH
     cin <- pr$cin         ## FEH
-    Cex <- cex * pr$cex   ## FEH
+    Cex <- (if(length(unique(cex)) > 1) mean(cex,na.rm=TRUE) 
+      else cex) * pr$cex   ## FEH
     if (!length(text.width)) ## FEH
         text.width <- max(strwidth(legend, u = "user", cex = cex))
     else if (!is.numeric(text.width) || text.width < 0) 
@@ -618,7 +639,9 @@ if(.R.) {
             xt <- xt + dx.pch
     }
     xt <- xt + x.intersp * xchar
-    if(plot)text2(xt, yt, labels = legend, adj = adj, cex = cex) ## FEH
+    if(plot)text2(xt, yt, labels = legend,
+                  adj = adj,
+                  cex = max(1,min(cex, na.rm=TRUE))) ## FEH
     invisible(list(rect = list(w = w, h = h, left = left, top = top), 
                    text = list(x = xt, y = yt)))
   }

@@ -64,12 +64,55 @@ panel.xYplot <-
            pch = plot.symbol$pch, cex = plot.symbol$cex, 
            font = plot.symbol$font, col = NULL, 
            lwd.bands = NULL, lty.bands = NULL, col.bands = NULL, 
-           minor.ticks = NULL, col.fill = NULL, ...)
+           minor.ticks = NULL, col.fill = NULL,
+           size=NULL, rangeCex=c(.5,3), ...)
 {
   if(missing(method) || !is.function(method))
     method <- match.arg(method)   # was just missing() 26Nov01
   type <- type   # evaluate type before method changes 9May01
+  sizeVaries <- length(size) && length(unique(size)) > 1
   if(length(groups)) groups <- as.factor(groups)
+  g <- as.integer(groups)[subscripts]
+  ng <- if(length(groups)) max(g) else 1
+  plot.symbol <- trellis.par.get(if(ng > 1) "superpose.symbol"
+   else "plot.symbol")
+  plot.line <- trellis.par.get(if(ng > 1) "superpose.line"
+   else "plot.line")
+  lty <- rep(lty, length = ng)
+  lwd <- rep(lwd, length = ng)
+  if(length(rangeCex) != 1) pch <- rep(pch, length = ng)
+  if(!sizeVaries) cex <- rep(cex, length = ng)
+  font <- rep(font, length = ng)
+  if(!length(col))
+    col <- if(type == "p") plot.symbol$col else 
+  plot.line$col
+  col <- rep(col, length = ng)
+  pchVaries <- FALSE
+  ## Thanks to Deepayan Sarkar for the following size code
+  if(sizeVaries) {
+    if(length(rangeCex) > 1) srng <- range(size, na.rm=TRUE)
+    size <- size[subscripts]
+    if(length(rangeCex)==1) {
+		pch <- as.character(size)
+		cex <- rangeCex
+		sizeVaries <- FALSE
+		pchVaries  <- TRUE
+		} else {
+        cex <- rangeCex[1] + diff(rangeCex)*(size - srng[1])/diff(srng)
+        sKey <- function(x=0, y=1, cexObserved, cexCurtailed, col, pch, other) {
+          if(!length(x)) x <- 0.05
+          if(!length(y)) y <- 0.95  ## because of formals()
+		  ## had to multiply cex by 1.4 when using rlegend instead of rlegendg
+          rlegendg(x, y, legend=format(cexObserved), cex=cexCurtailed,
+                  col=col, pch=pch, other=other)
+          invisible()
+        }
+        formals(sKey) <- list(x=NULL, y=NULL, cexObserved=srng,
+                              cexCurtailed=rangeCex,
+                              col=col[1], pch=pch, other=NULL)
+        storeTemp(sKey)
+		}
+  }
   other <- attr(y, "other")
   if(length(other)) {
     nother <- ncol(other)
@@ -84,8 +127,6 @@ panel.xYplot <-
   }
   else nother <- 0
   y <- oldUnclass(y)
-  g <- as.integer(groups)[subscripts]
-  ng <- if(length(groups)) max(g) else 1
   levnum <- if(length(groups)) sort(unique(g)) else 1
   if(is.function(method) || method == "quantiles") {
     ## 2Mar00
@@ -135,10 +176,6 @@ panel.xYplot <-
     nother <- 2
     method <- "bands"
   }
-  plot.symbol <- trellis.par.get(if(ng > 1) "superpose.symbol"
-   else "plot.symbol")
-  plot.line <- trellis.par.get(if(ng > 1) "superpose.line"
-   else "plot.line")
   ## MB 04/17/01 default colors for filled bands
   ## 'pastel' colors matching superpose.line$col
   plot.fill <- c(9, 10, 11, 12, 13, 15, 7) 
@@ -151,13 +188,14 @@ panel.xYplot <-
 
     if(type !='l') gfun$points(x=x, y=y,
          ## size=if(.R.)unit(cex*2.5,"mm") else NULL,
-         pch = pch, font = font, cex = cex, col = col, 
+         pch = pch, font = font,
+         cex = cex, col = col, 
          type = type, lwd=lwd, lty=lty, ...)
   }
 
   ##The following is a fix for panel.superpose for type='b' 
   pspanel <- function(x, y, subscripts, groups, type, lwd, lty, 
-                      pch, cex, font, col, ...) {
+                      pch, cex, font, col, sizeVaries, pchVaries, ...) {
     gfun <- ordGridFun(.R.)
     
 	groups <- as.numeric(groups)[subscripts]
@@ -172,21 +210,13 @@ panel.xYplot <-
 
       if(type !='l') gfun$points(x[j], y[j],
            ## size=if(.R.) unit(cex[i]*2.5, 'mm') else NULL,
-           col = col[i], pch = pch[i], cex = cex[i],
+           col = col[i], pch = pch[if(pchVaries)j else i], 
+		   cex = cex[if(sizeVaries)j else i],
            font = font[i], lty=lty[i], lwd=lwd[i], ...)
 	  ## S-Plus version used type=type[i]; was type=type for points()
 	}
   }
   
-  lty <- rep(lty, length = ng)
-  lwd <- rep(lwd, length = ng)
-  pch <- rep(pch, length = ng)
-  cex <- rep(cex, length = ng)
-  font <- rep(font, length = ng)
-  if(!length(col))
-    col <- if(type == "p") plot.symbol$col else 
-   plot.line$col
-  col <- rep(col, length = ng)
   ## 14Apr2001 MB changes: set colors for method = "filled bands"
   if(!length(col.fill))
     col.fill <- plot.fill
@@ -207,7 +237,7 @@ panel.xYplot <-
     }  ## end MB
     pspanel(x, y, subscripts, groups, lwd = lwd, lty = 
             lty, pch = pch, cex = cex, font = font, col
-            = col, type = type)
+            = col, type = type, sizeVaries=sizeVaries, pchVaries=pchVaries)
     if(type != "p" && !(is.logical(label.curves) && !
          label.curves)) {
       lc <- if(is.logical(label.curves))
@@ -268,7 +298,8 @@ panel.xYplot <-
                      lty = dob(lty.bands, lty, ng, j), 
                      col = dob(col.bands, col, ng, j), 
                      pch = pch, cex = cex, font = 
-                     font, type = "l")
+                     font, type = "l", 
+		             sizeVaries=sizeVaries, pchVaries=pchVaries)
       }
     }
     else {
@@ -347,22 +378,21 @@ panel.xYplot <-
       gfun$axis(side = 1, at = minor.at, labels = 
                 minor.labs, tck = 0, cex = par("cex") * 0.5, line = 1.25)
   }
-  if(type != "l" && ng > 1) {
+#  if(type != "l" && ng > 1) {
+  if(ng > 1) {
 	##set up for key() if points plotted
     if(.R.) {
-      Key <- function(x=0, y=1, lev, cex, col, font, pch, ...) {
-        oldpar <- par(usr=c(0,1,0,1),xpd=NA)
-        on.exit(par(oldpar))
-        if(is.list(x)) { y <- x[[2]]; x <- x[[1]] }
+      Key <- function(x=0, y=1, lev, cex, col, font, pch, other) {
         ## Even though par('usr') shows 0,1,0,1 after lattice draws
         ## its plot, it still needs resetting
-        if(!length(x)) x <- 0
-        if(!length(y)) y <- 1  ## because of formals()
-        rlegend(x, y, legend=lev, cex=cex, col=col, pch=pch)
+        if(!length(x)) x <- 0.05
+        if(!length(y)) y <- 0.95  ## because of formals()
+        rlegendg(x, y, legend=lev, cex=cex, col=col, pch=pch, other=other)
         invisible()
       }
  } else {
-   Key <- function(x=NULL, y=NULL, lev, cex, col, font, pch, ... ) {
+   Key <- function(x=NULL, y=NULL, lev, cex, col, font, pch, other) {
+	## other currently ignored for S-Plus
      if(length(x)) {
        if(is.list(x)) {
          y <- x$y
@@ -370,38 +400,38 @@ panel.xYplot <-
        }
        key(x = x, y = y, text = list(lev, col = col),
            points = list(cex = cex, col = col, font = font,
-             pch = pch), transparent = TRUE, ...)
+             pch = pch), transparent = TRUE)
      }
      else key(text = list(lev, col = col),
               points  = list(cex = cex, col = col,
                 font = font, pch = pch), transparent =
-              TRUE, ...)
+              TRUE)
      invisible()
    }
  }
-    formals(Key) <- list(x=NULL,y=NULL,lev=levels(groups), cex=cex,
-                         col=col, font=font, pch=pch)  #, ...=NULL)
+    formals(Key) <- list(x=NULL,y=NULL,lev=levels(groups),
+                         cex=if(sizeVaries) 1 else cex,
+                         col=col, font=font, pch=pch, other=NULL)
     storeTemp(Key)
   }
   if(!missing(abline))
     do.call("panel.abline", abline)
   if(type == "l" && ng > 1) {
-    ## Set up for legend (key() or rlegend()) if lines drawn
+    ## Set up for legend (key() or rlegendg()) if lines drawn
     if(.R.) {
-      Key <- function(x=0, y=1, lev, cex, col, lty, lwd, ...) {
-        oldpar <- par(usr=c(0,1,0,1),xpd=NA)
-        on.exit(par(oldpar))
-        if(is.list(x)) { y <- x[[2]]; x <- x[[1]] }
+      Key <- function(x=0, y=1, lev, cex, col, lty, lwd, other) {
         ## Even though par('usr') shows 0,1,0,1 after lattice draws
         ## its plot, it still needs resetting
-        if(!length(x)) x <- 0
-        if(!length(y)) y <- 1  ## because of formals()
-        rlegend(x, y, legend=lev, cex=cex, col=col, lty=lty, lwd=lwd)
+        if(!length(x)) x <- 0.05
+        if(!length(y)) y <- 0.95  ## because of formals()
+        rlegendg(x, y, legend=lev, cex=cex, col=col, lty=lty, lwd=lwd,
+	             other=other)
         invisible()
     }
  } else {
-   Key <- function(x=NULL, y=NULL, lev, col, lty, lwd, ...)
+   Key <- function(x=NULL, y=NULL, lev, col, lty, lwd, other)
      {
+	## other currently ignored for S-Plus
        if(length(x)) {
          if(is.list(x)) {
            y <- x$y
@@ -410,16 +440,16 @@ panel.xYplot <-
          key(x = x, y = y,
              text = list(lev, col = col),
              lines = list(col = col, lty = lty, lwd = lwd),
-             transparent  = TRUE, ...)
+             transparent  = TRUE)
        }
        else key(text = list(lev, col = col),
                 lines = list(col = col, lty = lty, lwd = lwd),
-                transparent = TRUE, ...)
+                transparent = TRUE)
        invisible()
      }
  }
     formals(Key) <- list(x=NULL,y=NULL,lev=levels(groups), col=col,
-                         lty=lty, lwd=lwd)  #, ...=NULL)
+                         lty=lty, lwd=lwd, other=NULL)
     storeTemp(Key)
   }
 }
@@ -430,8 +460,7 @@ xYplot <- if(.R.)
             xlab=NULL, ylab=NULL, ylim=NULL,
             panel=panel.xYplot, prepanel=prepanel.xYplot,
             scales=NULL, minor.ticks=NULL, ...) {
-
-    require('grid')
+  require('grid')
   require('lattice')
   yvname <- as.character(formula[2])  # tried deparse
   y <- eval(parse(text=yvname), data)
@@ -452,9 +481,6 @@ xYplot <- if(.R.)
   if(!length(xlab)) xlab <- label(xv, units=TRUE, plot=TRUE,
                                   default=as.character(xvname),
                                   grid=TRUE)
-#    xlab <- attr(xv, 'label') 26sep02
-#    if(!length(xlab)) xlab <- as.character(xvname)
-#  }
 
   if(!length(scales$x)) {
     if(length(maj <- attr(xv,'scales.major'))) scales$x <- maj
@@ -578,17 +604,13 @@ prepanel.Dotplot <- function(x, y, ...) {
      panel.dotplot(x, y, pch=pch, col=col, cex=cex, font=font, ...)
    }
  if(gp) {
-     if(.R.) Key <- function(x=0, y=1, lev, cex, col, font, pch, ...) {
-       oldpar <- par(usr=c(0,1,0,1),xpd=NA)
-       on.exit(par(oldpar))
-       if(is.list(x)) { y <- x[[2]]; x <- x[[1]] }
-       ## Even though par('usr') shows 0,1,0,1 after lattice draws
-       ## its plot, it still needs resetting
-       if(!length(x)) x <- 0
-       if(!length(y)) y <- 1  ## because of formals()
-       rlegend(x, y, legend=lev, cex=cex, col=col, pch=pch)
+     if(.R.) Key <- function(x=0, y=1, lev, cex, col, font, pch, other) {
+       if(!length(x)) x <- 0.05
+       if(!length(y)) y <- 0.95  ## because of formals()
+       rlegendg(x, y, legend=lev, cex=cex, col=col, pch=pch, other=other)
        invisible()
-     } else Key <- function(x=NULL, y=NULL, lev, cex, col, font, pch) { #, ...)
+     } else Key <- function(x=NULL, y=NULL, lev, cex, col, font, pch, other) { 
+		## other currently ignored for S-Plus
        if(length(x)) {
          if(is.list(x)) {y <- x$y; x <- x$x}
          key(x=x, y=y, text=list(lev, col=col), 
@@ -603,7 +625,7 @@ prepanel.Dotplot <- function(x, y, ...) {
      ng <- length(lev)
      formals(Key) <- list(x=NULL,y=NULL,lev=lev,
                           cex=cex[1:ng], col=col[1:ng],
-                          font=font[1:ng], pch=pch[1:ng])   #,...=NULL)
+                          font=font[1:ng], pch=pch[1:ng], other=NULL)
      storeTemp(Key)
    }
  }
@@ -613,7 +635,7 @@ prepanel.Dotplot <- function(x, y, ...) {
                     groups, subset,
                     xlab=NULL, ylab=NULL, ylim=NULL,
                     panel=panel.Dotplot, prepanel=prepanel.Dotplot,
-                    scales=NULL, ...) {
+                    scales=NULL, xscale=NULL, ...) {
 
     require('grid')
   require('lattice')
@@ -628,9 +650,10 @@ prepanel.Dotplot <- function(x, y, ...) {
     yother <- attr(yv,'other')
     if(length(yother)) ylim <- range(yv, yother, na.rm=TRUE)
   }
-  if(is.character(yv)) yv <- factor(yv)
-  if(!length(scales) && is.factor(yv))
-    scales <- list(y=list(at=1:length(levels(yv)),labels=levels(yv)))
+    if(is.character(yv)) yv <- factor(yv)
+    if(!length(scales) && is.factor(yv))
+      scales <- list(y=list(at=1:length(levels(yv)),labels=levels(yv)))
+    if(length(xscale)) scales$x <- xscale
   
   xvname <- formula[[3]]
   if(length(xvname)>1 && as.character(xvname[[1]])=='|') 
