@@ -56,7 +56,8 @@ distributions of imputed values.
 Typically, \code{fit.mult.impute} will be called after \code{aregImpute}.
 }
 \usage{
-aregImpute(formula, data, subset, n.impute=5, method=c('ace','avas'),
+aregImpute(formula, data, subset, n.impute=5, group=NULL,
+           method=c('ace','avas'),
            match=c('weighted','closest'), fweighted=0.2,
            defaultLinear=FALSE, x=FALSE, pr=TRUE)
 \method{print}{aregImpute}(x, \dots)
@@ -90,6 +91,15 @@ These may be also be specified.  You may not specify \code{na.action} as
 number of multiple imputations.  \code{n.impute=5} is frequently
 recommended but 10 or more doesn't hurt.
 }
+\item{group}{a character or factor variable the same length as the
+  number of observations in \code{data} and containing no \code{NA}s.
+  When \code{group} is present, causes a bootstrap sample of the
+  observations corresponding to non-\code{NA}s of a target variable to
+  have the same frequency distribution of \code{group} as the
+  that in the non-\code{NA}s of the original sample.  This can handle
+  k-sample problems as well as lower the chance that a bootstrap sample
+  will have a missing cell when the original cell frequency was low.
+  }
 \item{method}{
 method (\code{"ace"}, the default, or \code{"avas"}) for modeling a variable to
 be imputed.  As \code{avas} does not allow the response variable to be
@@ -239,11 +249,11 @@ always match on the same donor observation.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{fit.mult.impute}}, \code{\link{transcan}}, \code{\link[acepack]{ace}}, \code{\link{naclus}}, \code{\link{naplot}}, \code{\link[mice]{mice}},

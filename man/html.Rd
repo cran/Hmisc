@@ -57,11 +57,11 @@ the name of the argument for \code{object}.
 \author{
 Frank E. Harrell, Jr.
 \cr
-Division of Biostatistics and Epidemiology,
+Department of Biostatistics,
 \cr
-University of Virginia,
+Vanderbilt University,
 \cr
-\email{fharrell@virginia.edu}
+\email{f.harrell@vanderbilt.edu}
 }
 \references{
 Maranget, Luc.  HeVeA: a LaTeX to HTML translater.

@@ -116,9 +116,9 @@ confidence limits
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology, University of Virginia
+Department of Biostatistics, Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link[Design]{lrm}}, \code{\link[Design]{cph}}, \code{\link{rcspline.eval}}, \code{\link{plot}}, \code{\link{supsmu}}, \code{\link[survival]{coxph.fit}}, \code{\link[Design]{lrm.fit}}

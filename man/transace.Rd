@@ -67,7 +67,7 @@ There is also a \code{plot} method for plotting transformation estimates,
 transformations for individual bootstrap re--samples, and pointwise
 confidence limits for transformations.  Unless you already have a
 \code{par(mfrow=)} in effect with more than one row or column, \code{plot} will
-try to fit the plots one one page.  A \code{predict} method computes
+try to fit the plots on one page.  A \code{predict} method computes
 predicted values on the original or transformed response scale, or a
 matrix of transformed predictors.  There is a \code{Function} method
 for producing a list of S-PLUS functions that perform the final fitted
@@ -409,16 +409,14 @@ constrained to be exactly zero although this does not simplify anything.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University School of Medicine
 \cr
-University of Virginia Health Sciences Center
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
-\code{\link[acepack]{avas}}, \code{\link[acepack]{ace}}, \code{\link[Design]{ols}}, \code{\link[Design]{validate}}, \code{\link[Design]{predab.resample}}, \code{\link{gam}}, \code{\link{label}},
+\code{\link[acepack]{avas}}, \code{\link[acepack]{ace}}, \code{\link[Design]{ols}}, \code{\link[Design]{validate}}, \code{\link[Design]{predab.resample}}, \code{\link{label}},
 \code{\link[Design]{nomogram}}
 }
 \references{

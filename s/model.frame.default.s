@@ -77,19 +77,6 @@ termsDrop <- function(object, drop, data) {
 }
 
 
-
-"[.terms" <- function (termobj, i) { # From survival5
-    resp <- if (attr(termobj, "response"))
-        termobj[[2]]
-    else NULL
-    newformula <- attr(termobj, "term.labels")[i]
-    if (length(newformula) == 0)
-        newformula <- 1
-    newformula <- reformulate(newformula, resp)
-    environment(newformula) <- environment(termobj)
-    terms(newformula, specials = names(attr(termobj, "specials")))
-}
-
 untangle.specials <- function (tt, special, order = 1) {
   ## From survival5
   spc <- attr(tt, "specials")[[special]]

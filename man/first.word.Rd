@@ -31,11 +31,11 @@ a character string
 \author{
 Frank E. Harrell, Jr.,
 \cr
-Division of Biostatistics and Epidemiology,
+Department of Biostatistics,
 \cr
-University of Virginia,
+Vanderbilt University,
 \cr
-\code{fharrell@virginia.edu}
+\code{f.harrell@vanderbilt.edu}
 
 
 Richard M. Heiberger,

@@ -49,7 +49,7 @@ in frame 0 called \code{Key} that when invoked will draw a key describing the
 the graph.  If \code{Key(locator(1))} is specified, the key will appear so that
 its upper left corner is at the coordinates of the mouse click.  For
 R/Lattice the first two arguments of \code{Key} (\code{x} and \code{y}) are fractions
-of the page, measured from the left left corner, and the default
+of the page, measured from the lower left corner, and the default
 placement is at \code{x=0, y=1}.
 
 
@@ -293,15 +293,12 @@ is true for \code{Dotplot} vs. \code{dotplot}.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University
 \cr
-University of Virginia Health Sciences Center
+f.harrell@vanderbilt.edu
 \cr
-fharrell@virginia.edu
-
-
 Madeline Bauer
 \cr
 Department of Infectious Diseases

@@ -340,11 +340,10 @@ reference it using for example:\cr
 
 \author{
 Frank E Harrell Jr\cr
-Professor of Biostatistics and Statistics\cr
-Chief, Division of Biostatistics and Epidemiology\cr
-Department of Health Evaluation Sciences\cr
-University of Virginia School of Medicine\cr
-Box 800717 Charlottesville VA 22908\cr
-\email{fharrell@virginia.edu}
+Professor of Biostatistics\cr
+Chair, Department of Biostatistics\cr
+Vanderbilt University School of Medicine\cr
+Nashville, Tennessee\cr
+\email{f.harrell@vanderbilt.edu}
 }
 \keyword{overview}

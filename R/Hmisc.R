@@ -112,19 +112,6 @@ termsDrop <- function(object, drop, data) {
 }
 
 
-
-"[.terms" <- function (termobj, i) { # From survival5
-    resp <- if (attr(termobj, "response"))
-        termobj[[2]]
-    else NULL
-    newformula <- attr(termobj, "term.labels")[i]
-    if (length(newformula) == 0)
-        newformula <- 1
-    newformula <- reformulate(newformula, resp)
-    environment(newformula) <- environment(termobj)
-    terms(newformula, specials = names(attr(termobj, "specials")))
-}
-
 untangle.specials <- function (tt, special, order = 1) {
   ## From survival5
   spc <- attr(tt, "specials")[[special]]
@@ -681,7 +668,8 @@ if(.R.) print.char.matrix <-
 ### Make an index for the rows to be printed
         rn <- row.names(xx)
         rnb <- strsplit(rn, "\\.")
-        rpref <- codes(factor(sapply(rnb, function(z) z[1])))
+        rpref <- as.numeric(factor(sapply(rnb, function(z) z[1])))
+        ## was codes( ) 10oct03
     }
     else rpref <- seq(nrow(x))
     x <- as.data.frame(xx)
@@ -1018,7 +1006,7 @@ whichClosePW <- function(x, w, f=0.2) {
   if(.R.) .Fortran("wclosepw",as.double(w),as.double(x),
                    as.double(runif(lw)),as.double(f),
                    lw, lx, double(lx), j=integer(lw),
-                   package="Hmisc")$j else
+                   PACKAGE="Hmisc")$j else
   .Fortran("wclosepw",as.double(w),as.double(x),
                    as.double(runif(lw)),as.double(f),
                    lw, lx, double(lx), j=integer(lw))$j
@@ -1085,158 +1073,6 @@ approxExtrap <- function(x, y, xout, method='linear', n=50, rule=2,
   n <- length(y)
   if(any(d)) w[d] <- (y[n]-y[n-1])/(x[n]-x[n-1])*(xout[d]-x[n-1])+y[n-1]
   list(x=xout, y=w)
-}
-
-if(FALSE) {
-requirePos <- function (package, quietly = FALSE, warn.conflicts = TRUE,
-                        keep.source = getOption("keep.source.pkgs"),
-                        pos=2)
-{
-    package <- as.character(substitute(package))
-    if (is.na(match(paste("package", package, sep = ":"), search()))) {
-        if (!quietly) 
-            cat("Loading required package:", package, "\n")
-        library(package, char = TRUE, logical = TRUE, 
-                warn.conflicts = warn.conflicts, 
-                keep.source = keep.source, pos=pos)
-    }
-    else TRUE
-}
-
-# If ever use this in R, uncomment Internal below - won't parse in S+
-library <- function (package, help, lib.loc = NULL, character.only = FALSE, 
-                     logical.return = FALSE, warn.conflicts = TRUE,
-                     keep.source = getOption("keep.source.pkgs"),  
-                     verbose = getOption("verbose"), pos=2)
-{
-    sQuote <- function(s) paste("`", s, "'", sep = "")
-    if (!missing(package)) {
-        if (!character.only) 
-            package <- as.character(substitute(package))
-        if (length(package) != 1) 
-            stop("argument `package' must be of length 1")
-        pkgname <- paste("package", package, sep = ":")
-        if (is.na(match(pkgname, search()))) {
-            hasMethods <- !is.na(match("package:methods", search()))
-            pkgpath <- .find.package(package, lib.loc, quiet = TRUE, 
-                verbose = verbose)
-            if (length(pkgpath) == 0) {
-                txt <- paste("There is no package called", sQuote(package))
-                if (logical.return) {
-                  warning(txt)
-                  return(FALSE)
-                }
-                else stop(txt)
-            }
-            which.lib.loc <- dirname(pkgpath)
-            if (exists("packageHasNamespace") && packageHasNamespace(package, 
-                which.lib.loc)) 
-                return(doNamespaceLibrary(package, which.lib.loc, 
-                  lib.loc, logical.return))
-            codeFile <- file.path(which.lib.loc, package, "R", 
-                package)
-            loadenv <- new.env(hash = TRUE, parent = .GlobalEnv)
-            if (file.exists(codeFile)) 
-                sys.source(codeFile, loadenv, keep.source = keep.source)
-            else warning(paste("Package ", sQuote(package), "contains no R code"))
-            env <- attach(NULL, name = pkgname, pos=pos)
-            on.exit(do.call("detach", list(name = pkgname)))
-            attr(env, "path") <- file.path(which.lib.loc, package)
-#            .Internal(lib.fixup(loadenv, env))
-            if (exists(".First.lib", envir = env, inherits = FALSE)) {
-                firstlib <- get(".First.lib", envir = env, inherits = FALSE)
-                tt <- try(firstlib(which.lib.loc, package))
-                if (inherits(tt, "try-error")) 
-                  if (logical.return) 
-                    return(FALSE)
-                  else stop(".First.lib failed")
-            }
-            if (length(firstlib <- getOption(".First.lib")[[package]])) {
-                tt <- try(firstlib(which.lib.loc, package))
-                if (inherits(tt, "try-error")) 
-                  if (logical.return) 
-                    return(FALSE)
-                  else stop(".First.lib failed")
-            }
-            if (warn.conflicts && !exists(".conflicts.OK", envir = env, 
-                inherits = FALSE)) {
-                dont.mind <- c("last.dump", "last.warning", ".Last.value", 
-                  ".Random.seed")
-                lib.pos <- match(pkgname, search())
-                ob <- objects(lib.pos)
-                fst <- TRUE
-                ipos <- seq(along = sp <- search())[-c(lib.pos, 
-                  match("Autoloads", sp))]
-                for (i in ipos) {
-                  obj.same <- match(objects(i), ob, nomatch = 0)
-                  if (any(obj.same > 0) && length(same <- (obs <- ob[obj.same])[!obs %in% 
-                    dont.mind])) {
-                    if (fst) {
-                      fst <- FALSE
-                      cat("\nAttaching package ", sQuote(package), 
-                        ":\n\n", sep = "")
-                    }
-                    cat("\n\tThe following object(s) are masked", 
-                      if (i < lib.pos) 
-                        "_by_"
-                      else "from", sp[i], ":\n\n\t", same, "\n\n")
-                  }
-                }
-            }
-            if (hasMethods && !identical(pkgname, "package:methods")) 
-                cacheMetaData(env, TRUE)
-            on.exit()
-        }
-        else if (verbose) 
-            warning(paste("Package", sQuote(package), "already present in search()"))
-    }
-    else if (!missing(help)) {
-        if (!character.only) 
-            help <- as.character(substitute(help))
-        help <- help[1]
-        pkgpath <- .find.package(help, lib.loc, verbose = verbose)
-        outFile <- tempfile("Rlibrary")
-        outConn <- file(outFile, open = "w")
-        docFiles <- file.path(pkgpath, c("TITLE", "DESCRIPTION", 
-            "INDEX"))
-        headers <- c("", "Description:\n\n", "Index:\n\n")
-        footers <- c("\n", "\n", "")
-        for (i in which(file.exists(docFiles))) {
-            writeLines(headers[i], outConn, sep = "")
-            writeLines(readLines(docFiles[i]), outConn)
-            writeLines(footers[i], outConn, sep = "")
-        }
-        close(outConn)
-        file.show(outFile, delete.file = TRUE, title = paste("Documentation for package", 
-            sQuote(help)))
-    }
-    else {
-        if (!length(lib.loc)) 
-            lib.loc <- .libPaths()
-        db <- matrix(character(0), nr = 0, nc = 3)
-        nopkgs <- character(0)
-        for (lib in lib.loc) {
-            a <- .packages(all.available = TRUE, lib.loc = lib)
-            for (i in sort(a)) {
-                INDEX <- file.path(lib, i, "TITLE")
-                title <- if (file.exists(INDEX)) 
-                  read.00Index(INDEX)[, 2]
-                else ""
-                db <- rbind(db, cbind(i, lib, title))
-            }
-            if (length(a) == 0) 
-                nopkgs <- c(nopkgs, lib)
-        }
-        colnames(db) <- c("Package", "LibPath", "Title")
-        y <- list(header = NULL, results = db, footer = NULL)
-        class(y) <- "libraryIQR"
-        return(y)
-    }
-    if (logical.return) 
-        TRUE
-    else invisible(.packages())
-}
-NULL
 }
 
 if(!existsFunction('reorder.factor'))
@@ -1336,7 +1172,31 @@ file <- tempfile()
 sink(file)
 print(x, ...)
 sink()
-sys(paste('xless -title "',title,'" -geometry "90x40" "',file,'" &',sep=''))
+cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
+             file,'" &',sep='')
+if(.R.) system(cmd) else sys(cmd)
+invisible()
+}
+
+gView <- function(x, ...,
+                  title=substring(deparse(substitute(x)),1,40),
+                  nup=1, fancy=TRUE, fontsize=if(nup==1)9 else 8){
+## Usage: gView(x) - uses print for x, converts to ps with enscript,
+##        views with gv using name of x as title (unless time=specified)
+##        nup = number of columns to print per page
+##        fancy controls fancy headers when nup>1
+##        fontsize default is 9 (8 if nup>1)
+file2 <- paste(tempdir(),title,sep='/')
+file <- tempfile()
+sink(file)
+print(x, ...)
+sink()
+cmd <- if(fancy) 'enscript -G' else 'enscript'
+cmd <- if(nup==1) paste(cmd, '-B -p') else
+            paste(cmd, ' -',nup,' -r -j -p',sep='')
+font <- paste('Courier', fontsize, sep='')
+sys(paste(cmd, file2, '-f', font, '-t', title, '-b', title, file))
+sys(paste('gv', file2, '&'))
 invisible()
 }
 
@@ -1363,8 +1223,9 @@ out
 
 isChron <- function(x) {
   cl <- class(x)  # was oldClass 22jun03
-  length(cl) && any(cl %in%
-    c('POSIXt','POSIXct','timeDate','date','dates','times','chron'))
+  dc <- if(.R.) c('POSIXt','POSIXct','chron') else
+                c('timeDate','date','dates','times','chron')
+  length(cl) && any(cl %in% dc)
 }
 
 # Note that expr may contain multiple expressions in { } but you
@@ -1447,6 +1308,91 @@ getHdata <-
     invisible()
   }
 }
+
+
+hdquantile <- function(x, probs=seq(0, 1, 0.25), se=FALSE,
+                       na.rm=FALSE, names=TRUE, weights=FALSE) {
+if(na.rm) {
+  na <- is.na(x)
+  if(any(na)) x <- x[!na]
+}
+x <- sort(x, na.last=TRUE)
+n <- length(x)
+if(n < 2) return(rep(NA, length(probs)))
+m  <- n + 1
+
+ps <- probs[probs > 0 & probs < 1]
+qs <- 1 - ps
+
+a <- outer((0:n)/n, ps,
+           function(x,p,m) pbeta(x, p*m, (1-p)*m), m=m)
+w <- a[-1,] - a[-m,]
+
+r <- drop(x %*% w)
+rp <- range(probs)
+pp <- ps
+if(rp[1]==0) { r <- c(x[1], r); pp <- c(0,pp) }
+if(rp[2]==1) { r <- c(r, x[n]); pp <- c(pp,1) }
+r <- r[match(pp, probs)]
+
+if(names) names(r) <- format(probs)
+
+if(weights) attr(r,'weights') <- structure(w, dimnames=list(NULL,format(ps)))
+
+if(!se) return(r)
+if(n < 3) stop('must have n >= 3 to get standard errors')
+
+l <- n - 1
+a <- outer((0:l)/l, ps,
+           function(x,p,m) pbeta(x, p*m, (1-p)*m), m=m)
+w <- a[-1,] - a[-n,]
+
+storage.mode(x) <- 'double'
+storage.mode(w) <- 'double'
+
+nq <- length(ps)
+# Get all n leave-out-one quantile estimates
+S <- matrix(.Fortran("jacklins", x, w, as.integer(n), as.integer(nq),
+              res=double(n*nq), PACKAGE='Hmisc')$res, ncol=nq)
+
+se <- l * sqrt(diag(var(S))/n)
+
+if(rp[1]==0) se <- c(NA, se)
+if(rp[2]==1) se <- c(se, NA)
+se <- se[match(pp,probs)]
+if(names) names(se) <- names(r)
+attr(r, 'se') <- se
+r
+}
+
+sepUnitsTrans <- function(x, 
+  conversion=c(day=1, month=365.25/12, year=365.25), round=FALSE, digits=0) {
+
+if(!any(is.present(x))) return(x)
+target <- names(conversion[conversion==1])
+if(!length(target))
+  stop('must specify a target unit with conversion factor=1')
+lab <- attr(x,'label')
+x <- ifelse(is.present(x),casefold(as.character(x)),'')
+
+for(w in names(conversion)) {
+  i <- grep(w, x)
+  if(length(i)) x[i] <-
+    as.character(as.numeric(gsub(paste(w,'s*',sep=''), '', x[i]))*
+                 conversion[w])
+}
+
+i <- grep('[a-z]', x)
+if(any(i))
+  warning(paste('variable contains units of measurement not in',
+                paste(names(conversion), collapse=','),':',
+                paste(unique(x[i]),collapse=' ')))
+x <- as.numeric(x)
+if(round) x <- round(x, digits)
+units(x) <- target
+if(length(lab)) label(x) <- lab
+x
+}
 abs.error.pred <- function(fit, lp=NULL, y=NULL) {
   if(!length(y))  y  <- fit$y
   if(!length(lp)) lp <- fit$fitted.values
@@ -1490,7 +1436,7 @@ print.abs.error.pred <- function(x, ...) {
 }
 						   
 aregImpute <- function(formula, data, subset, n.impute=5,
-                       method=c('ace','avas'),
+                       group=NULL, method=c('ace','avas'),
                        match=c('weighted','closest'), fweighted=0.2,
                        defaultLinear=FALSE, x=FALSE, pr=TRUE) {
   
@@ -1620,7 +1566,7 @@ ace <- function (x, y, wt = rep(1, nrow(x)), cat = NULL, mon = NULL,
   Terms <- terms(formula, specials=c('I','monotone'))
   m$formula <- formula
   m$match <- m$fweighted <- m$x <- m$n.impute <- m$defaultLinear <-
-  m$pr <- m$... <- NULL
+  m$group <- m$pr <- m$... <- NULL
   m$na.action <- na.retain
 
   m[[1]] <- as.name("model.frame")
@@ -1629,6 +1575,13 @@ ace <- function (x, y, wt = rep(1, nrow(x)), cat = NULL, mon = NULL,
   n <- nrow(z)
   rnam <- row.names(z)
   if(length(rnam)==0) rnam <- as.character(1:n)
+
+  lgroup <- length(group)
+  if(lgroup) {
+    if(lgroup != n)
+      stop('group should have length equal to number of observations')
+    ngroup <- length(unique(group[!is.na(group)]))
+  }
 
   linear <- nam[attr(Terms,'specials')$I]
   mono <- nam[attr(Terms,'specials')$monotone]
@@ -1643,15 +1596,26 @@ ace <- function (x, y, wt = rep(1, nrow(x)), cat = NULL, mon = NULL,
   xf <- matrix(as.double(1), nrow=n, ncol=p, dimnames=list(rnam,nam))
   imp <- vector('list',p)
   names(imp) <- nam
+  if(lgroup) group.inds <- imp
 
   for(i in 1:p) {
 	  xi <- z[[i]]
       ni <- nam[i]
       nai <- is.na(xi)
-      na[[i]] <- (1:n)[nai]
+      na[[i]] <- (1:n)[nai] 
       nna[i] <- nnai <- sum(nai)
       if(nnai > 0) imp[[ni]] <-  matrix(NA, nrow=nnai, ncol=n.impute,
                                         dimnames=list(rnam[nai],NULL))
+      if(lgroup) {
+        if(any(is.na(group[!nai]))) stop('NAs not allowed in group')
+        if(length(unique(group[!nai])) != ngroup)
+          stop(paste('not all',ngroup,
+                     'values of group are represented in\n',
+                     'observations with non-missing values of',
+                     ni))
+        group.inds[[i]] <- split((1:n)[!nai], group[!nai])
+      }
+  
       iscat <- FALSE
 	  if(is.character(xi)) {
 		xi <- as.factor(xi)
@@ -1672,6 +1636,7 @@ ace <- function (x, y, wt = rep(1, nrow(x)), cat = NULL, mon = NULL,
             ni %nin% linear) linear <- c(linear, ni)
       }
       xf[,i] <- xi
+      ## Initialize imputed values to random sample of non-missings
       if(nnai > 0) xf[nai,i] <-
         sample(xi[!nai], nnai, replace=nnai > (n-nnai))
     }
@@ -1688,7 +1653,13 @@ ace <- function (x, y, wt = rep(1, nrow(x)), cat = NULL, mon = NULL,
       nai <- na[[i]]
       j <- (1:n)[-nai]    ## subscripts of non-NAs on xf[i,]
       npr <- length(j)
-      s <- sample(j, npr, replace=TRUE)  ## sample of non-NAs
+      if(lgroup) {        ## insure orig. no. obs from each level of group
+        s <- rep(NA, npr)
+        for(ji in 1:ngroup) {
+          gi <- (group.inds[[i]])[[ji]]
+          s[gi] <- sample(gi, length(gi), replace=TRUE)
+        }
+      } else s <- sample(j, npr, replace=TRUE)  ## sample of non-NAs
       nami <- nam[i]
       nm <- c(nami, nam[-i])
 
@@ -3091,7 +3062,8 @@ if(n.unique>=10 & isnum)	{
       attributes(q) <- atx
       if(istimeDate) {
         if(.R. && notime) fval <- as.POSIXct(round(q,'days')) else
-        if(!.R.) {
+        if(.R.) fval <- q else {
+          ## above line 6sep03
           if(notime) q <- round(q)
           fval <- timeDate(julian=q)
         }
@@ -3327,10 +3299,14 @@ if(length(at$dimensions)) {
                           file=file, append=TRUE, tabular=tabular)
     ct('\\vspace{-.5ex}\\hrule\\smallskip}\n', file=file, append=TRUE)
   }
-  if(length(at$missing.vars)) {
-	ct('\nVariables with all observations missing:\\ \\smallskip\n',
+  if(length(mv <- at$missing.vars)) {
+	ct('\\smallskip\\noindent Variables with all observations missing:\\ \\smallskip\n',
         file=file, append=TRUE)
-    ct('\\texttt{',at$missing.vars, '}', sep='', file=file, append=TRUE)
+    mv <- paste('\\texttt{',mv,'}',sep='')
+    mv <- paste(mv, collapse=', ')
+#    ct('\\texttt{',at$missing.vars, '}', sep='', file=file,
+#    append=TRUE)
+    ct(mv, file=file, append=TRUE)
   }
   ct('}', file=file, append=TRUE)  # added 23oct02
 } else latex.describe.single(object,
@@ -3374,7 +3350,7 @@ if(length(object$units))
   des <- paste(des, '{\\smaller[1] [',
                latexTranslate(object$units),']}', sep='')
 if(length(object$format))
-  des <- paste(des, '{\\smaller  Format:', latexTranslate(object$format),
+  des <- paste(des, '{\\smaller~~Format:', latexTranslate(object$format),
                '}',sep='')
 desbas <- paste(object$descript,
                 if(length(object$units)) paste(' [',object$units,']',sep=''),
@@ -3487,8 +3463,8 @@ if(FALSE && length(intFreq)) {
   dev.off()
 }
 
-contents <- function(object) UseMethod('contents')
-contents.data.frame <- function(object) {
+contents <- function(object, ...) UseMethod('contents')
+contents.data.frame <- function(object, ...) {
   dfname <- deparse(substitute(object))
   nam <- names(object)
   d <- dim(object)
@@ -3503,8 +3479,10 @@ contents.data.frame <- function(object) {
     if(length(at$units)) un[i] <- at$units
     atl <- at$levels
     fl[i] <- length(atl)
-    if(length(at$class) && at$class[1] %nin%c('labelled','factor'))
-      cl[i] <- at$class[1]
+    cli <- at$class[at$class %nin% c('labelled','factor')]
+#    if(length(at$class) && at$class[1] %nin%c('labelled','factor'))
+#      cl[i] <- at$class[1]  11aug03
+    if(length(cli)) cl[i] <- cli[1]
     sm[i] <- storage.mode(x)
     nas[i] <- sum(is.na(x))
     if(length(atl)) Lev[[nam[i]]] <- atl 
@@ -3608,6 +3586,45 @@ html.contents.data.frame <-
     }
     out
   }
+
+contents.list <- function(object, dslabels=NULL, ...) {
+  nam <- names(object)
+  if(length(dslabels)) {
+    dslabels <- dslabels[nam]
+    names(dslabels) <- NULL
+  }
+  g <- function(w) {
+    c(Obs=length(w[[1]]), Var=length(w),
+      Var.NA=sum(sapply(w, function(x) sum(is.present(x))==0)))
+  }
+  v <- t(sapply(object, g))
+  structure(list(contents=if(length(dslabels))
+                 data.frame(Label=dslabels,Obs=v[,'Obs'],
+                            Var=v[,'Var'],Var.NA=v[,'Var.NA'],
+                            row.names=nam) else
+                 data.frame(Obs=v[,'Obs'],Var=v[,'Var'],
+                            Var.NA=v[,'Var.NA'], row.names=nam)),
+            class='contents.list')
+}
+
+print.contents.list <-
+  function(x, sort=c('none','names','labels','NAs','vars'), ...) {
+    sort <- match.arg(sort)
+    cont <- x$contents
+    nam <- row.names(cont)
+
+    cont <- cont[
+      switch(sort,
+             none=1:length(nam),
+             names=order(nam),
+             vars=order(cont$Var),
+             labels=order(cont$Label, nam),
+             NAs=order(cont$Var.NA,nam)),]
+
+    print(cont)
+    invisible()
+  }
+
 do <- function(condition, expressions, device=NULL, file, append=FALSE,
                multiplot=FALSE, ...) {
 
@@ -3916,7 +3933,6 @@ ecdf.data.frame <- function(x, group=rep(1,nrows),
 #    lab <- attr(v,"label") 26sep02
     lab <- if(vnames=='names') nam[j]
     else label(v, units=TRUE, plot=TRUE, default=nam[j]) 
-    
     z <- ecdf(v, group=group, weights=weights, normwt=normwt, 
               xlab=lab, label.curves=label.curves, 
               subtitles=subtitles, ...)
@@ -4108,6 +4124,7 @@ ecdf.formula <- function(x,
 						 prepanel=prepanel.ecdf, panel=panel.ecdf, ..., 
 						 xlab, ylab, fun=function(x)x, subset=TRUE) {
   if(.R.) {
+    require('grid')
     require('lattice')
     vars <- var.inner(x)
     xname <- vars[1]
@@ -5552,7 +5569,7 @@ hist.data.frame <- function(x, n.unique=3, nclass="compute", na.big=FALSE,
         if(is.numeric(nclass)) nc <- nclass else
         if(nclass=="compute") nc <- max(2,trunc(min(n/10,25*logb(n,10))/2))
         lab <- attr(v,"label")
-        lab <- if(length(lab) && nchar(lab) > 20) nam[j] else
+        lab <- if(length(lab) && nchar(lab) > 35) nam[j] else
         label(v, units=TRUE, plot=TRUE, default=nam[j])
         ##	nl <- if(is.null(lab)) 0 else nchar(lab)  26sep02
         ##	if(nl==0 | nl>20)lab <- nam[j]
@@ -6576,7 +6593,10 @@ putKey <- function(z, labels, type=NULL,
                    cex=par('cex'), col=rep(par('col'),nc),
                    transparent=TRUE, plot=TRUE, key.opts=NULL, grid=FALSE) {
 
-  if(grid) require('lattice')  # use draw.key in lattice    29Jan02
+  if(grid) {
+    require('grid')
+    require('lattice')  # use draw.key in lattice    29Jan02
+  }
   
   if(!.R. && !existsFunction('key')) 
     stop('must do library(trellis) to access key() function')
@@ -6629,9 +6649,14 @@ putKey <- function(z, labels, type=NULL,
       if(plot) m$vp <-
         viewport(x=unit(z[[1]],'native'),y=unit(z[[2]],'native'))
       z <- eval(as.call(m))
-      size <- if(plot) c(NA,NA) else
-      c(convertNative(width(z), 'x', 'dimension')[1],
-        convertNative(height(z),'y', 'dimension')[1])
+      size <- if(plot) c(NA,NA) else {
+        if(version$major=='1' && as.numeric(version$minor) > 7.1) {
+          width <- getFromNamespace('width','grid')
+          height <- getFromNamespace('height','grid')
+        }
+        c(convertNative(width(z), 'x', 'dimension')[1],
+          convertNative(height(z),'y', 'dimension')[1])
+      }
       return(invisible(size))
     } else {
       m$legend <- labels
@@ -7359,7 +7384,8 @@ if(blank.dot) sas.char <- function(x) {
 for(j in 1:ncx) {
   xj <- if(xtype==1) x[[j]] else if(xtype==2) x[,j] else x
   namj <- nams[j]
-  num <- is.numeric(xj)
+  num <- is.numeric(xj) || all(is.na(xj)) ## 16sep03
+  if(isChron(xj)) num <- FALSE            ## 16sep03
  #using xtype avoids things like as.matrix changing special characters 
   ncxj <- max(1,dim(xj)[2], na.rm=TRUE)
   ## Added na.rm=T 5Jan01: SV4 makes dim(xj)=single number if x is data.frame
@@ -7452,15 +7478,22 @@ latex.default <-
            rowlabel=title, rowlabel.just="l", cgroup=NULL, n.cgroup=NULL,
            rgroup=NULL, n.rgroup=NULL,
            rowname, cgroup.just=rep("c",length(n.cgroup)),
+           colheads=dimnames(cx)[[2]],
            extracolheads=NULL, extracolsize='scriptsize',
            dcolumn=FALSE, numeric.dollar=!dcolumn, cdot=FALSE,
            longtable=FALSE, draft.longtable=TRUE, ctable=FALSE, booktabs=FALSE,
            table.env=TRUE, here=FALSE, lines.page=40,
-           caption=NULL, caption.lot=NULL, double.slash=FALSE,
+           caption=NULL, caption.lot=NULL, caption.loc=c('top','bottom'),
+           double.slash=FALSE,
            vbar=FALSE, collabel.just=rep("c",nc), na.blank=TRUE,
            insert.bottom=NULL, first.hline.double=!(booktabs | ctable),
-           where='!tbp', size=NULL, ...)      ##11Jun95
+           where='!tbp', size=NULL,
+           center=c('center','centering','none'),
+           landscape=FALSE,
+           ...)      ## center MJ 08sep03
 {
+  center <- match.arg(center)
+  caption.loc <- match.arg(caption.loc)
   cx <- format.df(object, dcolumn=dcolumn, na.blank=na.blank,
                   numeric.dollar=numeric.dollar, cdot=cdot, ...)
   # removed check.names=FALSE from above 23jan03
@@ -7602,12 +7635,14 @@ if (length(cgroup)) {
   if(ctable) {  ## 13dec02
     latex.begin <- c(if(length(size)) paste('{',sl,size,sep=''),
                      paste(sl, "ctable[", sep=''),
+                     if(length(caption) && caption.loc=='bottom') 'botcap,',
                      if(length(caption))
                      paste('caption={',caption,'},',sep=''),
                      if(length(caption.lot))
                      paste('cap={',caption.lot,'},',sep=''),
                      paste('label=',label,',',sep=''),
-                     paste('pos=',where,sep=''),
+                     if(!landscape) paste('pos=',where,',',sep=''),
+                     if(landscape) 'rotate',
                      paste(']{',tabular.cols, '}',sep=''),
                      if(length(insert.bottom))
                      paste('{',sl,'tnote[]{',sedit(insert.bottom,'\\\\',' '),
@@ -7618,23 +7653,32 @@ if (length(cgroup)) {
     )
     latex.end <- c('}',if(length(size)) '}')
   } else if(!longtable) {
-    latex.begin <- c(
+    latex.begin <- c(if(landscape) paste(sl, "begin{landscape}",sep=""),
                      if(table.env) paste(
                                          sl, "begin{table}",
                                          if(here)"[H]" else
                                          paste('[',where,']',sep=''),
                                          "\n", sep=""),
-                     paste(sl,"begin{center}\n", sep=""),
                      if(length(size)) paste(sl,size,'\n',sep=''),
-                     if(!missing(caption)) paste(caption, "\n"),
+                     if(caption.loc=='top' && !missing(caption))
+                     paste(caption, "\n"),              ## 3oct03
+                     if(center == 'center')             ## MJ: 08sep03
+                     paste(sl,"begin{center}\n", sep="")## MJ: 08sep03
+                     else {if (center == 'centering')  ## MJ: 08sep03
+                     paste(sl,"centering\n", sep="")}, ## MJ: 08sep03
                      paste(sl,"begin{tabular}{", tabular.cols, "}",
                            toprule, "\n", sep="")
                                         #11Jun95   12jan03 "}" was "}{" WHY!
                      )
     latex.end <- c(
-                   paste(sl,"end{tabular}\n", sl,"end{center}\n", sep=""),
+                   paste(sl,"end{tabular}\n", sep = ""),
+                   if(center == 'center')  ## MJ: 08sep03
+                   paste(sl,"end{center}\n", sep=""), ## MJ: 08sep03
+                   if(caption.loc=='bottom' && !missing(caption))
+                     paste(caption,'\n'),   # 3oct03
                    if(length(insert.bottom)) insert.bottom,
-                   if(table.env) paste(sl, "end{table}\n", sep="")
+                   if(table.env) paste(sl, "end{table}\n", sep=""),
+                   if(landscape) paste(sl, "end{landscape}\n", sep="")
                    )
   }
   else {
@@ -7643,13 +7687,19 @@ if (length(cgroup)) {
                            if (!draft.longtable)
                            paste(sl,"let",sl,"LTmulticolumn=",sl,"multicolumn", sep=""),
                            paste(sl,"setlongtables",sep=""),
+                           if(landscape) paste(sl, "begin{landscape}",sep=""),
+                           if(length(size)) paste(sl,size,'\n',sep=''),
                            paste(sl,"begin{longtable}{", tabular.cols, "}",sep=""),
                            sep="\n"),
-                     if(!missing(caption)) paste(caption, sl,sl,"\n", sep=""),
+                     if(caption.loc=='top' && !missing(caption))
+                      paste(caption, sl,sl,"\n", sep=""),
                      paste(toprule, "\n", sep="")    #11Jun95
                      )
-    latex.end <- paste(if(length(insert.bottom)) insert.bottom,
-                       paste(sl,"end{longtable}\n", sep=""))
+    latex.end <- paste(if(caption.loc=='bottom' && !missing(caption))
+                        paste(caption, sl,sl,"\n",sep=""),  ## 3oct03
+                       if(length(insert.bottom)) insert.bottom,
+                       paste(sl,"end{longtable}\n", sep=""),
+                       if(landscape) paste(sl,"end{landscape}\n",sep=""))
   }
   
   cat(latex.begin, file=file, append=file!='')
@@ -7681,29 +7731,34 @@ if (length(cgroup)) {
       cvbar[vv2] <- paste(cvbar[vv2],vbar,sep="")
     }
     slmc1 <- paste(sl, "multicolumn{1}{", sep="")
-    labs <- dimnames(cx)[[2]]   ## 28apr03 and next 5
-    if(!length(extracolheads)) {
-      heads <- get2rowHeads(labs)
-      labs <- heads[[1]]
-      if(any(heads[[2]] != '')) extracolheads <- heads[[2]]
-    }
-    labs <- paste(slmc1, cvbar, "}{", labs, "}", sep="")
+#    labs <- dimnames(cx)[[2]]   ## 28apr03 and next 5  15jul03 next 2
+    labs <- colheads
+    if(length(labs)) {
+      if(!length(extracolheads)) {
+        heads <- get2rowHeads(labs)
+        labs <- heads[[1]]
+        if(any(heads[[2]] != '')) extracolheads <- heads[[2]]
+      }
+      labs <- paste(slmc1, cvbar, "}{", labs, "}", sep="")
+      
+      cat(labs, file=file, sep="&\n", append=file!='')
 
-    cat(labs, file=file, sep="&\n", append=file!='')
-
-    if(length(extracolheads)) {
-      extracolheads <- ifelse(extracolheads=='',extracolheads,
-        paste('{',sl,extracolsize,' ',extracolheads,'}',sep=''))
-      extracolheads <- ifelse(extracolheads=='',extracolheads,
-                              paste(slmc1,cvbar,'}{',extracolheads,'}',sep=''))
+      if(length(extracolheads)) {
+        extracolheads <- ifelse(extracolheads=='',extracolheads,
+                                paste('{',sl,extracolsize,' ',
+                                      extracolheads,'}',sep=''))
+        extracolheads <- ifelse(extracolheads=='',extracolheads,
+                                paste(slmc1,cvbar,'}{',
+                                      extracolheads,'}',sep=''))
 #      cat(eol," ", paste(c(if(length(rowname))'',extracolheads),collapse='&'),
 #          file=file, append=file!='') # 21jan03
-      cat(eol," ", paste(extracolheads,collapse='&'),
-          file=file, append=file!='') # 28apr03
+        cat(eol," ", paste(extracolheads,collapse='&'),
+            file=file, append=file!='') # 28apr03
+      }
+      if(ctable) cat(midrule, '\n', sep='', file=file, append=file!='') else
+      cat(eol," ",midrule, "\n",sep="",file=file, append=file!='')
+      ## eol was sl, sl  13dec02
     }
-    if(ctable) cat(midrule, '\n', sep='', file=file, append=file!='') else
-    cat(eol," ",midrule, "\n",sep="",file=file, append=file!='')
-    ## eol was sl, sl  13dec02
   }
 
 
@@ -7769,7 +7824,8 @@ if (length(cgroup)) {
 
   cat(latex.end, file=file, sep="\n", append=file!='')
   sty <- c("longtable"[longtable], "here"[here], "dcolumn"[dcolumn],
-           "ctable"[ctable], "booktabs"[booktabs])
+           "ctable"[ctable], "booktabs"[booktabs],
+           if(landscape && !ctable) "lscape")
   
   structure(list(file=file, style=sty), class='latex')
 }
@@ -7829,18 +7885,22 @@ latexVerbatim <- function(x,
 latex.list <- function( object,
 	title=first.word(deparse(substitute(object))),
                        file=paste(title, ".tex", sep=""), append=FALSE,
-                       label, caption, caption.lot, ...) {
+                       label,
+                       caption, caption.lot,
+                       caption.loc=c('top','bottom'),
+                       ...) {
+  caption.loc <- match.arg(caption.loc)
   nx <-	names(object)
   if (!length(nx)) nx <- paste(title, "[[",
 	seq(along=object), "]]", sep="")
   tmp <- latex(object=object[[1]],
 	caption=nx[1], label=nx[1], append=append, title=title, file=file,
-	caption.lot=NULL, ...)
+	caption.lot=NULL, caption.loc=caption.loc, ...)
   tmp.sty <- tmp$style
   for (i in	seq(along=object)[-1]) {
     tmp <- latex(object=object[[i]],
                  caption=nx[i], label=nx[i], append=file!='', title=title, file=file,
-                 caption.lot=NULL, ...)
+                 caption.lot=NULL, caption.loc=caption.loc, ...)
     tmp.sty <- c(tmp.sty, tmp$style)
   }
   sty <- if(length(tmp.sty)) unique(tmp.sty) else NULL
@@ -8065,6 +8125,7 @@ latexSN <- function(x) {
                     '\\\!\\times\\\!10^{*}','\\\!\\times\\\!10^{*}'))
   x
 }
+
 ldBands <- function(n=length(times), times=NULL,  alpha=.05,
                     sided=2, alphaLower=alpha/2, alphaUpper=alpha/2,
                     information=NULL,
@@ -8089,7 +8150,11 @@ ldBands <- function(n=length(times), times=NULL,  alpha=.05,
   if(sided != 3) {spending2 <- spending; sp2 <- sp} else
   sp2 <- c('OBrien-Fleming'=1,'Pocock'=2,'alpha*t^phi'=3,
            'Hwang-Shih-DeCani'=4)[spending2]
-  
+
+  if(phi==0) {
+    warning('phi may not be zero.  Set to 1')
+    phi <- 1
+  }
   if(length(times))       times       <- sort(times)
   if(length(information)) information <- sort(information)
 
@@ -8184,8 +8249,8 @@ print.ldBands <- function(x, ...) {
   if(x$sided < 3) {
     cat('alpha=',format(x$alpha),'\t',x$sided,
         '-sided  \tSpending function:',x$spending,sep='')
-    if(x$spending=='alpha*t^phi') cat('\tExponent:',x$param,sep='')
-    if(x$spending=='Hwang-Shih-DeCani') cat('\tPhi:',x$param,sep='')
+    if(x$spending=='alpha*t^phi') cat('\tExponent:',x$phi,sep='')
+    if(x$spending=='Hwang-Shih-DeCani') cat('\tPhi:',x$phi,sep='')
   } else {
     cat('Lower bounds:\n\n')
      cat('alpha=',format(x$alphaLower),
@@ -8205,7 +8270,7 @@ print.ldBands <- function(x, ...) {
 }
 
 plot.ldBands <- function(x, xlab='Time', ylab='Z', actual=NULL,
-                         type='b', ...) {
+                         type='b', labels=NULL, ...) {
   d <- x$data
   mfr <- par('mfrow')
   if(prod(mfr) != 1) {
@@ -8213,9 +8278,15 @@ plot.ldBands <- function(x, xlab='Time', ylab='Z', actual=NULL,
     par(mfrow=c(2,1))
   }
   plot(d$time, d$lower, type=type, ylim=range(d$lower,d$upper),
-       xlab=xlab, ylab=ylab)
+       xlab=xlab, ylab=ylab, axes=length(labels)==0)
+  if(length(labels)) {
+    axis(2)
+    if(length(labels) != length(d$time))
+      stop('length of labels not equal to length of times generated by ldBands')
+    axis(1, at=d$time, labels=labels)
+  }
   lines(d$time, d$upper, type=type)
-  if(length(actual)) points(actual[[1]],actual[[2]])
+  if(length(actual)) points(actual[[1]],actual[[2]], pch=16)
   if(x$type=='power')
     labcurve(list(Instant   =list(d$time,d$exit.prob),
                   Cumulative=list(d$time,d$cum.exit.prob)),
@@ -8941,6 +9012,7 @@ panel.bpplot <- function(x, y, box.ratio = 1, means=TRUE, qref=c(.5,.25,.75),
 bpplt <- function(stats, xlim, xlab='', box.ratio = 1, means=TRUE,
                   qref=c(.5,.25,.75), qomit=c(.025,.975),
                   pch=16, cex.labels=par('cex'),
+                  cex.points=if(prototype)1 else .5,
                   grid=FALSE) {
 
   prototype <- missing(stats)
@@ -9006,7 +9078,7 @@ bpplt <- function(stats, xlim, xlab='', box.ratio = 1, means=TRUE,
 	  do.call('segments',c(list(q[-(1:m2)],      y-w*size.qref/k,
                                 q[-(1:m2)], 	 y+w*size.qref/k)))
 	lines(q[j], y + w*z/k)
-	if(means) points(Means[Y], y, pch=pch)
+	if(means) points(Means[Y], y, pch=pch, cex=cex.points)
   }
   if(prototype) {
     mar <- par('mar')
@@ -11664,7 +11736,7 @@ sas.get <- if(under.unix || .R.)
 					keep.log = TRUE, log.file = "_temp_.log", 
 					macro = sas.get.macro,
 					data.frame.out = existsFunction("data.frame"), 
-					clean.up = TRUE,
+					clean.up = !.R.,
 					quiet = FALSE, temp = tempfile("SaS"), 
 					formats=TRUE, recode=formats, 
 					special.miss=FALSE, sasprog="sas", as.is=.5, check.unique.id=TRUE,
@@ -11694,6 +11766,8 @@ sas.get <- if(under.unix || .R.)
 
   file.is.readable <- if(.R.) function(name) file.access(name,4)==0
   else function(name) sys(paste("test -r", name)) == 0
+
+  fileShow <- if(.R.) function(x) file.show(x) else page(filename=x)
 
   if(recode) formats <- TRUE
 
@@ -11731,9 +11805,8 @@ sas.get <- if(under.unix || .R.)
   temp.files <- c(sasin, sasout1, sasout2, sasout3, sasout4)
   if(!keep.log)
 	temp.files <- c(temp.files, log.file)
-  if(clean.up)
-	on.exit(sys(paste("rm -f", paste(temp.files, collapse = " ")))
-			)
+  if(clean.up) on.exit(unlink(temp.files))
+##	on.exit(sys(paste("rm -f", paste(temp.files, collapse = " ")))) 4oct03
   if(missing(member))
 	stop("SAS member name is required")
   if(missing(library))
@@ -11799,30 +11872,27 @@ sas.get <- if(under.unix || .R.)
 	}
   status <- sys(paste(sasprog, sasin, "-log", log.file))
   if(status != 0) {
-	if(!quiet)
-	  sys(paste("less", log.file))
+	if(!quiet) fileShow(log.file)  ## 4oct03
 	stop(paste("SAS job failed with status", status))
   }
 										#
 										# Read in the variable information
 										#
   if(!(file.exists(sasout1) && file.exists(sasout2))) {
-	if(!quiet)
-	  sys(paste("less", log.file))
+	if(!quiet) fileShow(log.file)  ## 4oct03
 	stop("SAS output files not found")
   }
   vars <- if(.R.) scan(sasout1, list(name = "", type = 0, length = 0,
                                      format = "", label = "", n = 0),
                        multi.line = FALSE, sep = "\022",
-                       flush=TRUE, comment.char='') else
+                       flush=TRUE, comment.char='', quote='') else
   scan(sasout1, list(name = "", type = 0, length = 0, format = "",
                      label = "", n = 0),
        multi.line = FALSE, flush=TRUE, sep = "\022")
 ## Thanks Don MacQueen for scan fix for R
   nvar <- length(vars$name)
   if(nvar == 0) {
-	if(!quiet)
-	  sys(paste("less", log.file))
+	if(!quiet) fileShow(log.file)  ## 4oct03
 	stop("First SAS output is empty")
   }
   nrow <- vars$n[1]	#n is the same for each variable
@@ -11848,7 +11918,7 @@ sas.get <- if(under.unix || .R.)
   ##
   ## Read the data
   ds <- if(.R.) scan(sasout2, eval(inlist), sep = "\022", multi.line = FALSE,
-             flush=TRUE, comment.char='') else
+             flush=TRUE, comment.char='', quote='') else
     scan(sasout2, eval(inlist), sep = "\022", multi.line = FALSE,
              flush=TRUE)
   if(length(ds) < nvariables) {
@@ -11877,7 +11947,7 @@ sas.get <- if(under.unix || .R.)
   if(special.miss && file.exists(sasout4))
 	smiss <- if(.R.) scan(sasout4, list(name="", code="", obs=integer(1)),
                           multi.line=FALSE, flush=TRUE, sep="\022",
-                          comment.char='') else
+                          comment.char='', quote='') else
       scan(sasout4, list(name="", code="", obs=integer(1)),
 				  multi.line=FALSE, flush=TRUE, sep="\022")
   sasdateform <- c("date","mmddyy","yymmdd","ddmmyy","yyq","monyy",
@@ -12140,7 +12210,7 @@ if(sasran) {
 vars <- if(.R.) scan(sasout[1], list(name = "", type = 0, length = 0,
                                      format = "", label = "", n = 0),
                      multi.line = FALSE, flush=TRUE, sep = "\022",
-                     comment.char='') else
+                     comment.char='', quote='') else
   scan(sasout[1], list(name = "", type = 0, length = 0, format = "",
 		label = "", n = 0), multi.line = FALSE, flush=TRUE, sep = "\022")
 nvar <- length(vars$name)
@@ -12440,7 +12510,7 @@ c("/* Macro sas_get (modified by F. Harrell 30Jan90, Bill Dunlap Dec90, FH Mar92
 	"\t\t\tFH Apr95 (extend LENGTH smiss))", 
 	"    Sets up for conversion of SAS dataset to S dataset.", 
 	"    Arguments:", "\tdataset - name of SAS dataset", 
-	"\ttemp1\t- Name of temporary dataset to contain data dictionary \t\t  \t  \t  (unquoted)",
+	"\ttemp1\t- Name of temporary dataset to contain data dictionar (unquoted)",
 	"\t\t  default=/tmp/file.1", 
 	"\ttemp2\t- Name of temporary dataset to contain ASCII version of SAS", 
 	"\t\t  dataset (unquoted)", "\t\t  default=/tmp/file.2", 
@@ -12527,7 +12597,7 @@ c("/* Macro sas_get (modified by F. Harrell 30Jan90, Bill Dunlap Dec90, FH Mar92
 	"         PUT \"))\";", "         END;", 
 	"      IF _eof_ THEN PUT \")\";", "   %END;", 
 	"PROC SORT DATA=&_s_;BY varnum;", "data _null_;", " set &_s_ end=eof;", 
-	" file \"&temp1\";  RETAIN _bk_ -1;", " if _n_ = 1 then do;", 
+	" FILE \"&temp1\";  RETAIN _bk_ -1;", " if _n_ = 1 then do;", 
 	"%IF &specmiss=0 %THEN %LET ofile=_NULL_; ", 
 	"%ELSE %LET ofile=smiss(KEEP=vname val obs);", 
 	"  put \"data &ofile; set &dataset end=eof;\";", 
@@ -12542,7 +12612,8 @@ c("/* Macro sas_get (modified by F. Harrell 30Jan90, Bill Dunlap Dec90, FH Mar92
 	"  PUT 'ELSE PUT ' name '+_bk_ __delim IB1. @;';", "  END;", 
 	" ELSE DO; ", "  PUT 'IF ' name '<=.Z THEN _xx_=\"NA\";' @;", 
 	"  PUT 'ELSE _xx_=LEFT(PUT(' @;", "  format=UPCASE(format);", 
-	"  IF format=\"DATE\"|format=\"MMDDYY\"|format=\"YYMMDD\"|format=\"DDMMYY\"|format=\"YYQ\"|format=\"MONYY\"|format=\"JULIAN\" THEN DO;",
+	"  IF format=\"DATE\"|format=\"MMDDYY\"|format=\"YYMMDD\"|",
+    "format=\"DDMMYY\"|format=\"YYQ\"|format=\"MONYY\"|format=\"JULIAN\" THEN DO;",
 	"   %IF &dates=SAS %THEN", "    PUT name \",BEST18.)\";", 
 	"   %ELSE %IF &dates=YYMMDD %THEN", "    PUT name \",YYMMDD6.)\";", 
 	"   %ELSE %IF &dates=YEARFRAC %THEN", 
@@ -12554,10 +12625,11 @@ c("/* Macro sas_get (modified by F. Harrell 30Jan90, Bill Dunlap Dec90, FH Mar92
 	"  ELSE DO;PUT name \",BEST18.)\" @;END;", 
 	"  PUT ');  PUT _xx_ +_bk_ __delim IB1. @;';  *Added +_bk_ 2Aug92;", 
 	"%IF &specmiss=1 %THEN %DO;", 
-	"  put 'IF .A<=' name '<=.Z THEN DO; vname=\"' name +_bk_ '\"; val=put(' name ',1.); OUTPUT; END;';",
+	"  put 'IF .A<=' name '<=.Z THEN DO;",
+    "   vname=\"' name +_bk_ '\"; val=put(' name ',1.); OUTPUT; END;';",
 	"  %END;", "  END;", "if eof then PUT 'PUT; RUN;';", "run;", 
 	"%include \"&temp1\";", "data _null_; set &_s_;", 
-	" retain __delim 18 _bk_ -1; ", " file \"&temp1\";", 
+	" retain __delim 18 _bk_ -1; ", " file \"&temp1\" LRECL=4096;", 
 	" name=TRANSLATE(name,\".abcdefghijklmnopqrstuvwxyz\",", 
 	"\t\t     \"_ABCDEFGHIJKLMNOPQRSTUVWXYZ\");", 
 	" format=TRANSLATE(format,\".abcdefghijklmnopqrstuvwxyz\",", 
@@ -12577,7 +12649,9 @@ cleanup.import <- function(obj, labels=NULL, lowernames=FALSE,
 						   force.single=TRUE, force.numeric=TRUE,
                            rmnames=TRUE,
 						   big=1e20, sasdict, 
-						   pr=prod(dimobj) > 5e5) {
+						   pr=prod(dimobj) > 5e5,
+                           datevars=NULL,
+                           dateformat='%d%b%Y') {
   nam <- names(obj)
   dimobj <- dim(obj)
   nv <- length(nam)
@@ -12648,6 +12722,14 @@ cleanup.import <- function(obj, labels=NULL, lowernames=FALSE,
       }
     }
 
+    if(length(datevars) && nam[i] %in% datevars & !all(is.na(x))) {
+      if(!is.factor(x) || is.character(x))
+        stop(paste('variable',nam[i],
+                   'must be a factor or character variable for date conversion'))
+      x <- as.POSIXct(strptime(as.character(x), dateformat))
+      modif <- TRUE
+    }
+
 	if(length(labels)) {
 	  label(x) <- labels[i]
 	  modif <- TRUE
@@ -12665,6 +12747,7 @@ cleanup.import <- function(obj, labels=NULL, lowernames=FALSE,
 	  }
 	}
 
+
 	if(storage.mode(x) == 'double') {
 	  xu <- oldUnclass(x)
 	  j <- is.infinite(xu) | is.nan(xu) | abs(xu) > big
@@ -12675,17 +12758,24 @@ cleanup.import <- function(obj, labels=NULL, lowernames=FALSE,
 		cat(sum(j,na.rm=TRUE),'infinite values set to NA for variable',
 			nam[i],'\n')
 	  }
-
+         
       isdate <- isChron(x)  ## 31aug02
 	  if(force.single && !isdate) {
-        notfractional <- !any(floor(x) != x, na.rm=TRUE)  ## 28Mar01
-        ## max(abs()) 22apr03
-        if(max(abs(x),na.rm=TRUE) <= (2^31-1) && notfractional) {   ## 29may02
+        allna <- all(is.na(x))
+        if(allna) {
           storage.mode(x) <- 'integer'
           modif <- TRUE
-        } else if(!.R.) {
-          storage.mode(x) <- 'single'
-          modif <- TRUE
+        }
+        if(!allna) {
+          notfractional <- !any(floor(x) != x, na.rm=TRUE)  ## 28Mar01
+          ## max(abs()) 22apr03
+          if(max(abs(x),na.rm=TRUE) <= (2^31-1) && notfractional) {   ## 29may02
+            storage.mode(x) <- 'integer'
+            modif <- TRUE
+          } else if(!.R.) {
+            storage.mode(x) <- 'single'
+            modif <- TRUE
+          }
         }
       }
     }
@@ -12852,11 +12942,14 @@ if(force.single) {
       if(sm[i]=='double') {
         x <- object[[i]]
         if(isChron(x)) next   ## 31aug02
-        notfractional <- !any(floor(x) != x, na.rm=TRUE)  ## 28Mar01
-        ## max(abs()) 22apr03
-        if(notfractional && max(abs(x),na.rm=TRUE) <= (2^31-1))
-          storage.mode(object[[i]]) <- 'integer' else
-        if(!.R.) storage.mode(object[[i]]) <- 'single'
+        if(all(is.na(x))) storage.mode(object[[i]]) <- 'integer' else
+        {
+          notfractional <- !any(floor(x) != x, na.rm=TRUE)  ## 28Mar01
+          ## max(abs()) 22apr03
+          if(notfractional && max(abs(x),na.rm=TRUE) <= (2^31-1))
+            storage.mode(object[[i]]) <- 'integer' else
+          if(!.R.) storage.mode(object[[i]]) <- 'single'
+        }
       }
     }
 }
@@ -12974,8 +13067,14 @@ if(.R.) {
                       format=c(dates='day mon year'),
                       origin=c(month=1,day=1,year=1970))   )
         changed <- TRUE
+      } else if(all(is.na(x))) {
+        storage.mode(x) <- 'integer'
+        changed <- TRUE
       } else if(!(is.factor(x) || is.character(x))) {
-        if(max(abs(x),na.rm=TRUE) <= (2^31-1) &&
+        if(all(is.na(x))) {
+          storage.mode(x) <- 'integer'
+          changed <- TRUE
+        } else if(max(abs(x),na.rm=TRUE) <= (2^31-1) &&
            all(floor(x) == x, na.rm=TRUE)) {
           storage.mode(x) <- 'integer'
           changed <- TRUE
@@ -13023,7 +13122,10 @@ sasxport.get <- function(file, force.single=TRUE) {
   finfo <- NULL
   if(length(fds)) {
     finfo <- ds[[fds]]
-    finfo <- split(finfo[c('START','END','LABEL')], finfo$FMTNAME)
+    ## Remove leading $ from char format names
+#    fmtname <- sub('^\\$','',as.character(finfo$FMTNAME))
+    fmtname <- as.character(finfo$FMTNAME)
+    finfo <- split(finfo[c('START','END','LABEL')], fmtname)
     finfo <- lapply(finfo,
                     function(f) {
                       st <- as.character(f$START)
@@ -13032,7 +13134,6 @@ sasxport.get <- function(file, force.single=TRUE) {
                       list(value = all.is.numeric(st, 'vector'),
                            label = as.character(f$LABEL))
                     })
-                      
   }
 
   ## Number of non-format datasets
@@ -13044,7 +13145,7 @@ sasxport.get <- function(file, force.single=TRUE) {
   
   if(nds > 1) {
     res <- vector('list', nds)
-    names(res) <- dsn
+    names(res) <- gsub('_','.',dsn)
   }
 
   j <- 0
@@ -13055,9 +13156,8 @@ sasxport.get <- function(file, force.single=TRUE) {
     nam      <- names(w)
     names(w) <- tolower(nam)
     dinfo    <- dsinfo[[k]]
-    fmt      <- dinfo$format
+    fmt      <- sub('^\\$','',dinfo$format)
     lab      <- dinfo$label
-    
     for(i in 1:length(w)) {
       changed <- FALSE
       x  <- w[[i]]
@@ -13087,7 +13187,10 @@ sasxport.get <- function(file, force.single=TRUE) {
           x <- as.POSIXct(format(tmp,tz='GMT'),tz='')
           changed <- TRUE
         } else if(force.single) {
-          if(max(abs(x),na.rm=TRUE) <= (2^31-1) &&
+          if(all(is.na(x))) {
+            storage.mode(x) <- 'integer'
+            changed <- TRUE
+          } else if(max(abs(x),na.rm=TRUE) <= (2^31-1) &&
              all(floor(x) == x, na.rm=TRUE)) {
             storage.mode(x) <- 'integer'
             changed <- TRUE
@@ -13107,6 +13210,31 @@ sasxport.get <- function(file, force.single=TRUE) {
 }
 
 NULL}
+
+csv.get <- function(file, lowernames=FALSE, datevars=NULL,
+                    dateformat='%d%b%Y', ...) {
+  w <- read.csv(file, check.names=FALSE, ...)
+  n <- names(w)
+  m <- make.names(n, unique=TRUE)
+  if(lowernames) m <- casefold(m)
+  changed <- any(m != n)
+  if(changed) names(w) <- m
+  cleanup.import(w, labels=if(changed)n else NULL,
+                 datevars=datevars, dateformat=dateformat)
+}
+
+sasdsLabels <- function(file) {
+  w <- scan(file, sep='\n', what='', quiet=TRUE)
+  i <- grep('Data Set Name:', w)
+  if(!length(i)) return(NULL)
+  n <- tolower(sub('.*\\.([A-Z0-9\\_]*)[[:space:]]+.*','\\1',w[i]))
+  w <- gsub('\t','',w)
+  labs <- ifelse(nchar(w[i-1])==0,w[i-2],w[i-1])
+  names(labs) <- n
+  labs
+}
+
+  
 ### -*-S-*- Improvements due to Martin Maechler <maechler@stat.math.ethz.ch>
 
 scat1d <- function(x, side=3, frac=.02, jitfrac=.008, tfrac, 
@@ -15064,7 +15192,7 @@ plot.summary.formula.reverse <-
            pch=c(if(FALSE)183 else 16,1,2,17,15,3,4,5,0), exclude1=TRUE,
            dotfont=1, main, subtitles=TRUE,
            prtest=c('P','stat','df','name'), pdig=3, eps=.001,
-           conType=c('dot','bp'), ...) {
+           conType=c('dot','bp'), cex.means=.5, ...) {
 
     obj <- x
   vnames <- match.arg(vnames)
@@ -15230,7 +15358,7 @@ plot.summary.formula.reverse <-
                     dotfont=dotfont[1],
                     add=j > 1)   ## , reset.par=j==3, ...) 1sep02
         }
-      } else bpplt(st, xlab=nam)
+      } else bpplt(st, xlab=nam, cex.points=cex.means)
       if(all(prtest != 'none')) {
         fts <- formatTestStats(test[[varNames[i]]], prtest=prtest,
                                plotmath=.R.,
@@ -15580,14 +15708,17 @@ formatCats <- function(tab, nam, tr, type, group.freq,
 
   ## If there was a missing column of tab because the variable was
   ## always NA for one (or more) of the groups, add columns of NAs
-  tabfull <- matrix(NA,nrow=nr,ncol=length(group.freq),
-                    dimnames=list(dimnames(tab)[[1]],gnames))
-  tabfull[,dimnames(tab)[[2]]] <- tab
-  tab <- tabfull
+  if(ncol(tab) > 1) {  ## 23sep03
+    tabfull <- matrix(NA,nrow=nr,ncol=length(group.freq),
+                      dimnames=list(dimnames(tab)[[1]],gnames))
+    tabfull[,dimnames(tab)[[2]]] <- tab
+    tab <- tabfull
+  }
 
   denom <- if(type==1) apply(tab, 2, sum) else group.freq ## 17Jan99
   pct <- 100*sweep(tab, 2, denom, FUN='/')
-  cpct <- paste(format(round(pct,pctdig)),if(latex)"\\%" else "%",sep="")
+  cpct <- paste(format(round(pct,pctdig)),if(latex)"\\%" else
+                "%",sep="")
   denom.rep <- matrix(rep(format(denom),nr),nrow=nr,byrow=TRUE)
   if(npct!='none') cpct <- paste(cpct,
        if(latex)
@@ -16612,9 +16743,12 @@ symbol.freq <- function(x, y, symbol=c("thermometer","circle"),
   box()
   invisible()
 }
-sys <- if(.R.) function(command, text=NULL) {
+# Improvements by Sebastian Weber <Sebastian.Weber@aventis.com> 26Aug03
+
+sys <- if(.R.) function(command, text=NULL, output=TRUE) {
   cmd <- if(length(text))paste(command,text) else command
-  if(under.unix) system(cmd) else shell(cmd, wait=TRUE)
+  if(under.unix) system(cmd, intern=output) else
+  shell(cmd, wait=TRUE, intern=output)
 } else if(under.unix) function(..., minimized) unix(...) else
   function(...,minimized=FALSE)  dos(..., minimized=minimized)
 t.test.cluster <- function(y, cluster, group, conf.int=.95)    		{
@@ -18832,7 +18966,7 @@ translate <- if(!.R. && !under.unix)
     if(!missing(multichar) && !multichar)
       stop('multichar=F not implemented for this operating system')
     sedit(text, old, new)
-  } else if(.R.) function(text, old, new, multichar=FALSE) {
+  } else if(FALSE && .R.) function(text, old, new, multichar=FALSE) {
     if(multichar) stop('multichar=T not implemented under R')
     k <- chartr(old, new, text)
     if(is.matrix(text)) k <- matrix(k, nrow=nrow(text))
@@ -18843,10 +18977,16 @@ translate <- if(!.R. && !under.unix)
     if(length(old)>1 && (length(new)>1 & length(new)!=length(old)))
       stop("old and new must have same lengths or new must have 1 element")
 
-    if(multichar) command <- paste("sed",paste('-e "s/',old,"/",new,'/g"',
-                                               sep="", collapse=" "))
-    else command <- paste("tr \"", old, "\" \"", new, "\"", sep="")
-    k <- sys(command, text)
+    if(.R. && !multichar) k <- chartr(old, new, text)  ## 27aug03
+    else {
+      if(multichar) command <- paste("sed",paste('-e "s/',old,"/",new,'/g"',
+                                                 sep="", collapse=" "))
+      else command <- paste("tr \"", old, "\" \"", new, "\"", sep="")
+      ##    k <- sys(command, text)  replace with next 2 27aug03
+      ## Thanks:   <Sebastian.Weber@aventis.com>  
+      k <- unlist(lapply(text, function(x) {
+        sys(paste("echo \"", x, "\" | ", command, sep="")) }))
+    }
     if(is.matrix(text)) k <- matrix(k, nrow=nrow(text))
     k
   }
@@ -19864,6 +20004,7 @@ xYplot <- if(.R.)
             panel=panel.xYplot, prepanel=prepanel.xYplot,
             scales=NULL, minor.ticks=NULL, ...) {
 
+    require('grid')
   require('lattice')
   yvname <- as.character(formula[2])  # tried deparse
   y <- eval(parse(text=yvname), data)
@@ -20047,6 +20188,7 @@ prepanel.Dotplot <- function(x, y, ...) {
                     panel=panel.Dotplot, prepanel=prepanel.Dotplot,
                     scales=NULL, ...) {
 
+    require('grid')
   require('lattice')
   yvname <- as.character(formula[2])  # tried deparse
   yv <- eval(parse(text=yvname), data)

@@ -120,11 +120,11 @@ case), and \code{y}.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Ming K, Rosenbaum PR (2001): A note on optimal matching with variable

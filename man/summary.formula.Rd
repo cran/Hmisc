@@ -190,7 +190,7 @@ x[i,j]
   pch=c(16,1,2,17,15,3,4,5,0), exclude1=TRUE,
   dotfont=1, main, subtitles=TRUE,
   prtest=c('P','stat','df','name'), pdig=3, eps=.001,
-  conType=c('dot','bp'), \dots)
+  conType=c('dot','bp'), cex.means=.5, \dots)
 
 \method{latex}{summary.formula.reverse}(object,
      title=first.word(expr=substitute(object)), digits,
@@ -539,6 +539,8 @@ for categorical variables, continuous variables, or both (the default).
   quantiles in \code{quant} except the outermost ones.  Means are drawn
   with a solid dot and vertical reference lines are placed at the three
   quartiles.}
+\item{cex.means}{
+character size for means in box-percentile plots; default is .5}
 \item{xlim}{
 vector of length two specifying x-axis limits.  For
 \code{method="reverse"}, this is only used for plotting categorical
@@ -667,11 +669,11 @@ of pages of plots that were made.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Harrell FE (1999): Statistical tables and plots using S-Plus and LaTeX.

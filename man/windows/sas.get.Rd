@@ -6,9 +6,7 @@
 \alias{format.special.miss}
 \alias{sas.codes}
 \alias{code.levels}
-\title{
-Convert a SAS Dataset to an S Data Frame
-}
+\title{Convert a SAS Dataset to an S Data Frame}
 \description{
 Converts a SAS dataset into an S data frame.  
 You may choose to extract only a subset of variables 
@@ -46,7 +44,7 @@ step or on another computer, and then tell \code{sas.get} (through the
 sas.get(library, member, variables, ifs,
      format.library=library, id, dates.,
      keep.log=TRUE, log.file="_temp_.log", macro=sas.get.macro,
-     data.frame.out=TRUE, clean.up=TRUE, quiet=FALSE,
+     data.frame.out=TRUE, clean.up=FALSE, quiet=FALSE,
      temp=tempfile("SaS"), formats=TRUE, recode=formats,
      special.miss=FALSE, sasprog="sas", 
      as.is=.5, check.unique.id=TRUE, force.single=FALSE,
@@ -66,7 +64,7 @@ code.levels(object)
 }
 \arguments{
 \item{library}{
-character string naming the directory in which the the dataset is kept.
+character string naming the directory in which the dataset is kept.
 The default is \code{library="."}, indicating that the current
 directory is to be used.
 }
@@ -165,7 +163,7 @@ Suppose that variable  \code{y} was .E in observation 3 and .G
 in observation 544.  The \code{special.miss} attribute for \code{y} then has the
 value
 \cr
-    list(codes=c("E","G"),obs=c(3,544)))
+    list(codes=c("E","G"),obs=c(3,544))
 \cr
 To fetch this information for variable \code{y} you would say for example
 \cr
@@ -232,8 +230,8 @@ can be edited using, for example, sas.get.macro <- editor(sas.get.macro).
 \item{data.frame.out}{
   set to \code{FALSE} to make the result a list instead of a data frame}
 \item{clean.up}{
-logical flag: if \code{T}, remove all temporary files when finished.  You
-may want to keep these while debugging the SAS macro.
+logical flag: if \code{TRUE}, remove all temporary files when finished.  You
+may want to keep these while debugging the SAS macro.  Not needed for \R.
 }
 \item{quiet}{logical flag: if \code{FALSE}, print the contents of the
   SAS log file if there has been an error.

@@ -109,11 +109,11 @@ corresponding to statistics being computed.  The class of the array is
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{interaction}}, \code{\link{cut}}, \code{\link{cut2}}, \code{\link{latex}}, \code{\link{print.char.matrix}},

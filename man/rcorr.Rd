@@ -140,11 +140,11 @@ P-values are approximated by using the \code{t} distribution.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-\email{fharrell@virginia.edu}
+\email{f.harrell@vanderbilt.edu}
 }
 \references{
 Hollander M. and Wolfe D.A. (1973).  Nonparametric Statistical Methods.

@@ -73,11 +73,11 @@ For \code{is.imputed}, a vector of logical values is returned (all
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-\email{fharrell@virginia.edu}
+\email{f.harrell@vanderbilt.edu}
 }
 \seealso{
 \code{\link{transcan}}, \code{\link{impute.transcan}}, \code{\link{describe}}, \code{\link{na.include}}, \code{\link{sample}}

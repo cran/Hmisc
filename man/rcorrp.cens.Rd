@@ -37,9 +37,9 @@ a vector of statistics
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology, University of Virginia
+Department of Biostatistics, Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{rcorr.cens}}, \code{\link{somers2}}, \code{\link{Surv}}

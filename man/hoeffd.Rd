@@ -23,7 +23,7 @@ the value of \code{D}, the more dependent are \code{x} and \code{y}.
 \usage{
 hoeffd(x)
 hoeffd(x, y)
-print(x, \dots}
+\method{print}{hoeffd}(x, \dots)
 }
 \arguments{
 \item{x}{
@@ -32,7 +32,9 @@ a numeric matrix with at least 5 rows and at least 2 columns (if
 }
 \item{y}{
 a numeric vector or matrix which will be concatenated to \code{x}
-}}
+}
+\item{\dots}{ignored}
+}
 \value{
 a list with elements \code{D}, the
 matrix of D statistics, \code{n} the
@@ -55,11 +57,11 @@ algorithms (see reference 3).
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Hoeffding W. (1948): A non-parametric test of independence.  Ann Math Stat

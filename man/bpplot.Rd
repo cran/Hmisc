@@ -46,7 +46,7 @@ A plot is created on the current graphics device.
 Box-percentile plots are similiar to boxplots, except box-percentile plots
 supply more information about the univariate distributions.  At any height
 the width of the irregular "box" is proportional to the percentile of that
-height, up the the 50th percentile, and above the 50th percentile the width
+height, up to the 50th percentile, and above the 50th percentile the width
 is proportional to 100 minus the percentile.  Thus, the width at any given
 height is proportional to the percent of observations that are more 
 extreme in that direction.  As in boxplots, the median, 25th and 75th 
