@@ -1,4 +1,4 @@
-## $Id: AFirst.lib.s,v 1.3 2004/07/11 14:38:51 harrelfe Exp $
+## $Id: AFirst.lib.s,v 1.4 2004/11/21 15:46:28 harrelfe Exp $
 under.unix   <- !(version$os=='Microsoft Windows' ||
                   version$os=='Win32' || version$os=='mingw32')
 
@@ -16,9 +16,8 @@ if(!exists('existsFunction')) existsFunction <- function(...)
     cat("Hmisc library by Frank E Harrell Jr\n\n",
         "Type library(help='Hmisc'), ?Overview, or ?Hmisc.Overview')\n",
         "to see overall documentation.\n\n",
-        "Hmisc redefines [.factor to drop unused levels of factor variables\n",
-        "when subscripting. To prevent this behaviour, issue the command\n",
-        "options(drop.unused.levels=F).\n\n",
+		"NOTE:Hmisc no longer redefines [.factor to drop unused levels when\n",
+		"subsetting.  To get the old behavior of Hmisc type dropUnusedLevels().\n",
         sep='')
   library.dynam("Hmisc", pkg, lib)
   invisible()

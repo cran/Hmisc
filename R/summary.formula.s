@@ -1236,9 +1236,9 @@ formatCats <- function(tab, nam, tr, type, group.freq,
   gnames <- names(group.freq)
   nr <- nrow(tab)
 
-  ## If there was a missing column of tab because the variable was
+  ## If there was a missing column of tab because e.g. the variable was
   ## always NA for one (or more) of the groups, add columns of NAs
-  if(ncol(tab) > 1) {  ## 23sep03
+  if(ncol(tab) < length(group.freq)) {
     tabfull <- matrix(NA,nrow=nr,ncol=length(group.freq),
                       dimnames=list(dimnames(tab)[[1]],gnames))
     tabfull[,dimnames(tab)[[2]]] <- tab
@@ -1562,8 +1562,8 @@ latex.summary.formula.reverse <-
                       'Numbers after percents are frequencies.',
                       sep="\n")
       if(length(testUsed))
-        legend <-paste(legend,'\\\\\n','\n\n',
-                       if(length(testUsed)==1)'Test used:' else 'Tests used:',
+        legend <-paste(legend, '\n\n',
+                       if(length(testUsed)==1)'\\noindent Test used:' else 'Tests used:',
                        if(length(testUsed)==1) paste(testUsed,'test') else
                        paste(paste('$^{',1:length(testUsed),'}$',testUsed,
                                    ' test',sep=''),collapse='; '))
@@ -2112,9 +2112,11 @@ if(!length(nr)) {  ## X not a matrix
               x=X, fun=FUN, ..., simplify=simplify)
   if(simplify) r <- drop(t(r))
 }
-dn <- dimnames(r)  ## 22mar03   length(dn) 29may03
+dn <- dimnames(r)
 if(length(dn) && !length(dn[[length(dn)]])) {
-  dn[[length(dn)]] <- names(FUN(X,...))  ## 18dec03
+  fx <- FUN(X,...)
+  dnl <- if(length(names(fx))) names(fx) else dimnames(fx)[[2]]
+  dn[[length(dn)]] <- dnl
   dimnames(r) <- dn
 }
 
