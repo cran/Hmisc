@@ -1,4 +1,4 @@
-## $Id: sas.get.s,v 1.11 2004/11/19 19:45:39 harrelfe Exp $
+## $Id: sas.get.s,v 1.16 2005/01/12 02:24:33 harrelfe Exp $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
 					ifs = character(0), 
@@ -17,26 +17,18 @@ sas.get <- if(under.unix || .R.)
   if(.R. && force.single) stop('force.single does not work under R')
   dates. <- match.arg(dates.)
 
-  file.exists <- if(.R.) function(name) {
-    w <- file.access(name)==0
+  fexists <- function(name) {
+    w <- file.exists(name)
     attr(w, 'which') <- name[w]
     w
-  } else function(name)
-	{  # 22Oct00
-	  n <- length(name)
-	  w <- logical(n)
-	  for(i in 1:n) 
-		w[i] <- sys(paste("test -f", name[i], "-o -d", name[i])) == 0
-	  which <- character(0)
-	  if(any(w)) which <- name[w]
-	  attr(w, 'which') <- which
-	  w
-	}
-  file.is.dir <- if(.R.) function(name) !is.na(file.info(name)$isdir) else
-  function(name) sys(paste("test -d", name)) == 0
+  }
 
-  file.is.readable <- if(.R.) function(name) file.access(name,4)==0
-  else function(name) sys(paste("test -r", name)) == 0
+  file.is.dir <- if(.R.) function(name) !is.na(file.info(name)$isdir) else
+  function(name) is.dir(name)
+
+  file.is.readable <- function(name) if(.R.) file.access(name,4)==0
+  else
+    access(name,4)==0
 
   fileShow <- if(.R.) function(x) file.show(x) else page(filename=x)
 
@@ -45,7 +37,7 @@ sas.get <- if(under.unix || .R.)
   if(missing(formats) || formats) {
 	## *****  Next line begins mod from Mike Kattan edits 11 Sep 97
 	## Redone FEH 22Oct00
-	no.format <- all(!file.exists(paste(format.library,
+	no.format <- all(!fexists(paste(format.library,
 	 c('formats.sc2','formats.sct','formats.sct01','formats.sas7bcat'),
 	 sep='/')))
 	if(no.format) {
@@ -90,9 +82,9 @@ sas.get <- if(under.unix || .R.)
   if(library == "") {
 	if(uncompress) {  # 22Oct00
 	  unix.file <- paste(member, sasds.suffix, sep=".")
-	  if(any(fe <- file.exists(paste(unix.file,".gz",sep=""))))
+	  if(any(fe <- fexists(paste(unix.file,".gz",sep=""))))
 		sys(paste("gunzip ",attr(fe,'which'),'.gz',sep='')) else
-	  if(any(fe <- file.exists(paste(unix.file,".Z",sep=""))))
+	  if(any(fe <- fexists(paste(unix.file,".Z",sep=""))))
 		sys(paste("uncompress ",attr(fe,'which'),'.Z',sep=''))
 	}
 	cat("%sas_get(", member, " ,", sasout1, " ,", sasout2,
@@ -110,12 +102,12 @@ sas.get <- if(under.unix || .R.)
                          sep='')
       ##23Nov00
 	  if(uncompress) {  #22Oct00
-		if(any(fe <- file.exists(paste(unix.file,".gz",sep=""))))
+		if(any(fe <- fexists(paste(unix.file,".gz",sep=""))))
 		  sys(paste("gunzip ", attr(fe,'which'),'.gz',sep='')) else
-		if(any(fe <- file.exists(paste(unix.file,".Z",sep=""))))
+		if(any(fe <- fexists(paste(unix.file,".Z",sep=""))))
 		  sys(paste("uncompress ",attr(fe,'which'),'.Z',sep=''))
 	  }
-	  if(!any(fe <- file.exists(unix.file))) {
+	  if(!any(fe <- fexists(unix.file))) {
 		stop(paste(sep = "", "Unix file, \"",
 			paste(unix.file,collapse=' '), 
 				   "\", does not exist"))
@@ -150,7 +142,7 @@ sas.get <- if(under.unix || .R.)
 										#
 										# Read in the variable information
 										#
-  if(!(file.exists(sasout1) && file.exists(sasout2))) {
+  if(!(fexists(sasout1) && fexists(sasout2))) {
 	if(!quiet) fileShow(log.file)  ## 4oct03
 	stop("SAS output files not found")
   }
@@ -207,7 +199,7 @@ sas.get <- if(under.unix || .R.)
   format[format=='$'] <- ' '    # 1Mar00
   label <- vars$label
   name <- vars$name
-  esasout3 <- formats && file.exists(sasout3)   #added formats && 1/20/93
+  esasout3 <- formats && fexists(sasout3)   #added formats && 1/20/93
   if(recode && !esasout3) recode <- FALSE
   FORMATS <- NULL
 
@@ -216,7 +208,7 @@ sas.get <- if(under.unix || .R.)
 	if(length(FORMATS)==0) {FORMATS <- NULL; recode <- FALSE}	
   }
   smiss <- NULL
-  if(special.miss && file.exists(sasout4))
+  if(special.miss && fexists(sasout4))
 	smiss <- if(.R.) scan(sasout4, list(name="", code="", obs=integer(1)),
                           multi.line=FALSE, flush=TRUE, sep="\022",
                           comment.char='', quote='') else
@@ -1337,12 +1329,18 @@ exportDataStripped <- if(.R.) function(data, ...)
   }
 
 if(.R.) {
-  spss.get <- function(file, datevars=NULL,
+  spss.get <- function(file, lowernames=FALSE,
+                       datevars=NULL,
                        use.value.labels=TRUE,
                        to.data.frame=TRUE,
                        max.value.labels=Inf,
-                       force.single=TRUE) {
+                       force.single=TRUE, allow=NULL) {
     require('foreign')
+    if(length(grep('http://', file))) {
+      tf <- tempfile()
+      download.file(file, tf, mode='wb', quiet=TRUE)
+      file <- tf
+    }
     w <- read.spss(file, use.value.labels=use.value.labels,
                    to.data.frame=to.data.frame,
                    max.value.labels=max.value.labels)
@@ -1350,6 +1348,10 @@ if(.R.) {
     a   <- attributes(w)
     vl  <- a$variable.labels
     nam <- a$names
+    nam <- makeNames(a$names, unique=TRUE, allow=allow)
+    if(lowernames) nam <- casefold(nam)
+    names(w) <- nam
+
     lnam <- names(vl)
     if(length(vl)) for(i in 1:length(vl)) {
       n <- lnam[i]
@@ -1357,7 +1359,6 @@ if(.R.) {
       if(lab != '' && lab != n) label(w[[i]]) <- lab
     }
     attr(w, 'variable.labels') <- NULL
-
     if(force.single || length(datevars)) for(v in nam) {
       x <- w[[v]]
       changed <- FALSE
@@ -1388,10 +1389,12 @@ if(.R.) {
 if(.R.) {               
 sasxport.get <- function(file, force.single=TRUE,
                          method=c('read.xport','dataload','csv'),
-                         formats=NULL, allow=NULL,
-                         keep=NULL, drop=NULL) {
+                         formats=NULL, allow=NULL, out=NULL,
+                         keep=NULL, drop=NULL, as.is=0.5, FUN=NULL) {
 
   method <- match.arg(method)
+  if(length(out) && method!='csv')
+    stop('out only applies to method="csv"')
   if(method != 'csv')
     require('foreign') || stop('foreign package is not installed')
   rootsoftware <- if(method=='dataload')'dataload' else 'sas'
@@ -1407,15 +1410,18 @@ sasxport.get <- function(file, force.single=TRUE,
     download.file(file, tf, mode='wb', quiet=TRUE)
     file <- tf
   }
+
   dsinfo <-
     if(method == 'csv') lookupSASContents(file) else lookup.xport(file)
 
-  whichds <- if(length(keep)) keep else setdiff(names(dsinfo), drop)
+  whichds <- if(length(keep)) keep else
+   setdiff(names(dsinfo), c(drop,'_CONTENTS_','_contents_'))
     
   ds     <- switch(method,
                    read.xport= read.xport(file),
                    dataload  = read.xportDataload(file, whichds),
-                   csv       = readSAScsv(file, dsinfo, whichds))
+                   csv       = if(!length(out))
+                                readSAScsv(file, dsinfo, whichds))
 
   if(method=='read.xport' && (length(keep) | length(drop)))
     ds <- ds[whichds]
@@ -1435,7 +1441,8 @@ sasxport.get <- function(file, force.single=TRUE,
   
   finfo <- NULL
   if(length(formats) || length(fds)) {
-    finfo <- if(length(formats)) formats else ds[[fds]]
+    finfo <- if(length(formats)) formats else
+     if(length(out)) readSAScsv(file, dsinfo, fds) else ds[[fds]]
     ## Remove leading $ from char format names
     #  fmtname <- sub('^\\$','',as.character(finfo$FMTNAME))
     fmtname <- as.character(finfo$FMTNAME)
@@ -1462,18 +1469,26 @@ sasxport.get <- function(file, force.single=TRUE,
   which.regular <- setdiff(whichds, fds)
   dsn <- tolower(which.regular)
   
-  if(nds > 1) {
+  if((nds > 1) && !length(out)) {
     res <- vector('list', nds)
     names(res) <- gsub('_','.',dsn)
   }
 
+  if(length(FUN)) {
+    funout <- vector('list', length(dsn))
+    names(funout) <- gsub('_','.',dsn)
+  }
+  possiblyConvertChar <- (is.logical(as.is) && !as.is) ||
+   (is.numeric(as.is) && as.is > 0)
   j <- 0
   for(k in which.regular) {
     j   <- j + 1
-    cat('Processing SAS dataset', dsn[j], '\n')
-    w   <- if(nods==1) ds else ds[[k]]
+    cat('Processing SAS dataset', k, '\t ')
+    w   <- if(length(out)) readSAScsv(file, dsinfo, k) else
+     if(nods==1) ds else ds[[k]]
+    cat('.')
     if(!length(w)) {
-      cat('Empty dataset', dsn[j], 'ignored\n')
+      cat('Empty dataset', k, 'ignored\n')
       next
     }
     nam      <- tolower(makeNames(names(w), allow=allow))
@@ -1515,6 +1530,12 @@ sasxport.get <- function(file, force.single=TRUE,
             changed <- TRUE
           }
         }
+      } else if(possiblyConvertChar && is.character(x)) {
+        if((is.logical(as.is) && !as.is) || 
+		(is.numeric(as.is) && length(unique(x)) < as.is*length(x))) {
+          x <- factor(x, exclude='')
+          changed <- TRUE
+        }
       }
       lz <- lab[nam[i]]
       if(lz != '') {
@@ -1525,9 +1546,24 @@ sasxport.get <- function(file, force.single=TRUE,
       
       if(changed) w[[i]] <- x
     }
-    if(nds > 1) res[[j]] <- w
+    cat('.\n')
+    if(length(out)) {
+      nam <- gsub('_','.',dsn[j])
+      assign(nam, w)
+      ## ugly, but a way to get actual data frame name into first
+      ## argument of save( )
+      eval(parse(text=paste('save(',nam,', file="',
+                   paste(out, '/', nam,'.rda',sep=''),
+                   '", compress=TRUE)',sep='')))
+      if(length(FUN) && length(w)) funout[[nam]] <- FUN(w)
+      remove(nam)
+    } else if(nds > 1) res[[j]] <- w
   }
-  if(nds > 1) res else w
+  if(length(out)) {
+    names(dsinfo) <- gsub('_','.',tolower(names(dsinfo)))
+    if(length(FUN)) attr(dsinfo, 'FUN') <- funout
+    invisible(dsinfo)
+    } else if(nds > 1) res else w
 }
 
   ## Use dataload program to create a structure like read.xport does
@@ -1568,7 +1604,10 @@ lookupSASContents <- function(sasdir) {
 ## Read all SAS csv export files and store in a list
 readSAScsv <- function(sasdir, dsinfo, dsnames=names(dsinfo)) {
   sasnobs <- sapply(dsinfo, function(x)x$nobs[1])
-  w <- vector('list', length(dsnames)); names(w) <- dsnames
+  multi <- length(dsnames) > 1
+  if(multi) {
+    w <- vector('list', length(dsnames)); names(w) <- dsnames
+  }
   for(a in dsnames) {
     z <- read.csv(paste(sasdir,'/',a,'.csv', sep=''),
                   as.is=TRUE, blank.lines.skip=FALSE)
@@ -1577,9 +1616,9 @@ readSAScsv <- function(sasdir, dsinfo, dsnames=names(dsinfo)) {
       cat('\nError: NOBS reported by SAS (',sasnobs[a],') for dataset ',
           a,' is not the same as imported length (', importedLength,
           ')\n', sep='')
-    w[[a]] <- z
+    if(multi) w[[a]] <- z
   }
-  w
+  if(multi)w else z
 }
 
 NULL}
@@ -1590,7 +1629,7 @@ csv.get <- function(file, lowernames=FALSE, datevars=NULL,
   fixdates <- match.arg(fixdates)
   w <- read.csv(file, check.names=FALSE, ...)
   n <- names(w)
-  m <- makeNames(n, unique=TRUE)
+  m <- makeNames(n, unique=TRUE, allow=allow)
   if(lowernames) m <- casefold(m)
   changed <- any(m != n)
   if(changed) names(w) <- m

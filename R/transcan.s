@@ -1,4 +1,4 @@
-## $Id: transcan.s,v 1.6 2004/11/24 12:53:02 harrelfe Exp $
+## $Id: transcan.s,v 1.8 2004/12/25 17:57:08 harrelfe Exp $
 
 transcan <-
   function(x, method=c("canonical","pc"),
@@ -737,7 +737,7 @@ impute.transcan <-
         next
       }
 	  d <- dim(i)
-	  obsImputed <- dimnames(i)[[1]]  
+	  obsImputed <- if(length(d)) dimnames(i)[[1]] else names(i)
 		## i[,imputation] drops names if only one obs. imputed
 	  if(!missing(imputation)) {
 		if(!length(d)) 
@@ -772,8 +772,10 @@ impute.transcan <-
       ## added !.SV4. 2may03
 	  nimp[nam] <- length(i)
       if(list.out) outlist[[nam]] <- v else {
-        if(missing(frame.out)) assign(nam, v, where=where.out) else
-		assign(nam, v, frame=frame.out)
+        if(.R.) assign(nam, v, env=.GlobalEnv) else {
+          if(missing(frame.out)) assign(nam, v, where=where.out) else
+          assign(nam, v, frame=frame.out)
+        }
       }
 	}
 	if(pr) {

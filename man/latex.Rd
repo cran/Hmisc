@@ -40,7 +40,9 @@ commands that are similar to those in the
 
 \code{latexTranslate} translates particular items in character
 strings to LaTeX format, e.g., makes \code{a^2 = a$^2$} for superscript within
-variable labels.  Math mode is inserted as needed.
+variable labels.   LaTeX names of greek letters (e.g., \code{"alpha"})
+will have backslashes added if \code{greek==TRUE}.  Math mode is
+inserted as needed. 
 \code{latexTranslate} assumes that input text always has matches,
 e.g. \code{[) [] (] ()}, and that surrounding  by \code{$$} is OK.
 
@@ -94,6 +96,8 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
     rowlabel=title, rowlabel.just="l",
     cgroup=NULL, n.cgroup=NULL, rgroup=NULL, n.rgroup=NULL,
     rowname, cgroup.just=rep("c",length(n.cgroup)),
+    rgroupTexCmd="bfseries", 
+    labTexCmd="bfseries",
     colheads=dimnames(cx)[[2]],
     extracolheads=NULL, extracolsize='scriptsize',
     dcolumn=FALSE, numeric.dollar=!dcolumn,
@@ -130,7 +134,7 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
 
 \method{print}{latex}(x, ...)
 
-latexTranslate(object, inn=NULL, out=NULL, pb=FALSE, \dots)
+latexTranslate(object, inn=NULL, out=NULL, pb=FALSE, greek=FALSE, \dots)
 
 latexSN(x)
 
@@ -221,6 +225,22 @@ rows by horizontal lines. If \code{rgroup} is given but \code{n.rgroup} is omitt
 \code{n.rgroup} will default so that each row group contains the same number
 of rows.
 }
+\item{rgroupTexCmd}{
+a vector of character strings of LaTeX commands to format
+the \code{rgroup} labels. The default, bfseries, selects 'bold'. LaTeX
+commands should be specified without the leading backslash. Only one
+LaTeX  command can be specified per label. To combine effects define new LaTeX
+commands in the preamble,
+e.g. \code{\newcommand{\rowLabel}{\color{red}\scshape}}
+to create a command \code{rowLabel} to format the labels in red
+small-caps. If \code{length(rgroupTexCmd) < length(n.rgroups)}
+values are recycled in the normal way.
+}
+\item{labTexCmd}{
+a LaTeX command to format the \code{cgroup} labels. See
+\code{rgroupTexCmd}. Note that attempting to format each column label
+differently doesn't quite work as might be expected.
+}
 \item{na.blank}{
 Set to \code{TRUE} to use blanks rather than \code{NA} for missing values.
 This usually looks better in \code{latex}.
@@ -235,7 +255,7 @@ set to \code{FALSE} to use single horizontal rules for styles other than
 }
 \item{rowname}{
 rownames for \code{tabular} environment.  Default is rownames of matrix or
-data.frame.
+data.frame.  Specify \code{rowname=NULL} to suppress the use of row names.
 }
 \item{cgroup.just}{
 justification for labels for column groups.  Defaults to \code{"c"}.
@@ -366,9 +386,10 @@ instead use the LaTeX \code{verbatim} environment.
 }
 \item{\dots}{
 other arguments are accepted and ignored except that \code{latex}
-passes arguments to \code{format.df}.  For \code{latexVerbatim} these
-arguments are passed to the \code{print} function.  Ignored for
-\code{latexTranslate}.
+passes arguments to \code{format.df} (e.g., \code{col.just} and other
+formatting options like \code{dec}, \code{rdec}, and \code{cdec}).  For
+\code{latexVerbatim} these arguments are passed to the \code{print}
+function.  Ignored for \code{latexTranslate}.
 }
 \item{inn, out}{
 specify additional input and translated strings over the usual
@@ -378,6 +399,8 @@ defaults
 If \code{pb}=\code{TRUE}, \code{latexTranslate} also translates \code{[()]} to math mode using
 \code{\left, \right}.
 }
+\item{greek}{set to \code{TRUE} to have \code{latexTranslate} put names
+  for greek letters in math mode and add backslashes}
 \item{hspace}{
 horizontal space, e.g., extra left margin for verbatim text.  Default
 is none.  Use e.g. \code{hspace="10ex"} to add 10 extra spaces to the left
@@ -426,6 +449,12 @@ commands which are assumed to be in the system path.
   \code{geometry} and \code{ctable} styles in MikTeX to make optimum use
   of \code{latex()}.
 
+  System options can be used to specify external commands to be used.
+  Defaults are given by \code{options(xdvicmd='xdvi')} or
+  \code{options(xdvicmd='yap')}, \code{options(dvipscmd='dvips')},
+  \code{options(latexcmd='latex')}.  For MacOS specify
+  \code{options(xdvicmd='MacdviX')}.
+  
   If running S-Plus and your directory for temporary files is not
   \code{/tmp} (Unix/Linux) or \code{\\windows\\temp} (Windows), add your
   own \code{tempdir} function such as \code{

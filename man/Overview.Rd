@@ -22,7 +22,11 @@ collection of functions includes all of
 Harrell's submissions to statlib other than 
 the functions in the Design and display 
 libraries.  A few of the functions do not 
-have "Help" documentation.}
+have "Help" documentation.
+
+To make Hmisc load silently, issue \code{options(Hverbose=FALSE)} before
+\code{library(Hmisc)}.
+}
 
 \section{Functions}{
 \tabular{ll}{
@@ -131,6 +135,7 @@ latex           \tab Convert an S object to LaTeX (R Heiberger & FE Harrell)\cr
 ldBands         \tab Lan-DeMets bands for group sequential tests\cr
 list.tree       \tab Pretty-print the structure of any data object\cr
                 \tab     (Alan Zaslavsky, \email{zaslavsk@hcp.med.harvard.edu})\cr
+Load            \tab Enhancement of \code{load}\cr
 mask            \tab 8-bit logical representation of a short integer value\cr
                 \tab     (Rick Becker)\cr
 matchCases      \tab Match each case on one continuous variable\cr
@@ -196,6 +201,7 @@ samplesize.bin  \tab Sample size for 2-sample binomial problem\cr
                 \tab     (Rick Chappell, \email{chappell@stat.wisc.edu})\cr
 sas.get         \tab Convert SAS dataset to S data frame\cr
 sasxport.get    \tab Enhanced importing of SAS transport dataset in R\cr
+Save            \tab Enhancement of \code{save}\cr
 scat1d          \tab Add 1-dimensional scatterplot to an axis of an existing plot\cr
                 \tab     (like bar-codes, FEH/Martin Maechler, \cr
                 \tab     \email{maechler@stat.math.ethz.ch}/Jens Oehlschlaegel-Akiyoshi,\cr
@@ -278,28 +284,6 @@ wtd.mean \tab \cr wtd.var \tab \cr  wtd.quantile \tab \cr  wtd.ecdf \tab
 num.denom.setup \tab Set of function for obtaining weighted estimates\cr
 zoom            \tab Zoom in on any graphical display\cr \tab     (Bill Dunlap, \email{bill@statsci.com})
 }}
-
-\section{System Overrides}{
-Hmisc overrides the system function model.frame.default
-to allow for more elegant handling of NAs by allowing 
-the user to specify a global method for handling NAs
-using options(na.action='na.methodname').  Hmisc
-overrides the system subscripting method for factor
-vectors and date vectors, and it defines functions
-is.na.dates and is.na.times to check for NAs in date
-and time vectors.  The [.factor redefinition by Hmisc
-causes by default unused levels to be dropped from the
-factor vector's levels attribute when the vector is
-subscripted.  This can be overridden by using for example
-\code{x <- x[,drop=FALSE]} or by specifying a system option as
-follows: \code{options(drop.factor.levels=FALSE)}.\cr
-
-Hmisc also overrides the trelllis shingle function, which
-has a bug when its sole argument has a class (such as
-the "labelled" class created by the Hmisc label function).
-The shingle replacement has the default intervals argument
-set to sort(unique(unclass(x))) instead of sort(unique(x)).
-}
 
 \references{
 See Alzola CF, Harrell FE (2004): An Introduction to S and the
