@@ -1,4 +1,4 @@
-## $Id: AFirst.lib.s,v 1.2 2004/06/01 02:30:59 harrelfe Exp $
+## $Id: AFirst.lib.s,v 1.3 2004/07/11 14:38:51 harrelfe Exp $
 under.unix   <- !(version$os=='Microsoft Windows' ||
                   version$os=='Win32' || version$os=='mingw32')
 
@@ -10,8 +10,9 @@ under.unix   <- !(version$os=='Microsoft Windows' ||
 if(!exists('existsFunction')) existsFunction <- function(...)
   exists(..., mode='function')
 
-.First.lib <- function(lib, pkg, verbose=TRUE, ...) {
-  if(verbose)
+.First.lib <- function(lib, pkg, ...) {
+  verbose <- .Options$Hverbose
+  if(!length(verbose) || verbose)
     cat("Hmisc library by Frank E Harrell Jr\n\n",
         "Type library(help='Hmisc'), ?Overview, or ?Hmisc.Overview')\n",
         "to see overall documentation.\n\n",

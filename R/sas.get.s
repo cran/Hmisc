@@ -1,4 +1,4 @@
-## $Id: sas.get.s,v 1.7 2004/06/02 21:47:21 harrelfe Exp $
+## $Id: sas.get.s,v 1.9 2004/09/05 16:21:08 harrelfe Exp $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
 					ifs = character(0), 
@@ -643,30 +643,31 @@ importConvertDateTime <-
 	stop('only date variables are support for spss, dataload')
 		
  if(.R.) {
-  adjdays <- c(sas=3653, spss=140697, dataload=135080)[input]
-  ## 1970-1-1 minus 1960-1-1, 1584-10-14, or 1600-3-1
+   adjdays <- c(sas=3653, spss=140697, dataload=135080)[input]
+   ## 1970-1-1 minus 1960-1-1, 1584-10-14, or 1600-3-1
 
- switch(type,
-		date = structure(x - adjdays, class='Date'),
-		time = {
-			  ## Don MacQueen 3Apr02
-              z <- structure(x, class=c('POSIXt','POSIXct'))
-              f <- format(z, tz='GMT')
-              z <- as.POSIXct(format(z, tz='GMT'), tz='')
-              structure(z, class=c('timePOSIXt','POSIXt','POSIXct'))},
-		datetime = {
-			  z <- structure(x - adjdays*86400,
-                             class=c('POSIXt','POSIXct'))
-              as.POSIXct(format(z, tz='GMT'), tz='')})
+   switch(type,
+          date = structure(x - adjdays, class='Date'),
+          time = {
+            ## Don MacQueen 3Apr02
+            z <- structure(x, class=c('POSIXt','POSIXct'))
+            f <- format(z, tz='GMT')
+            z <- as.POSIXct(format(z, tz='GMT'), tz='')
+            structure(z, class=c('timePOSIXt','POSIXt','POSIXct'))},
+          datetime = {
+            require(chron) ||
+             stop('you must install chron package to handle date-time variables')
+            chron((x - adjdays*86400)/86400,
+            out.format=c(dates='day mon year', times='h:m:s'))})
  } else if(.SV4.) 
-  switch(type,
-	 	 date     = timeDate(julian=x, format=form),
-		 time     = timeDate(ms=x*1000, format=form),
-		 datetime = timeDate(julian=x/86400, format=form)) else
-  switch(type,
-	 	 date = dates(x, out.format=form),
-		 time = chron(x/86400, out.format=form),
-		 datetime = chron(x/86400, out.format=form))
+   switch(type,
+          date     = timeDate(julian=x, format=form),
+          time     = timeDate(ms=x*1000, format=form),
+          datetime = timeDate(julian=x/86400, format=form)) else
+ switch(type,
+        date = dates(x, out.format=form),
+        time = chron(x/86400, out.format=form),
+        datetime = chron(x/86400, out.format=form))
 }
 
 
@@ -1329,7 +1330,6 @@ if(.R.) {
                        max.value.labels=Inf,
                        force.single=TRUE) {
     require('foreign')
-    typeDate <- match.arg(typeDate)
     w <- read.spss(file, use.value.labels=use.value.labels,
                    to.data.frame=to.data.frame,
                    max.value.labels=max.value.labels)

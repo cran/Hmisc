@@ -1,4 +1,4 @@
-## $Id: Misc.s,v 1.5 2004/05/28 18:44:55 harrelfe Exp $
+## $Id: Misc.s,v 1.6 2004/09/03 21:21:05 harrelfe Exp $
 		
 prn <- function(x, txt) {
   calltext <- as.character(sys.call())[2]
@@ -1231,7 +1231,8 @@ r
 }
 
 sepUnitsTrans <- function(x, 
-  conversion=c(day=1, month=365.25/12, year=365.25), round=FALSE, digits=0) {
+  conversion=c(day=1, month=365.25/12, year=365.25, week=7),
+  round=FALSE, digits=0) {
 
 if(!any(is.present(x))) return(x)
 target <- names(conversion[conversion==1])
