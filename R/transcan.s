@@ -1,4 +1,4 @@
-## $Id: transcan.s,v 1.5 2004/06/24 13:59:19 harrelfe Exp $
+## $Id: transcan.s,v 1.6 2004/11/24 12:53:02 harrelfe Exp $
 
 transcan <-
   function(x, method=c("canonical","pc"),
@@ -83,7 +83,6 @@ if(imputed.actual!='none') imputed <- TRUE
 if(impcat=='multinom') {
   if(.R.) require('nnet') else if(!existsFunction('multinom')) library(nnet)
 }
-if(.R.) require('mva')
 if(.R. & missing(data)) stop('Must specify data= when using R')  ## 11apr03
 
 formula <- nact <- NULL
