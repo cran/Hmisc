@@ -45,10 +45,10 @@ sas.get(library, member, variables, ifs,
      format.library=library, id, dates.,
      keep.log=TRUE, log.file="_temp_.log", macro=sas.get.macro,
      data.frame.out=TRUE, clean.up=FALSE, quiet=FALSE,
-     temp=tempfile("SaS"), formats=TRUE, recode=formats,
-     special.miss=FALSE, sasprog="sas", 
-     as.is=.5, check.unique.id=TRUE, force.single=FALSE,
-     where, uncompress=FALSE)
+     temp=tempfile("SaS"), formats=TRUE, 
+     recode=formats, special.miss=FALSE, sasprog="sas",
+     as.is=.5, check.unique.id=TRUE, force.single=FALSE, where,
+     uncompress=FALSE)
 
 is.special.miss(x, code)
 
@@ -98,30 +98,6 @@ the definitions of the user defined formats used in this dataset.
 By default, we look for the formats in the same directory as the data.
 The user defined formats must be available (so SAS can read the data).
 }
-\item{sasout}{
-If SAS has already run to create the ASCII files needed to
-complete the creation of the S data frame, specify
-a vector of 4 character strings containing the names of the
-files (with full path names if the files are not on the
-current working directory).  The files are in the following
-order: data dictionary, data, formats, special missing values.
-This is the same order that the file names are specified
-to the \code{sas_get} macro.  For files which were not created
-and hence not applicable, specify \code{""} as the file name.
-The presence/absence of formats and special missing data files
-is used to set the \code{formats} and \code{special.miss} arguments
-automatically by \code{sas.get}.
-
-\code{sasout} may also be a character string of length one, in which
-case it is assumed to be the name of a \code{.zip} file, and
-\code{sas.get} automatically runs the DOS \code{PKUNZIP} command to
-extract the component files to the current working directory.  
-The files that are present
-in the \code{.zip} file must have names \code{"dict","data","formats","specmiss"}
-(although \code{"formats"} and \code{"specmiss"} do not have to be present).
-When \code{sas.get} is finished, these extracted files are automatically
-deleted.  \code{.zip} files are useful for downloading large datasets.
-}
 \item{formats}{
 Set \code{formats} to \code{FALSE} to keep \code{sas.get} from telling the SAS macro to 
 retrieve value label formats from \code{format.library}.  When you do not
@@ -137,11 +113,11 @@ or a numeric format that is not used just to label missing values.
 To fetch the values and labels for variable \code{x} in the dataset \code{d} you
 could type:
 \cr
-    f <- attr(d$x, "format")
+    f <- attr(d\$x, "format")
 \cr
     formats <- attr(d, "formats")
 \cr
-    formats$f$values; formats$f$labels
+    formats\$f\$values; formats\$f\$labels
 }
 \item{recode}{
 This parameter defaults to \code{T} if \code{formats} is \code{T}.  If it is
@@ -169,7 +145,7 @@ To fetch this information for variable \code{y} you would say for example
 \cr
     s <- attr(y, "special.miss")
 \cr
-    s$codes; s$obs
+    s\$codes; s\$obs
 \cr
 or use \code{is.special.miss(x)} or the \code{print.special.miss} method, which
 will replace \code{NA} values for the variable with \code{E} or \code{G} if they
@@ -276,13 +252,13 @@ was specified, that column of the data frame will be used
 as the row names of the data frame.  Each variable in the data frame
 or vector in the list will have the attributes \code{label} and \code{format}
 containing SAS labels and formats.  Underscores in formats are
-converted to periods.  Formats for character variables have \code{$} placed
+converted to periods.  Formats for character variables have \code{\$} placed
 in front of their names.
 If \code{formats} is \code{T} and there are any 
 appropriate format definitions in \code{format.library}, the returned
 object will have attribute \code{formats} containing lists named the
 same as the format names (with periods substituted for underscores and
-character formats prefixed by $).
+character formats prefixed by \$).
 Each of these lists has a vector called \code{values} and one called
 \code{labels} with the PROC FORMAT; VALUE \dots   definitions.
 }
