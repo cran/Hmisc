@@ -296,11 +296,11 @@ in frame 0 (the session database).
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Grant MC, Carlisle (1998): The PSfrag System, Version 3.  Full

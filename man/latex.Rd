@@ -94,15 +94,19 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
     rowlabel=title, rowlabel.just="l",
     cgroup=NULL, n.cgroup=NULL, rgroup=NULL, n.rgroup=NULL,
     rowname=dimnames(x)[[1]], cgroup.just=rep("c",length(n.cgroup)),
+    colheads=dimnames(cx)[[2]],
     extracolheads=NULL, extracolsize='scriptsize',
     dcolumn=FALSE, numeric.dollar=!dcolumn,
     cdot=FALSE, longtable=FALSE, draft.longtable=TRUE,
     ctable=FALSE, booktabs=FALSE,
     table.env=TRUE, here=FALSE, lines.page=40,
-    caption=NULL, caption.lot=NULL, double.slash=FALSE,
+    caption=NULL, caption.lot=NULL, caption.loc=c('top','bottom'),
+    double.slash=FALSE,
     vbar=FALSE, collabel.just=rep("c",nc), na.blank=TRUE,
     insert.bottom=NULL, first.hline.double=!(booktabs|ctable),
     where='!tbp', size=NULL,
+    center=c('center','centering','none'),
+    landscape=FALSE,
     \dots) # x is a matrix or data.frame
 
 \method{latex}{function}(
@@ -120,6 +124,7 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
            label,
            caption,
            caption.lot,
+           caption.loc=c('top','bottom'),
            \dots) # x is a list. latex is called recursively for each element
 
 \method{print}{latex}(x, ...)
@@ -234,6 +239,9 @@ data.frame.
 \item{cgroup.just}{
 justification for labels for column groups.  Defaults to \code{"c"}.
 }
+\item{colheads}{a character vector of column headings if you don't want
+  to use \code{dimnames(object)[[2]]}.  Specify \code{colheads=NULL} to
+  suppress column headings.}
 \item{extracolheads}{
   an optional vector of extra column headings that will appear under the
   main headings (e.g., sample sizes).  This character vector does not
@@ -308,6 +316,8 @@ a text string representing a short caption to be used in the "List of Tables".
 By default, LaTeX will use \code{caption}.  If you get inexplicable \code{latex} errors,
 you may need to supply \code{caption.lot} to make the errors go away.
 }
+\item{caption.loc}{set to \code{"bottom"} to position a caption below
+the table instead of the default of \code{"top"}.}
 \item{double.slash}{
 set to \code{TRUE} to output \code{\\} as \code{\\\\} in LaTeX commands. Useful when you
 are reading the output file back into an S vector for later output.
@@ -334,6 +344,18 @@ text you might specify \code{where="!htbp"} to \code{latex.default}.
 size of table text if a size change is needed (default is no change).
 For example you might specify \code{size="small"} to use LaTeX font size
 "small".
+}
+\item{center}{
+default is \code{"center"} to enclose the table in a \code{center}
+environment.  Use \code{center="centering"} to instead use a LaTeX
+\code{centering} directive, or \code{center="none"} to use no
+centering.  This option was implemented by Markus Jäntti
+\email{markus.jantti@iki.fi} of Abo Akademi University.
+}
+\item{landscape}{
+ set to \code{TRUE} to enclose the table in a \code{landscape}
+ environment.  When \code{ctable} is \code{TRUE}, will use the
+ \code{rotate} argument to \code{ctable}.
 }
 \item{type}{
 The default uses the S \code{Example} environment for \code{latex.function},
@@ -397,15 +419,20 @@ commands which are assumed to be in the system path.
   \code{.dvi} files created by \code{latex}.  You should install the
   \code{geometry} and \code{ctable} styles in MikTeX to make optimum use
   of \code{latex()}.
+
+  If running S-Plus and your directory for temporary files is not
+  \code{/tmp} (Unix/Linux) or \code{\\windows\\temp} (Windows), add your
+  own \code{tempdir} function such as \code{
+	tempdir <- function() "/yourmaindirectory/yoursubdirectory"}
   }
 \author{
 Frank E. Harrell, Jr.,
 \cr
-Division of Biostatistics and Epidemiology,
+Department of Biostatistics,
 \cr
-University of Virginia,
+Vanderbilt University,
 \cr
-\code{fharrell@virginia.edu}
+\code{f.harrell@vanderbilt.edu}
 
 
 Richard M. Heiberger,

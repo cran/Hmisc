@@ -67,7 +67,7 @@ other parameters passed to plot function.
 }}
 \author{
 Charles Geyer, University of Chicago.  Modified by Frank Harrell,
-University of Virginia, to handle missing data, to add the parameters
+Vanderbilt University, to handle missing data, to add the parameters
 \code{add} and \code{lty}, and to implement horizontal charts with differences.
 }
 \examples{

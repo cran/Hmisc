@@ -46,17 +46,18 @@ containing two matrices: \code{differences} and \code{ratios}.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University School of Medicine
 \cr
-University of Virginia Health Sciences Center
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{lm}}, \code{\link[Design]{ols}}, \code{\link{cor}}, \code{\link[Design]{validate.ols}}
 }
+\references{
+  Schemper M (2003): Stat in Med 22:2299-2308.
+  }
 \examples{
 set.seed(1)         # so can regenerate results
 x1 <- rnorm(100)

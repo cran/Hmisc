@@ -1,5 +1,6 @@
 \name{sasxport.get}
 \alias{sasxport.get}
+\alias{sasdsLabels}
 \title{Enhanced Importing of SAS Transport Files using read.xport}
 \description{
 Uses the \code{read.xport} and \code{lookup.xport} functions in the
@@ -10,16 +11,25 @@ with variables, and (by default) integer-valued variables are converted
 from storage mode \code{double} to \code{integer}.  If the user ran
 \code{PROC FORMAT CNTLOUT=} in SAS and included the resulting dataset in
 the SAS version 5 transport file, variables having customized formats
-that do not include any ranges (i.e., for variables having standard
-\code{PROC FORMAT; VALUE} label formats), the format labels are looked
-up and the variables are converted to S \code{factor}s.
+that do not include any ranges (i.e., variables having standard
+\code{PROC FORMAT; VALUE} label formats) will have their format labels looked
+up, and these variables are converted to S \code{factor}s.
+
+\code{SASdsLabels} reads a file containing \code{PROC CONTENTS}
+printed output to parse dataset labels, assuming that \code{PROC
+CONTENTS} was run on an entire library.
 }
 \usage{
 sasxport.get(file, force.single = TRUE)
+
+sasdsLabels(file)
 }
 \arguments{
   \item{file}{name of a file containing the SAS transport file.
-	\code{file} may be a URL beginning with \code{http://}.}
+	\code{file} may be a URL beginning with \code{http://}.  For
+\code{sasdsLabels}, \code{file} is the name of a file containing a
+\code{PROC CONTENTS} output listing.
+}
   \item{force.single}{set to \code{FALSE} to keep integer-valued
 	variables not exceeding \eqn{2^31-1} in value from being converted to
 	\code{integer} storage mode}
@@ -28,12 +38,15 @@ sasxport.get(file, force.single = TRUE)
   If there is more than one dataset in the transport file other than the
   \code{PROC FORMAT} file, the result is a list of data frames
   containing all the non-\code{PROC FORMAT} datasets.  Otherwise the
-  result is the single data frame.
+  result is the single data frame.  \code{sasdsLabels} returns a named
+  vector of dataset labels, with names equal to the dataset names.
 }
+\details{See \code{\link{contents.list}} for a way to print the
+directory of SAS datasets when more than one was imported.}
 \author{Frank E Harrell Jr}
 \seealso{\code{\link{read.xport}},\code{\link{label}},\code{\link{sas.get}},
   \code{\link{DateTimeClasses}},\code{\link{lookup.xport}},
-  \code{\link{describe}}}
+  \code{\link{contents}},\code{\link{describe}}}
 \examples{
 \dontrun{
 # SAS code to generate test dataset:

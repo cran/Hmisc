@@ -100,13 +100,13 @@ For \code{bpower.sim}, all arguments must be of length one.
 Frank Harrell
 
 
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 
 
-University of Virginia
+Vanderbilt University
 
 
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Fleiss JL, Tytun A, Ury HK (1980): A simple approximation for calculating

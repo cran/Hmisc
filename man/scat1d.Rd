@@ -340,13 +340,13 @@ in constructing line segments.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
 Charlottesville VA, USA
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 
 
 Martin Maechler (improved \code{scat1d})

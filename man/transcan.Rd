@@ -556,7 +556,7 @@ and \code{suffix} placed in back of the name.  The default is to use names
 of the form \code{.varname}, where \code{varname} is the variable name.
 }
 \item{where}{
-position in \code{search} list at which to store new new functions (for \code{Function}).
+position in \code{search} list at which to store new functions (for \code{Function}).
 Default is position 1 in the search list.  See the \code{assign} function for more
 documention on the \code{where} argument.
 }
@@ -742,11 +742,11 @@ Trevor Thompson \email{trevor@hp5.eushc.org}).
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-\email{fharrell@virginia.edu}
+\email{f.harrell@vanderbilt.edu}
 }
 \references{
 Kuhfeld, Warren F: The PRINQUAL Procedure.  SAS/STAT User's Guide, Fourth

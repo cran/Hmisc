@@ -139,13 +139,11 @@ specified.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University School of Medicine
 \cr
-University of Virginia Health Sciences Center
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Research Triangle Institute (1995): SUDAAN User's Manual, Release

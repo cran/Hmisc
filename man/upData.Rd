@@ -2,6 +2,7 @@
 \alias{cleanup.import}
 \alias{upData}
 \alias{exportDataStripped}
+\alias{csv.get}
 \title{
 Update a Data Frame or Cleanup a Data Frame after Importing
 }
@@ -19,7 +20,8 @@ converts these to \code{Inf} without warning.  There is also an option to
 convert variable names to lower case and to add labels to variables.
 The latter can be made easier by importing a CNTLOUT dataset created
 by SAS PROC FORMAT and using the \code{sasdict} option as shown in the
-example below.
+example below.  \code{cleanup.import} can also transform character or
+factor variables to dates.
 
 \code{upData} is a function facilitating the updating of a data frame
 without attaching it in search position one.  New variables can be
@@ -48,17 +50,25 @@ exporting of data to other systems
 by removing attributes \code{label, imputed, format, units}, and
 \code{comment}.  It calls \code{exportData} after stripping these
 attributes.  Otherwise \code{exportData} will fail.
+
+\code{csv.get} reads comma-separated text data files, allowing optional
+translation to lower case for variable names after making them valid S
+names.  Original possibly non-legal names are taken to be variable
+labels.  Character or factor variables containing dates can be converted
+to date variables.  \code{cleanup.import} is invoked to finish the job.
 }
 \usage{
 cleanup.import(obj, labels, lowernames=FALSE, 
                force.single=TRUE, force.numeric=TRUE, rmnames=TRUE,
-               big=1e20, sasdict, pr)
+               big=1e20, sasdict, pr, datevars=NULL, dateformat='%d%b%Y')
 
 upData(object, \dots, 
        rename, drop, labels, units, levels,
        force.single=TRUE, lowernames=FALSE, moveUnits=FALSE)
 
 exportDataStripped(data, \dots)
+
+csv.get(file, lowernames=FALSE, datevars=NULL, dateformat='\%d\%b\%Y', \dots)
 }
 \arguments{
 \item{obj}{a data frame or list}
@@ -111,11 +121,17 @@ variable number being processed.  By default, such messages are printed if the
 product of the number of variables and number of observations in \code{obj}
 exceeds 500,000.
 }
-\item{...}{
+\item{datevars}{character vector of names (after \code{lowernames} is
+  applied) of variables to consider as a factor or character vector
+  containing dates in a format matching \code{dateformat}}
+\item{dateformat}{for \code{cleanup.import} is the input format (see
+  \code{\link{strptime}})}
+\item{\dots}{
 for \code{upData}, one or more expressions of the form
 \code{variable=expression}, to derive new variables or change old ones.
 For \code{exportDataStripped}, optional arguments that are passed to
-\code{exportData}.
+\code{exportData}.  For \code{csv.get}, arguments to pass to
+\code{read.csv}.
 }
 \item{rename}{
 list or named vector specifying old and new names for variables.  Variables are
@@ -143,14 +159,16 @@ redefining \code{levels} (in order) or another list (see
   in a label is enclosed in parentheses or brackets it is assumed to be
   units if \code{moveUnits=TRUE}.
 }
+\item{file}{a file name to import}
 }
 \value{a new data frame}
 \author{
-Frank Harrell, University of Virginia
+Frank Harrell, Vanderbilt University
 }
 \seealso{
 \code{\link{sas.get}}, \code{\link{data.frame}}, \code{\link{describe}},
-\code{\link{label}}
+\code{\link{label}}, \code{\link{read.csv}}, \code{\link{strptime}},
+\code{\link{POSIXct}}
 }
 \examples{
 \dontrun{

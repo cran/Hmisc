@@ -498,13 +498,11 @@ through \code{xYplot} as shown in some of its examples.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University
 \cr
-University of Virginia
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{approx}}, \code{\link{text}}, \code{\link{legend}}, \code{\link{setps}}, \code{\link{scat1d}}, \code{\link{xYplot}}, \code{\link{abline}}
@@ -566,9 +564,10 @@ height.m <- pmin(ages.m,21)*.16+63
 
 
 labcurve(list(Female=list(ages.f,height.f,col=2),
-              Male  =list(ages.m,height.m,col=3,lty=2)),
+              Male  =list(ages.m,height.m,col=3,lty='dashed')),
          xlab='Age', ylab='Height', pl=TRUE)
 # add ,keys=c('f','m') to label curves with single letters
+# For S-Plus use lty=2
 
 
 # Plot power for testing two proportions vs. n for various odds ratios, 

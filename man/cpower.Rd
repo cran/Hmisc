@@ -80,11 +80,11 @@ the SAS \code{samsizc} program.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Peterson B, George SL: Controlled Clinical Trials 14:511--522; 1993.

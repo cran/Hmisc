@@ -6,6 +6,7 @@
 \alias{matxv}
 \alias{nomiss}
 \alias{outerText}
+\alias{sepUnitsTrans}
 \alias{trap.rule}
 \alias{trellis.strip.blank}
 \alias{under.unix}
@@ -46,6 +47,15 @@
 
   \code{outerText} uses \code{text()} to put test strings in left or
   right margins. It temporarily sets \code{par(xpd=NA)} if using \R.
+
+  \code{sepUnitsTrans} converts character vectors containing values such
+  as \code{c("3 days","3day","4month","2 years","7")} to numeric vectors
+  (here \code{c(3,3,122,730,7)}) in a flexible fashion.  The user can specify a
+  vector of units of measurements and conversion factors.  The units
+  with a conversion factor of \code{1} are taken as the target units,
+  and if those units are present in the character strings they are
+  ignored.  The target units are added to the resulting vector as the
+  \code{"units"} attribute.
   
   \code{trap.rule} computes the area under a curve using the trapezoidal
   rule, assuming \code{x} is sorted.
@@ -92,6 +102,8 @@ matxv(a, b, kint=1)
 nomiss(x)
 outerText(string, y, setAside=string[1], side=4, space=1,
           adj=1, cex=par('cex'))
+sepUnitsTrans(x, conversion=c(day=1, month=365.25/12, year=365.25),
+              round=FALSE, digits=0)
 trap.rule(x, y)
 trellis.strip.blank()
 unPaste(str, sep="/", extended=FALSE)
@@ -137,11 +149,15 @@ xless(x, \dots, title)
   \item{space}{the number of extra characters to leave to the left of
 	the string(s) (\code{adj=0}) or to the right (\code{adj=1})}
   \item{adj}{0 for left justification, 0.5 for centered, 1 for right}
+  \item{conversion}{a named numeric vector}
+  \item{round}{set to \code{TRUE} to round converted values}
+  \item{digits}{number of digits used for \code{round}}
   \item{str}{a character string vector}
   \item{w}{a numeric vector}
   \item{x}{a numeric vector (matrix for \code{lm.fit.qr.bare}) or data
 	frame.  For \code{xless} may be any object that is sensible to
-	\code{print}}
+	\code{print}.  For \code{sepUnitsTrans} is a character or factor
+	variable.}
   \item{y}{a numeric vector}
   \item{sep}{a single character string specifying the delimiter}
   \item{extended}{see \code{\link{strsplit}} in \R}
@@ -154,6 +170,8 @@ xless(x, \dots, title)
 trap.rule(1:100,1:100)
 
 unPaste(c('a;b or c','ab;d','qr;s'), ';')
+
+sepUnitsTrans(c('3 days','4 months','2 years','7'))
 
 set.seed(1)
 whichClosest(1:100, 3:5)

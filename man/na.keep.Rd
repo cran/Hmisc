@@ -23,11 +23,11 @@ the same model frame with the \code{"na.action"} attribute
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{na.omit}}, \code{\link{na.delete}}, \code{\link{model.frame.default}}, \code{\link{na.detail.response}},

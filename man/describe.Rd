@@ -176,9 +176,9 @@ the response.  The actual summary function can be designated through
 \author{
 Frank Harrell
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-\email{fharrell@virginia.edu}
+\email{f.harrell@vanderbilt.edu}
 }
 \seealso{
 \code{\link{sas.get}}, \code{\link{quantile}}, \code{\link{table}}, \code{\link{summary}},  \code{\link{model.frame.default}},

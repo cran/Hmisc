@@ -19,7 +19,7 @@ Jeffrey Banfield's (umsfjban@bill.oscs.montana.edu) \code{bpplot} function.
 To quote from Banfield, "box-percentile plots supply more
 information about the univariate distributions.  At any height the
 width of the irregular 'box' is proportional to the percentile of that
-height, up the the 50th percentile, and above the 50th percentile the
+height, up to the 50th percentile, and above the 50th percentile the
 width is proportional to 100 minus the percentile.  Thus, the width at
 any given height is proportional to the percent of observations that
 are more extreme in that direction.  As in boxplots, the median, 25th
@@ -52,7 +52,7 @@ panel.bpplot(x, y, box.ratio=1, means=TRUE, qref=c(.5,.25,.75),
 
 bpplt(stats, xlim, xlab='', box.ratio = 1, means=TRUE,
       qref=c(.5,.25,.75), qomit=c(.025,.975),
-      pch=16, cex.labels=par('cex'),
+      pch=16, cex.labels=par('cex'), cex.points=.5,
       grid=FALSE)
 }
 \arguments{
@@ -107,18 +107,17 @@ a list containing named arguments (without abbreviations) to pass to
 \item{xlab}{}
 \item{qomit}{}
 \item{cex.labels}{}
+\item{cex.points}{}
 \item{grid}{undocumented arguments to \code{bpplt}}
 }
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University School of Medicine
 \cr
-University of Virginia Health Sciences Center
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Esty, W. W. and Banfield, J. D. (1992)

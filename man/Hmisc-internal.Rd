@@ -17,6 +17,7 @@
 \alias{bpx}
 \alias{do}
 \alias{dot.chart}
+\alias{existsFunction}
 \alias{expr.tree}
 \alias{fillin}
 \alias{formatCats}
@@ -25,8 +26,10 @@
 \alias{format.timePOSIXt}
 \alias{ftuss}
 \alias{ftupwr}
+\alias{getFunction}
 \alias{get2rowHeads}
 \alias{groupn}
+\alias{gView}
 \alias{is.category}
 \alias{isChron}
 \alias{is.present}

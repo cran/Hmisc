@@ -254,13 +254,11 @@ it returns the power estimate and confidence limits for it if \code{nsim} >
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University School of Medicine
 \cr
-University of Virginia Health Sciences Center
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \references{
 Spiegelhalter DJ, Freedman LS, Parmar MKB (1994): Bayesian approaches to

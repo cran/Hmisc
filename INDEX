@@ -92,6 +92,7 @@ impute          Impute missing data (generic method)
 interaction     More flexible version of builtin function
 is.present      Tests for non-blank character values or non-NA numeric values
 james.stein     James-Stein shrinkage estimates of cell means from raw data
+km.quick        Quick computation of Kaplan-Meier estimates without strata
 labcurve        Optimally label a set of curves that have been drawn on
                     an existing plot, on the basis of gaps between curves.
                     Also position legends automatically at emptiest rectangle.
@@ -244,6 +245,8 @@ varclus         Graph hierarchical clustering of variables using squared
 xy.group        Compute mean x vs. function of y by groups of x
 xYplot          Like trellis xyplot but supports error bars and multiple
                     response variables that are connected as separate lines
+whichClosePW    Weighted sampling of close elements in a vector
+whichClosest    Find the closest element in a vector
 wtd.mean, wtd.var, wtd.quantile, wtd.ecdf, wtd.table, wtd.rank,
 wtd.loess.noiter, num.denom.setup
                 Set of function for obtaining weighted estimates

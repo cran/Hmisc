@@ -45,9 +45,9 @@ nothing
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology, University of Virginia
+Department of Biostatistics, Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \section{Side Effects}{
 plots

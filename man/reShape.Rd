@@ -1,8 +1,6 @@
 \name{reShape}
 \alias{reShape}
-\title{
-Reshape Matrices and Serial Data
-}
+\title{Reshape Matrices and Serial Data}
 \description{
 If the first argument is a matrix, \code{reShape} strings out its values
 and creates row and column vectors specifying the row and column each
@@ -39,7 +37,9 @@ observation identifiers are each repeated \code{reps} times in the output
 object.  See the last example.
 }
 \usage{
-reShape(x, \dots, id, colvar, base, reps, times=1:reps, timevar='seqno')
+reShape(x, \dots, id, colvar, base, reps, times=1:reps,
+        timevar='seqno')
+}
 \arguments{
 \item{x}{
 a matrix or vector, or, when \code{base} is specified, a list or data frame
@@ -68,7 +68,7 @@ a constant.
 when \code{base} is given, \code{times} is the vector of times to create
 if you do not want to use consecutive integers beginning with 1.
 }
-\item{timevar}
+\item{timevar}{
 specifies the name of the time variable to create if \code{times} is
 given, if you do not want to use \code{seqno}
 }
@@ -102,13 +102,11 @@ are given by a table lookup into the vector \code{times}.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-Department of Health Evaluation Sciences
+Vanderbilt University School of Medicine
 \cr
-University of Virginia Health Sciences Center
-\cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{as.vector}}, \code{\link{matrix}}, \code{\link{dimnames}}, \code{\link{outer}}, \code{\link{table}}

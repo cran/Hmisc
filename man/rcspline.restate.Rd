@@ -82,9 +82,9 @@ also return in character string format as the \code{text} attribute.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology, University of Virginia
+Department of Biostatistics, Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{rcspline.eval}}, \code{\link{ns}}, \code{\link[Design]{rcs}}, \code{\link{latex}}, \code{\link{Function.transcan}}

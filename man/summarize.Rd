@@ -126,11 +126,11 @@ list containing attributes of a single variable.
 \author{
 Frank Harrell
 \cr
-Division of Biostatistics and Epidemiology
+Department of Biostatistics
 \cr
-University of Virginia
+Vanderbilt University
 \cr
-fharrell@virginia.edu
+f.harrell@vanderbilt.edu
 }
 \seealso{
 \code{\link{label}}, \code{\link{cut2}}, \code{\link{llist}}, \code{\link{by}}
