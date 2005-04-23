@@ -227,6 +227,8 @@ latex.default <-
            rowlabel=title, rowlabel.just="l", cgroup=NULL, n.cgroup=NULL,
            rgroup=NULL, n.rgroup=NULL,
            rowname, cgroup.just=rep("c",length(n.cgroup)),
+           rgroupTexCmd="bfseries", # Added by David Whiting 2005-04-14
+           labTexCmd="bfseries", # Added by David Whiting 2005-04-14
            colheads=dimnames(cx)[[2]],
            extracolheads=NULL, extracolsize='scriptsize',
            dcolumn=FALSE, numeric.dollar=!dcolumn, cdot=FALSE,
@@ -460,7 +462,8 @@ if (length(cgroup)) {
     cvbar[1] <- paste(vbar, cvbar[1], sep="")
     cvbar[-length(cvbar)] <- paste(cvbar[-length(cvbar)], vbar, sep="")
     slmc <- paste(sl,"multicolumn{",sep="")
-    labs <- paste(sl, "bf ", cgroup, sep="")
+    ## labs <- paste(sl, "bf ", cgroup, sep="") Replaced with line below
+    labs <- paste(sl, labTexCmd, " ", cgroup, sep="")  # David Whiting 2005-04-14
     if(multicol) ## SSJ 17nov03
       labs <- paste(slmc, n.cgroup, "}{", cvbar, "}{", labs, "}", sep="")
 
@@ -542,7 +545,8 @@ if (length(cgroup)) {
       rg.end   <- cumsum(n.rgroup)
       rg.start <- rg.end-n.rgroup+1
       if(!length(rgroup)) rgroup <- rep("",length(n.rgroup))
-      else rgroup <- paste("{",sl,"bf ",rgroup,"}",sep="")
+      else rgroup <- paste("{",sl, rgroupTexCmd," ",rgroup,"}",sep="") # David Whiting 2005-04-14
+      ## else rgroup <- paste("{",sl,"bf ",rgroup,"}",sep="") Replaced by line above.
       seq.rgroup <- seq(along=n.rgroup)
     }
     else {
@@ -684,7 +688,8 @@ latex.list <- function( object,
 ## that surrounding  by $$ is OK
 ## latexTranslate is used primarily by summary.formula
 
-latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE, ...) {
+latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
+                           greek=FALSE, ...) {
 
   text <- object
   
@@ -722,6 +727,16 @@ for(i in 1:length(text)) {
     substring2(text[i],is,ie-1) <- paste(dol,'^{',
                                         substring(text[i],is+1,ie-1),'}',
        dol,sep='')  # 25May01
+  }
+  if(greek) {
+    gl <- Cs(alpha,beta,gamma,delta,epsilon,varepsilon,zeta,eta,theta,
+             vartheta,iota,kappa,lambda,mu,nu,xi,pi,varpi,rho,varrho,
+             sigma,varsigma,tau,upsilon,phi,carphi,chi,psi,omega,Gamma,
+             Delta,Theta,Lambda,Xi,Pi,Sigma,Upsilon,Phi,Psi,Omega)
+    for(w in gl)
+      text[i] <- gsub(paste('\\b', w, '\\b', sep=''),
+                      paste('$\\\\',w,'$',   sep=''),
+                      text[i])
   }
 }
 sedit(text, 'DOLLARS', '\\$', wild.literal=TRUE)  ## 17Nov00
@@ -777,9 +792,10 @@ if(.R. && FALSE) show <- function(object) UseMethod('show')
 show.dvi <- function(object, width=5.5, height=7) {
   viewer <- optionsCmds('xdvi')
   cmd <- if(viewer=='yap') paste(viewer,object$file) else
-  paste(viewer, ' -paper ',
-        width,'x',height,'in -s 0 ',
-        object$file,' &',sep='')
+   if(viewer=='kdvi') paste(viewer,object$file,'&') else
+   paste(viewer, ' -paper ',
+         width,'x',height,'in -s 0 ',
+         object$file,' &',sep='')
   sys(cmd)
   invisible()
 }

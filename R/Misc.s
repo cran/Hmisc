@@ -1,4 +1,4 @@
-## $Id: Misc.s,v 1.6 2004/09/03 21:21:05 harrelfe Exp $
+## $Id: Misc.s,v 1.7 2004/11/29 18:02:14 harrelfe Exp $
 		
 prn <- function(x, txt) {
   calltext <- as.character(sys.call())[2]
@@ -1274,4 +1274,23 @@ makeNames <- function(names, unique=FALSE, allow=NULL) {
  n <- make.names(names, unique)
  if(!length(allow)) n <- gsub('_', '.', n)
  n
+}
+
+
+Load <- function(object) {
+  nam <- deparse(substitute(object))
+  path <- .Options$LoadPath
+  if(length(path)) path <- paste(path,'/',sep='')
+  file <- paste(path, nam, '.rda', sep='')
+  load(file, .GlobalEnv)
+}
+
+Save <- function(object) {
+  .ObjectName <- deparse(substitute(object))
+  path <- .Options$LoadPath
+  if(length(path)) path <- paste(path, '/', sep='')
+  .FileName <- paste(path, .ObjectName, '.rda', sep='')
+  assign(.ObjectName, object)
+  eval(parse(text=paste('save(', .ObjectName, ', file="',
+               .FileName, '", compress=TRUE)', sep='')))
 }

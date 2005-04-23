@@ -13,7 +13,6 @@
 \alias{substi}
 \alias{substi.source}
 \alias{[.substi}
-\alias{[.factor}
 \alias{bpx}
 \alias{ddmmmyy}
 \alias{do}
@@ -60,6 +59,7 @@
 \alias{sas.get.macro}
 \alias{setParNro}
 \alias{stepfun.eval}
+\alias{stripChart}
 \alias{[.terms}
 \alias{termsDrop}
 \alias{testDateTime}
