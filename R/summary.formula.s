@@ -1,4 +1,4 @@
-## $Id: summary.formula.s,v 1.13 2005/03/15 04:25:19 harrelfe Exp $
+## $Id: summary.formula.s,v 1.16 2005/05/20 18:48:11 harrelfe Exp $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -314,7 +314,7 @@ summary.formula <-
                                   c(format(quant),'Mean','SD')))
             if(any(group.freq <= nmin))
               dat[[i]] <-
-                lapply(split(x,g),nmin=nmin,
+                lapply(split(w,g),nmin=nmin,
                        function(x,nmin)
                         if(length(x) <= nmin)x else NULL)
             type[i] <- 2
@@ -1430,7 +1430,7 @@ latex.summary.formula.reverse <-
 		   caption, rowlabel="",
            insert.bottom=TRUE, dcolumn=FALSE,
            prtest=c('P','stat','df','name'), prmsd=FALSE, msdsize=NULL,
-           long=FALSE, pdig=3, eps=.001, ...) {
+           long=FALSE, pdig=3, eps=.001, auxCol=NULL, ...) {
     x      <- object
     npct   <- match.arg(npct)
     vnames <- match.arg(vnames)
@@ -1543,6 +1543,18 @@ latex.summary.formula.reverse <-
                        paste(paste('$^{',1:length(testUsed),'}$',testUsed,
                                    ' test',sep=''),collapse='; '))
       ## added rowname=lab 12aug02  added '\n\n' 4mar03 for ctable=T
+    }
+    if(length(auxCol)) {
+      if(length(auxCol[[1]]) != nrow(cstats))
+        stop(paste('length of auxCol (',length(auxCol[[1]]),
+                   ') is not equal to number or rows in table (',
+                   nrow(cstats),').', sep=''))
+      cstats <- cbind(auxCol[[1]], cstats)
+      nax <- names(auxCol)
+      heads <- get2rowHeads(nax)
+      names(cstats)[1] <- heads[[1]]
+      if(length(col.just)) col.just <- c('r', col.just)
+      if(length(extracolheads)) extracolheads <- c(heads[2], extracolheads)
     }
     latex.default(cstats, title=title, caption=caption, rowlabel=rowlabel,
                   col.just=col.just, numeric.dollar=FALSE, 
@@ -1670,7 +1682,10 @@ latex.summary.formula.cross <-
       } else names(stats)[length(stats)] <- ylab
       stats <- structure(stats, row.names=rep("",length(stats$N)),
                          class="data.frame")
-      return(latex(stats, title=title, caption=caption, rowlabel=rowlabel, 
+      if(hasArg(col.just)) {
+          return(latex(stats, title=title, caption=caption, rowlabel=rowlabel, ...))
+      }
+      else return(latex(stats, title=title, caption=caption, rowlabel=rowlabel, 
                    col.just=c("l","l",rep("r",length(stats)-2)), ...))
     }
 
