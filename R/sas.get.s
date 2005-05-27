@@ -1,4 +1,4 @@
-## $Id: sas.get.s,v 1.16 2005/01/12 02:24:33 harrelfe Exp $
+## $Id: sas.get.s,v 1.18 2005/05/13 20:37:07 harrelfe Exp $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
 					ifs = character(0), 
@@ -30,7 +30,7 @@ sas.get <- if(under.unix || .R.)
   else
     access(name,4)==0
 
-  fileShow <- if(.R.) function(x) file.show(x) else page(filename=x)
+  fileShow <- if(.R.) function(x) file.show(x) else function(x) page(filename=x)
 
   if(recode) formats <- TRUE
 
@@ -1452,7 +1452,7 @@ sasxport.get <- function(file, force.single=TRUE,
                       st <- as.character(f$START)
                       en <- as.character(f$END)
                       lab <- as.character(f$LABEL)
-                      j <- is.na(st) | is.na(en)
+                      j <- is.na(st) | is.na(en) | st=='' | en==''
                       if(any(j)) {
                         warning('NA in code in FORMAT definition; removed')
                         st <- st[!j]; en <- en[!j]; lab <- lab[!j]

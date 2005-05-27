@@ -1,4 +1,4 @@
-## $Id: Misc.s,v 1.7 2004/11/29 18:02:14 harrelfe Exp $
+## $Id: Misc.s,v 1.8 2005/05/03 16:41:32 dupontct Exp $
 		
 prn <- function(x, txt) {
   calltext <- as.character(sys.call())[2]
@@ -964,7 +964,23 @@ NULL
 }
 
 if(!existsFunction('tempdir')) {
-  tempdir <- function() if(under.unix) '/tmp' else '/windows/temp'
+    tempdir <- function() {
+        if(.R.) {
+            if(under.unix) tmp <- sub("/[^/]*$","", tempfile())
+            else tmp <- sub("\\[^\\]*$","", tempfile())
+        }
+        else {
+            if(under.unix) {
+                tmp <- getenv("S_TMPDIR")
+                if(identical(tmp, "")) {
+                    warning("S_TMPDIR not set, using old Splus startup script?  Will use unsafe S_TMPDIR=/tmp.")
+                    tmp <- "/tmp"
+                }
+            }
+            else tmp <- "/windows/temp" 
+        }
+        tmp
+    }
 }
 
 #xedit <- function(file, header, title, delete.file=FALSE) {
