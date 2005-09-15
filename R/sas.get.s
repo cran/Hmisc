@@ -1,4 +1,4 @@
-## $Id: sas.get.s,v 1.23 2005/09/09 20:20:00 dupontct Exp $
+## $Id: sas.get.s,v 1.26 2006/01/05 16:39:59 dupontct Exp $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
            ifs = character(0), 
@@ -99,12 +99,17 @@ sas.get <- if(under.unix || .R.)
         sys(paste("uncompress ",attr(fe,'which'),'.Z',sep=''))
     }
 
-    cat("%sas_get(", member, " ,", sasout1, " ,", sasout2,
-        " ,", sasout3, " ,", sasout4,
-        ", dates=", dates., ", vars=", varstring, ", ifs=",
-        ifs, ", formats=", as.integer(formats),
-        ", specmiss=", as.integer(special.miss),
-        ");\n", file = sasin, append = TRUE, sep = "")
+    cat("%sas_get(", member, ",\n",
+        "  ", sasout1, ",\n",
+        "  ", sasout2, ",\n",
+        "  ", sasout3, ",\n",
+        "  ", sasout4, ",\n",
+        "  dates=", dates., ",\n",
+        "  vars=",  varstring, ",\n",
+        "  ifs=",   ifs, ",\n",
+        "  formats=", as.integer(formats), "\n,",
+        "  specmiss=", as.integer(special.miss), ");\n",
+        file = sasin, append = TRUE, sep = "")
   } else {
     if(!file.is.dir(library))
       stop(paste(sep = "", "library, \"", library, 
@@ -140,12 +145,17 @@ sas.get <- if(under.unix || .R.)
     ## formats used by this dataset.  It must be present.
     cat("libname library '", format.library, "';\n", file = sasin,
         append = TRUE, sep = "")
-    cat("%sas_get(temp.", member, " ,", sasout1, " ,", sasout2,
-        " ,", sasout3,", ",sasout4,
-        ", dates=", dates., ", vars=", varstring, ", ifs=",
-        ifs, ", formats=",as.integer(formats),
-        ", specmiss=", as.integer(special.miss),
-        ");\n", file = sasin, append = TRUE, sep = "")
+    cat("%sas_get(temp.", member, ",\n",
+        "  ", sasout1, ",\n",
+        "  ", sasout2, ",\n",
+        "  ", sasout3, ",\n",
+        "  ", sasout4, ",\n",
+        "  dates=", dates., ",\n",
+        "  vars=",  varstring, ",\n",
+        "  ifs=",   ifs, ",\n",
+        "  formats=", as.integer(formats), "\n,",
+        "  specmiss=", as.integer(special.miss), ");\n",
+        file = sasin, append = TRUE, sep = "")
   }
   
   status <- sys(paste(sasprog, sasin, "-log", log.file), output=FALSE)
@@ -518,13 +528,17 @@ sas.get <- if(under.unix || .R.)
     ## formats used by this dataset.
     cat("libname library '", format.library, "';\n", file = sasin,
 	append = TRUE, sep = "")
-    cat("%sas_get(temp.", member, " ,", sasout[1], " ,", sasout[2],
-        " ,", sasout[3],", ",sasout[4],
-        ", dates=sas, vars=", varstring, 
-        ", ifs=", ifs, 
-        ", formats=",as.integer(formats),
-        ", specmiss=", as.integer(special.miss),
-        ");\n", file = sasin, append = TRUE, sep = "")
+    cat("%sas_get(temp.", member, ",\n",
+        "  ", sasout[1], ",\n",
+        "  ", sasout[2], ",\n",
+        "  ", sasout[3], ",\n",
+        "  ", sasout[4], ",\n",
+        "  dates=sas\n",
+        "  vars=",  varstring, ",\n",
+        "  ifs=",   ifs, ",\n",
+        "  formats=", as.integer(formats), "\n,",
+        "  specmiss=", as.integer(special.miss), ");\n",
+        file = sasin, append = TRUE, sep = "")
     
     cat('Invoking SAS for Windows.  Click the SAS icon if you want to watch.\n')
     win3(paste(sasprog, sasin, "-log", log.file, "-icon"))
@@ -1304,7 +1318,6 @@ upData <- function(object, ...,
                    force.single=TRUE, lowernames=FALSE,
                    moveUnits=FALSE)
 {
-  no <- names(object)
   n  <- nrow(object)
   if(!length(n)) {
     x <- object[[1]]
@@ -1316,7 +1329,8 @@ upData <- function(object, ...,
   rnames <- row.names(object)
 
   if(lowernames)
-    names(obj) <- casefold(nam)
+    names(object) <- casefold(names(object))
+  no <- names(object)
 
   cat('Input object size:\t',object.size(object),'bytes;\t',
       length(no),'variables\n')
@@ -1928,10 +1942,10 @@ if(.R.) {
 
 csv.get <- function(file, lowernames=FALSE, datevars=NULL,
                     dateformat='%F', fixdates=c('none','year'),
-                    allow=NULL, ...)
+                    comment.char = "", autodates=TRUE, allow=NULL, ...)
 {
   fixdates <- match.arg(fixdates)
-  w <- read.csv(file, check.names=FALSE, ...)
+  w <- read.csv(file, check.names=FALSE, comment.char=comment.char, ...)
   n <- names(w)
   m <- makeNames(n, unique=TRUE, allow=allow)
   if(lowernames)
@@ -1940,7 +1954,18 @@ csv.get <- function(file, lowernames=FALSE, datevars=NULL,
   changed <- any(m != n)
   if(changed)
     names(w) <- m
-  
+
+  if(autodates) {
+    tmp <- w
+    names(tmp) <- NULL
+
+    for(i in 1:length(tmp)) {
+      if(! is.character(tmp[[1]]))
+        next
+
+      
+    }
+  }
   cleanup.import(w,
                  labels=if(changed)n
                         else NULL,
