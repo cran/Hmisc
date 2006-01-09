@@ -77,6 +77,7 @@ ecdf.default <- function(x, what=c('F','1-F','f'),
     s <- group == lev[i]
     x <- X[s]
     wt <- weights[s]
+    xorig <- x
 
     z <- wtd.ecdf(x, wt, type='i/n', normwt=normwt, na.rm=FALSE)
     x <- z$x; y <- z$ecdf
@@ -123,7 +124,7 @@ ecdf.default <- function(x, what=c('F','1-F','f'),
       do.call(switch(datadensity, 
                      rug    ='scat1d', hist='histSpike',
                      density='histSpike'),
-              c(list(x=x,add=TRUE),if(datadensity=='density')list(type='density'), dens.opts))
+              c(list(x=xorig,add=TRUE),if(datadensity=='density')list(type='density'), dens.opts))
     }
   }
 
@@ -480,8 +481,7 @@ ecdf.formula <- function(x, data = sys.frame(sys.parent()),
 
   if(.R.)
     do.call("histogram",
-            c(list(formula=x, data=data,
-                   prepanel=prepanel, panel=panel,
+            c(list(x, data=data, prepanel=prepanel, panel=panel,
                    ylab=ylab, xlab=xlab, fun=fun),
               ## was jyst groups=groups 31aug02
               if(!missing(groups))

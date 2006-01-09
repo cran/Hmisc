@@ -1,4 +1,4 @@
-## $Id: transcan.s,v 1.11 2005/09/15 20:43:51 dupontct Exp $
+## $Id: transcan.s,v 1.13 2005/10/27 17:34:46 dupontct Exp $
 
 transcan <-
   function(x, method=c("canonical","pc"),
@@ -25,8 +25,7 @@ transcan <-
   
   if(version$major < 4 && !.R.)
     approx <- function(x, y, xout, method = "linear", n = 50, rule =
-                       1, f = 0)
-    {
+                       1, f = 0){
       nx <- length(x)
       if(any(is.na(x)) || any(is.na(y)))
         stop("Missing values not allowed")
@@ -124,9 +123,20 @@ transcan <-
     y <- eval(y, sys.parent())
     nact <- attr(y,"na.action")
     d <- dim(y)
-    nam <- if(.R.)var.inner(formula)
-           else attr(terms.inner(formula),'term.labels')
 
+    # Error if user is trying to use a non-allowed formula
+    if(length(attr(y, "terms")) > 2)
+      stop('transcan does not support a left hand side variable in the formula')
+
+
+    nam <- if(.R.)var.inner(attr(y, "terms"))
+           else attr(terms.inner(terms(y)),'term.labels')
+
+    # Error if user has passed an invalid formula
+    if(length(nam) != d[2])
+      stop(paste('Formula', formula,
+                 'does not have a dominant inner variable.'))
+    
     if(!length(asis)) {
       Terms <- terms(formula, specials='I')
       asis <- nam[attr(Terms,'specials')$I]
@@ -1036,7 +1046,7 @@ impute.transcan <-
 
 predict.transcan <- function(object, newdata=NULL, iter.max=50, eps=.01, 
                              curtail=TRUE, type=c("transformed","original"),
-                             inverse, tolInverse, ...)
+                             inverse, tolInverse, check=FALSE, ...)
 {
   type <- match.arg(type)
   
@@ -1048,6 +1058,7 @@ predict.transcan <- function(object, newdata=NULL, iter.max=50, eps=.01,
   ranges <- object$ranges
   scale  <- object$scale
   imp.con<- object$imp.con
+  rhsImp <- object$rhsImp
   trantab<- object$trantab
   categorical <- object$categorical
   formula <- object$formula
@@ -1098,8 +1109,8 @@ predict.transcan <- function(object, newdata=NULL, iter.max=50, eps=.01,
 
   ##only 1 iteration needed if no NAs   (imp.con)
   xt <- newdata
-  nam <- dimnames(object)[[2]]
-  if(ncol(object)!=p)
+  nam <- dimnames(ranges)[[2]]
+  if(ncol(ranges)!=p)
     stop("wrong number of columns in newdata")
 
   if(is.null(dimnames(xt)[[2]]))

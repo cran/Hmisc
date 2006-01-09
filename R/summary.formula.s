@@ -1,4 +1,4 @@
-## $Id: summary.formula.s,v 1.19 2005/09/07 12:46:12 dupontct Exp $
+## $Id: summary.formula.s,v 1.22 2006/01/05 19:57:05 dupontct Exp $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -1483,7 +1483,8 @@ print.summary.formula.reverse <-
           else NULL
 
     if(type[i]==1 || type[i]==3) {
-      cs <- formatCats(stats[[i]], nam, tr, type[i], x$group.freq,
+      cs <- formatCats(stats[[i]], nam, tr, type[i],
+                       if(length(x$group.freq)) x$group.freq else x$n[i],
                        npct, pctdig, exclude1, long, prtest,
                        pdig=pdig, eps=eps)
       nn <- c(nn, rep(NA, nrow(cs)-1))
@@ -1567,9 +1568,9 @@ formatCats <- function(tab, nam, tr, type, group.freq,
   }
 
   denom <- if(type==1) apply(tab, 2, sum)
-           else group.freq ## 17Jan99
+           else group.freq
 
-  pct <- 100*sweep(tab, 2, denom, FUN='/')
+  pct <- 100*(if(ncol(tab) > 1)sweep(tab, 2, denom, FUN='/') else tab/denom)
   cpct <- paste(format(round(pct, pctdig)),
                 if(latex)"\\%"
                 else "%",
@@ -1902,7 +1903,8 @@ latex.summary.formula.reverse <-
       testUsed <- unique(c(testUsed, tr$testname))
 
     if(type[i]==1 || type[i]==3) {
-      cs <- formatCats(stats[[i]], nam, tr, type[i], x$group.freq,
+      cs <- formatCats(stats[[i]], nam, tr, type[i],
+                       if(length(x$group.freq)) x$group.freq else x$n[i],
                        npct, pctdig, exclude1, long, prtest,
                        latex=TRUE, testUsed=testUsed,
                        npct.size=npct.size,
@@ -2685,62 +2687,6 @@ smedian.hilow <- function(x, conf.int=.95, na.rm=TRUE)
   quant <- quantile(x, probs=c(.5,(1-conf.int)/2,(1+conf.int)/2), na.rm=na.rm)
   names(quant) <- c('Median','Lower','Upper')
   quant
-}
-
-						  
-mApply <- function(X, INDEX, FUN=NULL, ..., simplify=TRUE)
-{
-  ## Matrix tapply
-  ## X: matrix with n rows; INDEX: vector or list of vectors of length n
-  ## FUN: function to operate on submatrices of x by INDEX
-  ## ...: arguments to FUN; simplify: see sapply
-  ## Modification of code by Tony Plate <tplate@blackmesacapital.com> 10Oct02
-  ## If FUN returns more than one number, mApply returns a matrix with
-  ## rows corresponding to unique values of INDEX
-
-  nr <- nrow(X)
-  if(!length(nr)) {  ## X not a matrix
-    r <- tapply(X, INDEX, FUN, ..., simplify=simplify)
-    if(is.matrix(r))
-      r <- drop(t(r))
-    else if(simplify && is.list(r))
-      r <- drop(matrix(unlist(r), nrow=length(r),
-                       dimnames=list(names(r),names(r[[1]])), byrow=TRUE))
-  } else {
-    idx.list <- tapply(1:nr, INDEX, c)
-    r <- sapply(idx.list, function(idx,x,fun,...) fun(x[idx,,drop=FALSE],...),
-                x=X, fun=FUN, ..., simplify=simplify)
-    if(simplify) r <- drop(t(r))
-  }
-
-  dn <- dimnames(r)
-  if(length(dn) && !length(dn[[length(dn)]])) {
-    fx <- FUN(X,...)
-    dnl <- if(length(names(fx))) names(fx)
-           else dimnames(fx)[[2]]
-
-    dn[[length(dn)]] <- dnl
-    dimnames(r) <- dn
-  }
-
-  if(simplify && is.list(r) && is.array(r)) {
-    ll <- sapply(r, length)
-    maxl <- max(ll)
-    empty <- (1:length(ll))[ll==0]
-    for(i in empty)
-      r[[i]] <- rep(NA, maxl)
-
-    ## unlist not keep place for NULL entries for nonexistent categories
-    first.not.empty <- ((1:length(ll))[ll > 0])[1]
-    nam <- names(r[[first.not.empty]])
-    dr <- dim(r)
-  
-    r <- aperm(array(unlist(r), dim=c(maxl,dr),
-                     dimnames=c(list(nam),dimnames(r))),
-               c(1+seq(length(dr)), 1))
-  }
-
-  r
 }
 
 

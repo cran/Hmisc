@@ -1,4 +1,4 @@
-## $Id: AFirst.lib.s,v 1.5 2005/07/12 22:01:34 dupontct Exp $
+## $Id: AFirst.lib.s,v 1.6 2005/09/26 15:44:17 dupontct Exp $
 under.unix <- !(version$os=='Microsoft Windows' ||
                 version$os=='Win32' || version$os=='mingw32')
 
@@ -7,8 +7,9 @@ under.unix <- !(version$os=='Microsoft Windows' ||
 
 .noGenenerics <- TRUE  # faster loading as new methods not used
 
-if(!exists('existsFunction')) existsFunction <- function(...)
-  exists(..., mode='function')
+if(!exists('existsFunction')) {
+  existsFunction <- function(...) exists(..., mode='function')
+}
 
 .First.lib <- function(lib, pkg, ...)
 {
