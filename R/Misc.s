@@ -1,4 +1,4 @@
-## $Id: Misc.s,v 1.23 2006/10/02 18:46:50 dupontct Exp $
+## $Id: Misc.s,v 1.26 2006/10/17 04:22:11 harrelfe Exp $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -1596,16 +1596,15 @@ Load <- function(object)
   load(file, .GlobalEnv)
 }
 
-Save <- function(object)
+Save <- function(object, name=deparse(substitute(object)))
 {
-  .ObjectName <- deparse(substitute(object))
   path <- .Options$LoadPath
   if(length(path))
     path <- paste(path, '/', sep='')
   
-  .FileName <- paste(path, .ObjectName, '.rda', sep='')
-  assign(.ObjectName, object)
-  eval(parse(text=paste('save(', .ObjectName, ', file="',
+  .FileName <- paste(path, name, '.rda', sep='')
+  assign(name, object)
+  eval(parse(text=paste('save(', name, ', file="',
                         .FileName, '", compress=TRUE)', sep='')))
 }
 
@@ -1623,4 +1622,42 @@ getZip <- function(url, password=NULL) {
   cmd <- if(length(password))
     paste('unzip -p -P', password) else 'unzip -p'
   pipe(paste(cmd, f))
+}
+
+getLatestSource <- function(x=NULL, package='Hmisc',
+                            recent=NULL, avail=FALSE) {
+  url <- paste('http://biostat.mc.vanderbilt.edu/cgi-bin/cvsweb.cgi',
+               package, 'R/', sep='/')
+  if(length(recent)) url <- paste(url, '?sortby=date#dirlist', sep='')
+  
+  w <- scan(url, what='',quiet=TRUE)
+  i <- grep('\\.s\\?rev=',w)
+  w <- w[i]
+  
+  files <- sub('href=\"\(.*\)\\?.*','\\1', w)
+  files <- sub('\\.s$','',files)
+  ver <- if(length(recent)) sub('^.*rev=\(.*\);.*','\\1',w) else
+   sub('\"$','',sub('^.*rev=','',w))
+
+  if(avail) return(data.frame(file=files, version=ver))
+
+  if(length(recent)) x <- files[1:recent]
+  if(length(x)==1 && x=='all') x <- files
+
+  for(fun in x) {
+    i <- which(files==fun)
+    if(!length(i)) stop(paste('no file ', fun,' in ',package, sep=''))
+    cat('Fetching', fun, 'version', ver[i],'\n')
+    url <- paste('http://biostat.mc.vanderbilt.edu/cgi-bin/cvsweb.cgi/~checkout~/',package,'/R/',fun,'.s?rev=',ver[i],';content-type=text%2Fplain', sep='')
+    source(url)
+  }
+}
+  
+clowess <- function(x, y=NULL, iter=3, ...) {
+  ## to get around bug in lowess with occasional wild values with iter>0
+  r <- range(if(length(y)) y else x$y)
+  f <- lowess(x, y, iter=iter, ...)
+  if(iter != 0 && any(f$y < r[1] | f$y > r[2]))
+    f <- lowess(x, y, iter=0)
+  f
 }

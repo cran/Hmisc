@@ -1,4 +1,4 @@
-## $Id: transcan.s,v 1.14 2006/10/02 15:46:17 dupontct Exp $
+## $Id: transcan.s,v 1.15 2006/10/23 18:15:45 dupontct Exp $
 
 transcan <-
   function(x, method=c("canonical","pc"),
@@ -96,7 +96,7 @@ transcan <-
     if(.R.)
       require('nnet')
     else if(!existsFunction('multinom'))
-      library(nnet)
+      require(nnet)
   }
 
   if(.R. & missing(data))

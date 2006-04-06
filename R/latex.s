@@ -875,7 +875,7 @@ latex.default <-
         linecnt <- linecnt+1
       }  ## End of for loop that writes the object.
 
-      if(length(n.group) > j)
+      if(length(n.rgroup) > j)
         cat(midrule, "\n", sep = "", file=file, append=file!='')
       else
         cat(bottomrule, "\n", sep="",file=file, append=file!='')
@@ -1012,12 +1012,12 @@ latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
 {
   text <- object
   
-  inn <- c("|",  "%",  "<=",     "<",  ">=",     ">",  "_", "\\243",
+  inn <- c("|",  "%",  "#", "<=",     "<",  ">=",     ">",  "_", "\\243",
            inn, 
            if(pb)
              c("[","(","]",")"))
 
-  out <- c("$|$","\\%","$\\leq$","$<$","$\\geq$","$>$","\\_", "\\pounds",
+  out <- c("$|$","\\%","\\#", "$\\leq$","$<$","$\\geq$","$>$","\\_", "\\pounds",
            out, 
            if(pb)
              c("$\\left[","$\\left(","\\right]$","\\right)$"))
