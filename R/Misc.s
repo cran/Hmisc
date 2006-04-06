@@ -1,5 +1,15 @@
-## $Id: Misc.s,v 1.11 2005/07/12 22:01:34 dupontct Exp $
+## $Id: Misc.s,v 1.18 2006/04/14 16:33:17 dupontct Exp $
 		
+if(!exists("NROW", mode='function')) {
+  NROW <- function(x)
+    if (is.array(x) || is.data.frame(x)) nrow(x) else length(x)
+}
+
+if(!exists("NCOL", mode='function')) {
+  NCOL <- function(x)
+    if (is.array(x) && length(dim(x)) > 1 || is.data.frame(x)) ncol(x) else as.integer(1)
+}
+
 prn <- function(x, txt)
 {
   calltext <- as.character(sys.call())[2]
@@ -293,33 +303,29 @@ Lag <- function(x, shift=1)
 {
   ## Lags vector x shift observations, padding with NAs or blank strings
   ## on the left, preserving attributes of x
-  ## factor vectors are converted to character strings
-  if(is.factor(x)) {
-    isf <- TRUE
-    atr <- attributes(x)
-    atr$class <- if(length(atr$class)==1)
-                   NULL
-                 else
-                   atr$class[atr$class!='factor']
-    
-    atr$levels <- NULL
-    x <- as.character(x)
+
+  # check to see if shift == 0
+  if(shift == 0)
+    return(x)
+
+  # Create base vector use character to generate "" for mode "character"
+  # Coerce base vector to be type of x
+  xLen <- length(x)
+  ret <- as.vector(character(xLen), mode=storage.mode(x))
+  
+  # set resp attributes equal to x attributes
+  attrib <- attributes(x)
+
+  if(!is.null(attrib$label))
+    atr$label <- paste(attrib$label, 'lagged', shift, 'observations')
+
+  if(xLen > shift){
+    retrange = 1:shift
+    ret[-retrange] <- x[1:(xLen - shift)]
   }
-  else
-    isf <- FALSE
   
-  n <- length(x)
-  x <- x[1:(n-shift)]
-  if(!isf) atr <- attributes(x)
-  if(length(atr$label)) atr$label <- 
-    paste(atr$label,'lagged',shift,'observations')
-  x <- c(rep(
-             if(is.character(x)) ''
-             else NA,
-             shift), oldUnclass(x))
-  
-  attributes(x) <- atr
-  x
+  attributes(ret) <- attrib
+  return(ret)
 }
 
 xySortNoDupNoNA <- function(x, y)
@@ -1592,4 +1598,20 @@ Save <- function(object)
   assign(.ObjectName, object)
   eval(parse(text=paste('save(', .ObjectName, ', file="',
                         .FileName, '", compress=TRUE)', sep='')))
+}
+
+getZip <- function(url, password=NULL) {
+  ## Allows downloading and reading a .zip file containing one file
+  ## File may be password protected.  Password will be requested unless given.
+  ## Example: read.csv(getZip('http://biostat.mc.vanderbilt.edu/twiki/pub/Sandbox/WebHome/z.zip'))
+  ## Password is 'foo'
+  ## url may also be a local file
+  ## Note: to make password-protected zip file z.zip, do zip -e z myfile
+  if(toupper(substring(url, 1, 7)) == 'HTTP://') {
+    f <- tempfile()
+    download.file(url, f)
+  } else f <- url
+  cmd <- if(length(password))
+    paste('unzip -p -P', password) else 'unzip -p'
+  pipe(paste(cmd, f))
 }
