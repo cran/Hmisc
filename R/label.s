@@ -3,8 +3,10 @@
 ##  x
 ##}
 
-label <- function(x, units=FALSE, plot=FALSE, default=NULL,
-                  grid=FALSE)
+label <- function(x, ...) UseMethod("label")
+
+label.default <- function(x, units=FALSE, plot=FALSE, default=NULL,
+                  grid=FALSE, ...)
 {
   at <- attributes(x)
   lab <- at$label
@@ -83,32 +85,32 @@ plotmathTranslate <- function(x)
   x
 }
 
+"label<-" <- function(x, value) UseMethod("label<-")
 
 ##From Bill Dunlap, StatSci  15Mar95:
-"label<-" <- if(!.SV4.) function(x, value)
-{
-  structure(x, label=value,
-            class=c('labelled',
-                    attr(x,'class')[attr(x,'class')!='labelled']))
-} else function(x, value)
-{    # 1Nov00 for Splus 5.x, 6.x
-  ##  oldClass(x) <- unique(c('labelled', oldClass(x),
-  ##                          if(is.matrix(x))'matrix'))
-  attr(x,'label') <- value
-  x
+if(!.SV4.) {
+  "label<-.default" <- function(x, value) {
+    structure(x, label=value,
+              class=c('labelled',
+                attr(x,'class')[attr(x,'class')!='labelled']))
+  }
+} else {
+  "label<-.default" <- function(x, value) {
+    ## 1Nov00 for Splus 5.x, 6.x
+    ##  oldClass(x) <- unique(c('labelled', oldClass(x),
+    ##                          if(is.matrix(x))'matrix'))
+    attr(x,'label') <- value
+    x
+  }
 }
 
 if(!.SV4.) "[.labelled"<- function(x, ...)
 {
-  atr <- attributes(x)
+  tags <- valueTags(x)
   ##lab <- attr(x, "label")  19sep02
   x <- NextMethod("[")
-  attr(x, "label") <- atr$label
-  if(length(atr$units))
-    attr(x,'units') <- atr$units
-  
-  if(!inherits(x,'labelled'))
-    attr(x,'class') <- c("labelled", attr(x,'class'))
+
+  valueTags(x) <- tags
   
   x
 }

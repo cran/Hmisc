@@ -1,4 +1,4 @@
-## $Id: summary.formula.s,v 1.29 2006/04/17 16:46:45 dupontct Exp $
+## $Id: summary.formula.s,v 1.32 2006/10/02 15:46:17 dupontct Exp $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -34,6 +34,8 @@ summary.formula <-
                   plotmathstat='chi[df]^2')
            },
            ordTest=function(group, x) {
+             requirePackage('Design')
+
              f <- lrm(x ~ group)$stats
              list(P=stats['P'], stat=stats['Model L.R.'], df=stats['d.f.'],
                   testname='Proportional odds likelihood ratio',
@@ -1168,7 +1170,7 @@ plot.summary.formula.reverse <-
                           else 16,
                           93)[j],
                     dotfont=dotfont[1],
-                    add=j > 1)
+                    add=j > 1, ...)
         }
       } else if(conType=='bp')
         bpplt(st, xlab=nam, cex.points=cex.means)
@@ -1386,12 +1388,12 @@ dotchart2 <-
         substring(labng,nchar(labng),nchar(labng))==']'
       yposng <- ypos[nongrp]
       s <- !bracket
-      if(any(s))
+      if(!is.na(any(s)) && any(s))
         mtextsrt(paste(labng[s],''), 2, 0, at=yposng[s],
                  srt=0, adj=1, cex=cex.labels)
 
       s <- bracket
-      if(any(s)) {
+      if(!is.na(any(s)) && any(s)) {
         if(.R.)
           text(rep(par('usr')[1],sum(s)),
                yposng[s], labng[s], adj=1,
