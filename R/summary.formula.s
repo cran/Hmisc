@@ -1,4 +1,4 @@
-## $Id: summary.formula.s,v 1.22 2006/01/05 19:57:05 dupontct Exp $
+## $Id: summary.formula.s,v 1.29 2006/04/17 16:46:45 dupontct Exp $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -8,11 +8,10 @@ summary.formula <-
            continuous=10, na.rm=TRUE, na.include=method!='reverse',
            g=4, 
            quant=c(.025,.05,.125,.25,.375,.5,.625,.75,.875,.95,.975),
-           nmin=if(method=='reverse') 15
+           nmin=if(method=='reverse') 100
                 else 0,
            test=FALSE,
-           conTest=function(group,x)
-           {
+           conTest=function(group,x) {
              st <- spearman2(group,x)
              list(P=st['P'], stat=st['F'],
                   df=st[c('df1','df2')],
@@ -21,8 +20,7 @@ summary.formula <-
                   statname='F', latexstat='F_{df}',
                   plotmathstat='F[df]')
            },
-           catTest=function(tab)
-           {
+           catTest=function(tab) {
              st <-
                if(!is.matrix(tab) || nrow(tab) < 2 | ncol(tab) < 2)
                  list(p.value=NA, statistic=NA, parameter=NA)
@@ -33,6 +31,13 @@ summary.formula <-
                   df=st$parameter,
                   testname='Pearson', statname='Chi-square',
                   latexstat='\\chi^{2}_{df}',
+                  plotmathstat='chi[df]^2')
+           },
+           ordTest=function(group, x) {
+             f <- lrm(x ~ group)$stats
+             list(P=stats['P'], stat=stats['Model L.R.'], df=stats['d.f.'],
+                  testname='Proportional odds likelihood ratio',
+                  statname='Chi-square',latexstat='\\chi^{2}_{df}',
                   plotmathstat='chi[df]^2')
            },
            ...)
@@ -369,8 +374,12 @@ summary.formula <-
           g <- group[s, drop=TRUE]
           if(is.factor(w)) {
             tab <- table(w, g)
-            if(test)
-              testresults[[i]] <- catTest(tab)
+            if(test) {
+              if(is.ordered(w))
+                testresults[[i]] <- ordTest(g, w)
+              else
+                testresults[[i]] <- catTest(tab)
+            }
 
             if(nrow(tab)==1) {  # 7sep02
               b <- casefold(dimnames(tab)[[1]],upper=TRUE)
@@ -807,10 +816,10 @@ latex.summary.formula.response <- function(object,
 
 
 plot.summary.formula.response <-
-  function(x, which=1,
-           vnames=c('labels','names'), xlim, xlab,
-           pch=c(16,1,2,17,15,3,4,5,0), superposeStrata=TRUE,
-           dotfont=1, add=FALSE, 
+  function(x, which = 1,
+           vnames = c('labels', 'names'), xlim, xlab,
+           pch = c(16, 1, 2, 17, 15, 3, 4, 5, 0), superposeStrata = TRUE,
+           dotfont=1, add=FALSE, reset.par=TRUE,
            main, subtitles=TRUE, ...)
 {
   stats <- x
@@ -849,7 +858,8 @@ plot.summary.formula.response <-
   opar <- if(.R.) par(no.readonly=TRUE)
           else par()
 
-  on.exit(par(opar))
+  if(reset.par)
+    on.exit(par(opar))
 
   if(superposeStrata) Ns <- apply(stats[,nstat*((1:ns)-1)+1],1,sum)
   
@@ -901,8 +911,8 @@ plot.summary.formula.response <-
 
       rlegend(x, y, legend=lev, pch=pch, ...)
       invisible()
-    } else function(x=NULL, y=NULL, lev, pch, ...)
-    {
+    }
+    else function(x=NULL, y=NULL, lev, pch, ...) {
       if(length(x)) {
         if(is.list(x)) {
           y <- x$y;
@@ -914,7 +924,7 @@ plot.summary.formula.response <-
             transparent=TRUE, ...)
       } else key(text=list(lev), 
                  points=list(pch=pch),transparent=TRUE, ...)
-
+      
       invisible()
     }
 
@@ -928,15 +938,16 @@ plot.summary.formula.response <-
 
 
 plot.summary.formula.reverse <-
-  function(x, 
-           vnames=c('labels','names'), what=c('proportion','%'),
-           which=c('both','categorical','continuous'),
-           xlim=if(what=='proportion') c(0,1) else c(0,100), 
-           xlab=if(what=='proportion')'Proportion' else 'Percentage', 
-           pch=c(if(FALSE)183 else 16,1,2,17,15,3,4,5,0), exclude1=TRUE,
-           dotfont=1, main, subtitles=TRUE,
-           prtest=c('P','stat','df','name'), pdig=3, eps=.001,
-           conType=c('dot','bp','raw'), cex.means=.5, ...)
+  function(x, vnames = c('labels', 'names'), what = c('proportion','%'),
+           which = c('both', 'categorical', 'continuous'),
+           xlim = if(what == 'proportion') c(0,1)
+                  else c(0,100), 
+           xlab = if(what == 'proportion') 'Proportion'
+                  else 'Percentage', 
+           pch = c(16, 1, 2, 17, 15, 3, 4, 5, 0), exclude1 = TRUE,
+           dotfont = 1, main, subtitles = TRUE,
+           prtest = c('P', 'stat', 'df', 'name'), pdig = 3, eps = 0.001,
+           conType = c('dot', 'bp', 'raw'), cex.means = 0.5, ...)
 {
   obj <- x
   vnames <- match.arg(vnames)
@@ -1045,8 +1056,8 @@ plot.summary.formula.reverse <-
       zi <- z[,i]
       if(any(prtest == 'none') || i > 1)
         dotchart2(zi, groups=vnd, xlab=xlab, xlim=xlim, 
-                  sort=FALSE, pch=pch[i], 
-                  dotfont=dotfont[i], 
+                  sort=FALSE, pch=pch[i],
+                  dotfont=dotfont[i],
                   add=i>1, ...)
       else
         dotchart2(zi, groups=vnd, auxdata=ftstats,
@@ -1431,14 +1442,14 @@ dotchart2 <-
 
 
 print.summary.formula.reverse <- 
-  function(x, digits, prn=!all(n==N), pctdig=0, 
+  function(x, digits, prn=any(n != N), pctdig=0, 
            npct=c('numerator','both','denominator','none'),
            exclude1=TRUE, vnames=c("labels","names"), prUnits=TRUE,
            sep="/", abbreviate.dimnames=FALSE, 
            prefix.width=max(nchar(lab)), 
            min.colwidth, formatArgs=NULL,
            prtest=c('P','stat','df','name'), prmsd=FALSE, long=FALSE,
-           pdig=3, eps=.001, ...)
+           pdig=3, eps=0.001, ...)
 {
   npct   <- match.arg(npct)
   vnames <- match.arg(vnames)
@@ -1828,7 +1839,7 @@ formatTestStats <- function(tr, multchoice=FALSE,
 
 latex.summary.formula.reverse <- 
   function(object, title=first.word(deparse(substitute(object))),
-           digits, prn=!all(n==N), pctdig=0, 
+           digits, prn = any(n!=N), pctdig=0, 
            npct=c('numerator','both','denominator','none'),
            npct.size='scriptsize', Nsize='scriptsize',
            exclude1=TRUE,  vnames=c("labels","names"), prUnits=TRUE,
@@ -2235,16 +2246,27 @@ latex.summary.formula.cross <-
 ##Saves label attributute and defaults shortlabel to T
 stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
 {
-  words <- as.character((match.call())[-1])
+  words <- as.list((match.call())[-1])
   if(!missing(na.group))
-    words <- words[-1]
+    words$na.group <- NULL
+
+  if(!missing(shortlabel))
+    words$shortlabel <- NULL
 
   allf <- list(...)
-  xlab <- attr(allf[[1]],'label')  #FEH 2Jun95
+  
   if(length(allf) == 1 && is.list(ttt <- oldUnclass(allf[[1]]))) {
     allf <- ttt
     words <- names(ttt)
   }
+  
+  xlab <- sapply(allf, function(x){lab <- valueLabel(x); if(is.null(lab)) NA else lab})
+  xname <- sapply(allf, function(x){name <- valueName(x); if(is.null(name)) NA else name})
+
+  xname <- ifelse(is.na(xname), words, xname)
+  xlab <- paste(ifelse(is.na(xlab), xname, xlab), collapse=' and ')
+  
+  xname <- paste(xname, collapse = ' and ')
 
   nterms <- length(allf)
   what <- allf[[1]]
@@ -2287,10 +2309,14 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
   levs <- match(levs, ulevs)
   labs <- labs[ulevs]
   levels(levs) <- labs
-  attr(levs,'class') <- "factor"
-  if(length(xlab))
-    label(levs) <- xlab   #FEH 2Jun95
+  oldClass(levs) <- "factor"
 
+  if(length(xlab))
+    valueLabel(levs) <- xlab   #FEH 2Jun95
+
+  if(length(xname))
+    valueName(levs) <- xname
+  
   levs
 }
 
@@ -2583,17 +2609,10 @@ if(FALSE) {
 }
 
 
-as.character.mChoice <- function(x)
+as.character.mChoice <- function(x, sep=",", ...)
 {
   lev <- dimnames(x)[[2]]
-  d <- dim(x)
-  w <- rep('',d[1])
-  for(j in 1:d[2]) {
-    w <- paste(w,ifelse(w!='' & x[,j],',',''),
-               ifelse(x[,j],lev[j],''),sep='')
-  }
-
-  w
+  apply(x, 1, FUN=function(x) paste(lev[x], collapse=sep))
 }
 
 
