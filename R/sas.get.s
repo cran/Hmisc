@@ -1,4 +1,4 @@
-## $Id: sas.get.s,v 1.26 2006/01/05 16:39:59 dupontct Exp $
+## $Id: sas.get.s,v 1.33 2006/10/02 15:46:17 dupontct Exp $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
            ifs = character(0), 
@@ -23,8 +23,14 @@ sas.get <- if(under.unix || .R.)
     w
   }
 
-  file.is.dir <- if(.R.) function(name) !is.na(file.info(name)$isdir)
-                 else function(name) is.dir(name)
+  file.is.dir <- if(.R.) {
+    function(name) {
+      isdir <- file.info(name)$isdir
+      isdir && !is.na(isdir)
+    }
+  } else {
+    function(name) is.dir(name)
+  }
 
   file.is.readable <- function(name)
     if(.R.)
@@ -113,7 +119,7 @@ sas.get <- if(under.unix || .R.)
   } else {
     if(!file.is.dir(library))
       stop(paste(sep = "", "library, \"", library, 
-                 "\", is not a Unix directory"))
+                 "\", is not a directory"))
     
     unix.file <- paste(library, "/", member, ".", sasds.suffix,
                        sep='')
@@ -158,10 +164,10 @@ sas.get <- if(under.unix || .R.)
         file = sasin, append = TRUE, sep = "")
   }
   
-  status <- sys(paste(sasprog, sasin, "-log", log.file), output=FALSE)
+  status <- sys(paste(shQuote(sasprog), shQuote(sasin), "-log", shQuote(log.file)), output=FALSE)
   ## 24nov03 added output=F
   if(status != 0) {
-    if(!quiet) fileShow(log.file)  ## 4oct03
+    if(!quiet && fexists(log.file)) fileShow(log.file)  ## 4oct03
     stop(paste("SAS job failed with status", status))
   }
 										#
@@ -466,7 +472,7 @@ sas.get <- if(under.unix || .R.)
     no.format <- all(access(paste(format.library,
                                   c('formats.sc2','formats.sct',
                                     'formats.sct01','formats.sas7bcat'),
-                                  sep='/'),4) < 0)
+                                  sep='//'),4) < 0)
     if(no.format) {
       if((!missing(formats) && formats) || (!missing(recode) && recode))
         warning(paste(paste(format.library, 
@@ -527,7 +533,7 @@ sas.get <- if(under.unix || .R.)
     ## format.library should contain formats.sct containing user defined
     ## formats used by this dataset.
     cat("libname library '", format.library, "';\n", file = sasin,
-	append = TRUE, sep = "")
+        append = TRUE, sep = "")
     cat("%sas_get(temp.", member, ",\n",
         "  ", sasout[1], ",\n",
         "  ", sasout[2], ",\n",
@@ -541,7 +547,8 @@ sas.get <- if(under.unix || .R.)
         file = sasin, append = TRUE, sep = "")
     
     cat('Invoking SAS for Windows.  Click the SAS icon if you want to watch.\n')
-    win3(paste(sasprog, sasin, "-log", log.file, "-icon"))
+    win3(paste(paste('"', sasprog, '"', sep=''), paste('"',sasin,'"', sep=''), "-log",
+               paste('"',log.file,'"',sep=''), "-icon"))
     if(access(log.file) < 0) 
       stop(paste('SAS did not create log file',log.file,
                  '\nCheck that sas.exe is in your path.'))
@@ -944,7 +951,7 @@ code.levels <- function(object) {
 }
 
 
-as.data.frame.special.miss <- function(x, row.names = NULL, optional = FALSE)
+as.data.frame.special.miss <- function(x, row.names = NULL, optional = FALSE, ...)
 {
   nrows <- length(x)
   if(is.null(row.names)) {
@@ -1645,7 +1652,6 @@ if(.R.) {
 
   NULL
 }
-
 
 if(.R.) {               
   sasxport.get <- function(file, force.single=TRUE,

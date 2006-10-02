@@ -1,4 +1,4 @@
-## $Id: Misc.s,v 1.18 2006/04/14 16:33:17 dupontct Exp $
+## $Id: Misc.s,v 1.23 2006/10/02 18:46:50 dupontct Exp $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -217,9 +217,11 @@ trellis.strip.blank <- function()
 }
 
 lm.fit.qr.bare <- function(x, y, 
-                           tolerance = if(.R.)1e-7 else .Machine$single.eps, 
+                           tolerance = NULL,
                            intercept=TRUE, xpxi=FALSE)
 {
+  if(!length(tolerance)) tolerance <- if(.R.)1e-7 else .Machine$single.eps
+
   if(intercept)
     x <- cbind(1,x)
   if(storage.mode(x) != "double")
@@ -1225,18 +1227,19 @@ xless <-
 {
   ## Usage: xless(x) - uses print method for x, puts in persistent window with
   ## xless using name of x as title (unless title= is specified)
-  file <- tempfile()
-  sink(file)
-  print(x, ...)
-  sink()
-  cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
+  if(under.unix) {
+	file <- tempfile()
+  	sink(file)
+  	print(x, ...)
+  	sink()
+  	cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
                file,'" &',sep='')
-  if(.R.)
-    system(cmd)
-  else
-    sys(cmd)
-  
-  invisible()
+  	if(.R.)
+    	system(cmd)
+  	else
+  		sys(cmd)
+  } else page(x, method='print', title=title, ...)
+invisible()
 }
 
 gView <- function(x, ...,
@@ -1371,6 +1374,12 @@ if(!.R.) {
     invisible()
   }
   NULL
+}
+
+requirePackage <- function(package, ...) {
+  if(!require(package, ...)) {
+    stop('This function requires the', as.character(package), 'package')
+  }
 }
 
 if(.R.) {

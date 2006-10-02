@@ -1,4 +1,4 @@
-## $Id: transcan.s,v 1.13 2005/10/27 17:34:46 dupontct Exp $
+## $Id: transcan.s,v 1.14 2006/10/02 15:46:17 dupontct Exp $
 
 transcan <-
   function(x, method=c("canonical","pc"),
@@ -671,7 +671,7 @@ transcan <-
         v1 <- datad[[i]]; v2 <- datad[[i+1]]
         n1 <- namdd[i]; n2 <- namdd[i+1]
         if(imputed.actual=='ecdf' && is.numeric(datad[[i]]))
-          ecdf(c(v1,v2), xlab=n1,
+          Ecdf(c(v1,v2), xlab=n1,
                group=c(rep('actual',length(v1)),
                        rep('imputed',length(v2))))
         else {
