@@ -1,4 +1,4 @@
-## $Id: summary.formula.s,v 1.32 2006/10/02 15:46:17 dupontct Exp $
+## $Id: summary.formula.s,v 1.35 2006/10/15 17:08:15 harrelfe Exp $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -2497,11 +2497,10 @@ summarize <- function(X, by, FUN, ...,
   ## lists in S+2000
   ##  }
 
-  r <- mApply(X, byc, FUN, ...)
-  
+  r <- mApply(X, byc, FUN, ..., keepmatrix=nc>1)
+  rdimn <- dimnames(r)[[1]]
   if(.R.) {   # someday can use unpaste defined in Misc.s
-    ans <- strsplit(if(nc==1)names(r)
-                    else dimnames(r)[[1]],'\\|')
+    ans <- strsplit(if(nc==1) names(r) else rdimn,'\\|')
 
     ## strsplit returns list "transpose" of unpaste
     bb <- matrix(unlist(ans), nrow=nby)
@@ -2509,8 +2508,7 @@ summarize <- function(X, by, FUN, ...,
     for(jj in 1:nby)
       ans[[jj]] <- bb[jj,]
   } else {
-    ans <- if(nc==1)names(r)
-           else dimnames(r)[[1]]  # was [[2]] 8jan03
+    ans <- if(nc==1)names(r) else rdimn
     
     if(nby==1)
       ans <- list(ans)
@@ -2528,7 +2526,7 @@ summarize <- function(X, by, FUN, ...,
   
   if(length(stat.name)==1)
     snames[1] <- stat.name
-  else
+  else if(length(stat.name))
     snames <- stat.name
   
   oldopt <- options(warn=-1)
