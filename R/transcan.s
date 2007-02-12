@@ -1,4 +1,4 @@
-## $Id: transcan.s,v 1.15 2006/10/23 18:15:45 dupontct Exp $
+## $Id: transcan.s 346 2006-10-23 18:15:45Z dupontct $
 
 transcan <-
   function(x, method=c("canonical","pc"),

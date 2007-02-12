@@ -1,4 +1,4 @@
-## $Id: AFirst.lib.s,v 1.6 2005/09/26 15:44:17 dupontct Exp $
+## $Id: AFirst.lib.s 225 2005-09-26 15:44:17Z dupontct $
 under.unix <- !(version$os=='Microsoft Windows' ||
                 version$os=='Win32' || version$os=='mingw32')
 

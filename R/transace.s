@@ -1,4 +1,4 @@
-# $Id: transace.s,v 1.5 2006/09/26 23:17:04 harrelfe Exp $
+# $Id: transace.s 350 2006-10-29 14:39:00Z harrelfe $
 transace <- function(x, monotonic=NULL, categorical=NULL, binary=NULL,
                      pl=TRUE)
 {
@@ -188,7 +188,7 @@ areg.boot <- function(x, data, weights, subset, na.action=na.delete,
 
   nfail <- 0
   for(b in 1:B) {
-    cat(b,'')
+    cat(b,'\r')
     s <- sample(n, n, rep = TRUE)
     g <- if(method=='areg')
       areg(x[s,,drop=FALSE], y[s], xtype=xtype, ytype=ytype, nk=nk,

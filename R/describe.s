@@ -1,4 +1,4 @@
-## $Id: describe.s,v 1.11 2005/07/12 22:01:34 dupontct Exp $
+## $Id: describe.s 208 2005-07-12 22:01:34Z dupontct $
 describe <- function(x, ...) UseMethod("describe")  #13Mar99
 
 
