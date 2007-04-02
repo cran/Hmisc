@@ -1,4 +1,4 @@
-# $Id: cut2.s 329 2006-10-14 22:29:33Z harrelfe $
+# $Id: cut2.s 468 2007-03-29 20:47:41Z dupontct $
 ## Function like cut but left endpoints are inclusive and labels are of
 ## the form [lower, upper), except that last interval is [lower,upper].
 ## F. Harrell  3 Dec 90, modified 7 Mar 92, mod 30May95 (more efficient digits)
@@ -103,7 +103,7 @@ cut2 <- function(x, cuts, m=150, g, levels.mean=FALSE, digits, minmax=TRUE,
     l <- length(cuts)
     k2 <- cuts-min.dif
     k2[l] <- cuts[l]
-    y <- if(version$major < 5) cut(x, k2) else oldCut(x, k2)
+    y <- cut(x, k2)
     
     if(!levels.mean) {
       brack <- rep(")",l-1)
@@ -115,10 +115,7 @@ cut2 <- function(x, cuts, m=150, g, levels.mean=FALSE, digits, minmax=TRUE,
                     brack,sep="")   
     
       if(oneval) {
-        nu <- table(if(version$major < 5)
-                      cut(x.unique,k2)
-                    else
-                      oldCut(x.unique,k2))
+        nu <- table(cut(x.unique,k2))
         
         if(length(nu)!=length(levels(y)))
           stop('program logic error')

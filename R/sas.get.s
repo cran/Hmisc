@@ -1,4 +1,4 @@
-## $Id: sas.get.s 346 2006-10-23 18:15:45Z dupontct $
+## $Id: sas.get.s 468 2007-03-29 20:47:41Z dupontct $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
            ifs = character(0), 
@@ -802,8 +802,6 @@ importConvertDateTime <-
              z <- as.POSIXct(format(z, tz='GMT'), tz='')
              structure(z, class=c('timePOSIXt','POSIXt','POSIXct'))},
            datetime = {
-             require(chron) ||
-             stop('you must install chron package to handle date-time variables')
              chron((x - adjdays*86400)/86400,
                    out.format=c(dates='day mon year', times='h:m:s'))})
   } else if(.SV4.) 

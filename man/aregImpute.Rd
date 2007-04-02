@@ -17,47 +17,62 @@ process of drawing predicted values from a full Bayesian predictive
 distribution.  Different bootstrap resamples are used for each of the
 multiple imputations, i.e., for the \code{i}th imputation of a sometimes
 missing variable, \code{i=1,2,\dots n.impute}, a flexible additive
-model is fitted on a sample with replacement
-from the original data and this model is used to predict all of the
-original missing and non-missing values for the target variable.
+model is fitted on a sample with replacement from the original data and
+this model is used to predict all of the original missing and
+non-missing values for the target variable.
 
-\code{areg} is used to fit the imputation models.  Unless the identity
-transformation is specified or \code{nk} is set to zero, \code{areg}
+\code{areg} is used to fit the imputation models.  By default, linearity
+is assumed for target variables (variables being imputed) and
+\code{nk=3} knots are assumed for continuous predictors transformed
+using restricted cubic splines.  If \code{nk} is three or greater and
+\code{tlinear} is set to \code{FALSE}, \code{areg}
 simultaneously find transformations of the target variable and of all of
 the predictors, to get a good fit assuming additivity, maximizing
 \eqn{R^2}, using the same canonical correlation method as
-\code{transcan}.  When a categorical variable is being predicted, this
-is Fisher's optimum scoring method.  For continuous variables.  The
-default transformation for continuous variables is a restricted cubic
-spline function unless \code{nk=0}.  allows nonmonotonic transformations
-of target variables.
+\code{transcan}.  Flexible transformations may be overridden for
+specific variables by specifying the identity transformation for them.
+When a categorical variable is being predicted, the flexible
+transformation is Fisher's optimum scoring method.  Nonlinear transformations for continuous variables may be nonmonotonic.  If
+\code{nk} is a vector, \code{areg}'s bootstrap and \code{crossval=10}
+options will be used to help find the optimum validating value of
+\code{nk} over values of that vector, at the last imputation iteration.
+For the imputations, the minimum value of \code{nk} is used.
 
-Instead of taking random draws from fitted imputation models using
-random residuals as is done by \code{transcan}, \code{aregImpute} uses
-predictive mean matching with optional weighted probability sampling of
-donors rather than using only the closest match.  Predictive mean
-matching works for binary, categorical, and continuous variables without
-the need for iterative maximum likelihood fitting for binary and
-categorical variables, and without the need for computing residuals or
-for curtailing imputed values to be in the range of actual data.
-Predictive mean matching is especially attractive when the variable
-being imputed is also being transformed automatically.  See Details
-below for more information about the algorithm.  A \code{"regression"}
-method is also available that is similar to that used in
-\code{transcan}.  This option should be used when mechanistic
+Instead of defaulting to taking random draws from fitted imputation
+models using random residuals as is done by \code{transcan},
+\code{aregImpute} by default uses predictive mean matching with optional
+weighted 
+probability sampling of donors rather than using only the closest match.
+Predictive mean matching works for binary, categorical, and continuous
+variables without the need for iterative maximum likelihood fitting for
+binary and categorical variables, and without the need for computing
+residuals or for curtailing imputed values to be in the range of actual
+data.  Predictive mean matching is especially attractive when the
+variable being imputed is also being transformed automatically.  See
+Details below for more information about the algorithm.  A
+\code{"regression"} method is also available that is similar to that
+used in \code{transcan}.  This option should be used when mechanistic
 missingness requires the use of extrapolation during imputation.
 
 A \code{print} method summarizes the results, and a \code{plot} method plots
-distributions of imputed values.
-Typically, \code{fit.mult.impute} will be called after \code{aregImpute}.
+distributions of imputed values.  Typically, \code{fit.mult.impute} will
+be called after \code{aregImpute}.
+
+If a target variable is transformed nonlinearly (i.e., if \code{nk} is
+greater than zero and \code{tlinear} is set to \code{FALSE}) and the
+estimated target variable transformation is non-monotonic, imputed
+values are not unique.  When \code{type='regression'}, a random choice
+of possible inverse values is made.
 }
 \usage{
 aregImpute(formula, data, subset, n.impute=5, group=NULL,
-           nk=3, type=c('pmm','regression'),
-           match=c('weighted','closest'), fweighted=0.2, burnin=3,
-           x=FALSE, pr=TRUE, plotTrans=FALSE, tolerance=NULL)
-\method{print}{aregImpute}(x, \dots)
-\method{plot}{aregImpute}(x, nclass=NULL, type=c('ecdf','hist'), 
+           nk=3, tlinear=TRUE, type=c('pmm','regression'),
+           match=c('weighted','closest'), fweighted=0.2,
+           curtail=TRUE, boot.method=c('simple', 'approximate bayesian'),
+           burnin=3, x=FALSE, pr=TRUE, plotTrans=FALSE, tolerance=NULL, B=75)
+\method{print}{aregImpute}(x, digits=3, \dots)
+\method{plot}{aregImpute}(x, nclass=NULL, type=c('ecdf','hist'),
+     datadensity=c("hist", "none", "rug", "density"),
      diagnostics=FALSE, maxn=10, \dots)
 }
 \arguments{
@@ -103,8 +118,16 @@ recommended but 10 or more doesn't hurt.
   linearity for non-categorical variables) or 3 (minimum number of knots
   possible with a linear tail-restricted cubic spline) for small sample
   sizes.  Simulated problems as in the examples section can assist in
-  choosing \code{nk}.
-  }
+  choosing \code{nk}.  See \code{nk} to a vector to get bootstrap-validated
+  and 10-fold cross-validated \eqn{R^2} and mean and median absolute
+  prediction errors for imputing each sometimes-missing variable, with
+  \code{nk} ranging over the given vector.  The errors are on the
+  original untransformed scale.  The mean absolute error is the
+  recommended basis for choosing the number of knots (or linearity).
+}
+\item{tlinear}{set to \code{FALSE} to allow a target variable (variable
+  being imputed) to have a nonlinear left-hand-side transformation when
+  \code{nk} is 3 or greater}
 \item{type}{
   The default is \code{"pmn"} for predictive mean matching,
   which is a more nonparametric approach that will work for categorical
@@ -137,6 +160,18 @@ recommended but 10 or more doesn't hurt.
   donor values to be less tightly matched.  See the examples below to
   learn how to study the relationship between \code{fweighted} and the
   standard deviation of multiple imputations within individuals.}
+\item{curtail}{applies if \code{type='regression'}, causing imputed
+  values to be curtailed at the observed range of the target variable.
+  Set to \code{FALSE} to allow extrapolation outside the data range.}
+\item{boot.method}{By default, simple boostrapping is used in which the
+  target variable is predicted using a sample with replacement from the
+  observations with non-missing target variable.  Specify
+  \code{boot.method='approximate bayesian'} to build the imputation
+  models from a sample with replacement from a sample with replacement
+  of the observations with non-missing targets.  Preliminary simulations
+  have shown this results in good confidence coverage of the final model
+  parameters when \code{type='regression'} is used.  Not implemented
+  when \code{group} is used.}
 \item{burnin}{
   \code{aregImpute} does \code{burnin + n.impute} iterations of the
   entire modeling process.  The first \code{burnin} imputations are
@@ -155,9 +190,10 @@ set to \code{FALSE} to suppress printing of iteration messages
 }
 \item{tolerance}{singularity criterion; list the source code in the
   \code{lm.fit.qr.bare} function for details}
-\item{nclass}{
-number of bins to use in drawing histogram
-}
+\item{B}{number of bootstrap resamples to use if \code{nk} is a vector}
+\item{digits}{number of digits for printing}
+\item{nclass}{number of bins to use in drawing histogram}
+\item{datadensity}{see \code{\link{Ecdf}}}
 \item{diagnostics}{
 Specify \code{diagnostics=TRUE} to draw plots of imputed values against
 sequential imputation numbers, separately for each missing
@@ -203,6 +239,7 @@ vector of types of transformations used for each variable
 (\code{"s","l","c"} for smooth spline, linear, or categorical with dummy
 variables)
 }
+\item{tlinear}{value of \code{tlinear} parameter}
 \item{nk}{number of knots used for smooth transformations}
 \item{cat.levels}{
 list containing character vectors specifying the \code{levels} of
@@ -286,6 +323,10 @@ transformed target values (linear extrapolation when a random residual
 is large enough to put the random draw prediction outside the range of
 observed values).  The bootstrap is used as with \code{type="pmm"} to
 factor in the uncertainty of the imputation model.
+
+As model uncertainty is high when the transformation of a target
+variable is unknown, \code{tlinear} defaults to \code{TRUE} to limit the
+variance in predicted values when \code{nk} is positive.
 }
 \author{
 Frank Harrell
@@ -340,6 +381,15 @@ orig.x2 <- x2[251:350]
 x1[1:250] <- NA
 x2[251:350] <- NA
 d <- data.frame(x1,x2,x3,y)
+# Find value of nk that yields best validating imputation models
+# tlinear=FALSE means to not force the target variable to be linear
+f <- aregImpute(~y + x1 + x2 + x3, nk=c(0,3:5), tlinear=FALSE,
+                data=d, B=10) # normally B=75
+f
+# Try forcing target variable (x1, then x2) to be linear while allowing
+# predictors to be nonlinear (could also say tlinear=TRUE)
+f <- aregImpute(~y + x1 + x2 + x3, nk=c(0,3:5), data=d, B=10)
+f
 
 # Use 100 imputations to better check against individual true values
 f <- aregImpute(~y + x1 + x2 + x3, n.impute=100, data=d)
@@ -477,3 +527,4 @@ abline(h=rmse, lty=2)  # root MSE of residuals from linear regression
 \concept{predictive mean matching}
 \concept{imputation}
 \concept{NA}
+\concept{missing data}
