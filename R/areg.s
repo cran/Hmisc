@@ -1,4 +1,4 @@
-# $Id: areg.s 468 2007-03-29 20:47:41Z dupontct $
+# $Id: areg.s 472 2007-04-03 14:56:56Z dupontct $
 areg <- function(x, y, xtype=NULL, ytype=NULL, nk=4,
                  B=0, na.rm=TRUE,
                  tolerance=NULL, crossval=NULL) {

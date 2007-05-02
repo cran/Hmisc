@@ -1,4 +1,4 @@
-# $Id: cut2.s 468 2007-03-29 20:47:41Z dupontct $
+# $Id: cut2.s 472 2007-04-03 14:56:56Z dupontct $
 ## Function like cut but left endpoints are inclusive and labels are of
 ## the form [lower, upper), except that last interval is [lower,upper].
 ## F. Harrell  3 Dec 90, modified 7 Mar 92, mod 30May95 (more efficient digits)

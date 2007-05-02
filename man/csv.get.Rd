@@ -4,11 +4,17 @@
 \description{
   Read comma-separated text data files, allowing optional translation
   to lower case for variable names after making them valid S names.
+  There is a facility for reading long variable labels as one of the
+  rows.  If labels are not specified and a final variable name is not
+  the same as that in the header, the original variable name is saved as
+  a variable label.
 }
 \usage{
-csv.get(file, lowernames=FALSE, datevars=NULL, dateformat='\%F',
+csv.get(file, lowernames=FALSE, datevars=NULL, datetimevars=NULL,
+        dateformat='\%F',
         fixdates=c('none','year'), comment.char="", autodates=TRUE,
-        allow=NULL, charfactor=FALSE, \dots)
+        allow=NULL, charfactor=FALSE,
+        sep=',', skip=0, vnames=NULL, labels=NULL, \dots)
 }
 \arguments{
   \item{file}{the file name for import.}
@@ -18,6 +24,12 @@ csv.get(file, lowernames=FALSE, datevars=NULL, dateformat='\%F',
     applied) of variables to consider as a factor or character vector
     containing dates in a format matching \code{dateformat}.  The
     default is \code{"\%F"} which uses the yyyy-mm-dd format.}
+  \item{datetimevars}{character vector of names (after \code{lowernames}
+	is applied) of variables to consider to be date-time variables, with
+	date formats as described under \code{datevars} followed by a space
+	followed by time in hh:mm:ss format.  \code{chron} is used to store
+	such variables.  If all times in the variable
+	are 00:00:00 the variable will be converted to an ordinary date variable.}
   \item{dateformat}{for \code{cleanup.import} is the input format (see
     \code{\link{strptime}})}
   \item{fixdates}{for any of the variables listed in \code{datevars}
@@ -29,9 +41,9 @@ csv.get(file, lowernames=FALSE, datevars=NULL, dateformat='\%F',
     \code{fixdates='year'} is implemented, which will cause 2-digit or
     4-digit years to be shifted to the alternate number of digits when
     \code{dateform} is the default \code{"\%F"} or is \code{"\%y-\%m-\%d"},
-    \code{"\%m/\%d/\%y"}, or \code{"\%m/\%d/\%Y"}.  Two-digits years are padded with \code{20}
-    on the left.  Set \code{dateformat} to the desired format, not the
-    exceptional format.}
+    \code{"\%m/\%d/\%y"}, or \code{"\%m/\%d/\%Y"}.  Two-digits years are
+	padded with \code{20} on the left.  Set \code{dateformat} to the
+	desired format, not the exceptional format.}
   \item{comment.char}{a character vector of length one containing a
     single character or an empty string.  Use '""' to turn off the
     interpretation of comments altogether.}
@@ -44,15 +56,21 @@ csv.get(file, lowernames=FALSE, datevars=NULL, dateformat='\%F',
   \item{charfactor}{set to \code{TRUE} to change character variables to
 	factors if they have at least two characters in an observation but
 	have fewer than n/2 unique values}
-  \item{\dots}{arguments to pass to \code{read.csv}.}
+  \item{sep}{field separator, defaults to comma}
+  \item{skip}{number of records to skip before data start.  Required if
+	\code{vnames} or \code{labels} is given.}
+  \item{vnames}{number of row containing variable names, default is one}
+  \item{labels}{number of row containing variable labels, default is no labels}
+  \item{\dots}{arguments to pass to \code{read.csv} other than
+	\code{skip} and \code{sep}.}
 }
 \details{
   \code{csv.get} reads comma-separated text data files, allowing optional
   translation to lower case for variable names after making them valid S
   names.  Original possibly non-legal names are taken to be variable
-  labels.  Character or factor variables containing dates can be converted
-  to date variables.  \code{cleanup.import} is invoked to finish the
-  job.
+  labels if \code{labels} is not specified.  Character or factor
+  variables containing dates can be converted to date variables.
+  \code{cleanup.import} is invoked to finish the job.
 }
 \value{a new data frame.}
 \author{Frank Harrell, Vanderbilt University}
@@ -63,8 +81,11 @@ csv.get(file, lowernames=FALSE, datevars=NULL, dateformat='\%F',
 }
 \examples{
 \dontrun{
-dat <- read.table('myfile.csv')
-dat <- cleanup.import(dat)
+dat <- csv.get('myfile.csv')
+
+# Read a csv file with junk in the first row, variable names in the
+# second, long variable labels in the third, and junk in the 4th row
+dat <- csv.get('myfile.csv', vnames=2, labels=3, skip=4)
 }
 }
 \keyword{manip}
