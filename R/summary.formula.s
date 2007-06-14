@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 439 2007-02-14 15:15:39Z dupontct $
+## $Id: summary.formula.s 506 2007-06-14 20:14:06Z dupontct $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -78,6 +78,13 @@ summary.formula <-
   nact <- attr(X, "na.action")
   nvar <- ncol(X)-1
   strat <- attr(Terms,'specials')$stratify
+
+  getlab <- function(x, default)
+    {
+      lab <- attr(x, 'label')
+      if(!length(lab) || lab=='') default else lab
+    }
+  
   if(length(strat)) {
     if(method!='response') 
       stop('stratify only allowed for method="response"')
@@ -88,8 +95,7 @@ summary.formula <-
     strat <- if(length(temp$vars)==1) as.factor(X[[temp$vars]])
              else stratify(X[,temp$vars])
 
-    strat.label <- if(length(l <- attr(X[,temp$vars[1]],'label'))) l
-                   else strat.name
+    strat.label <- getlab(X[,temp$vars[1]], strat.name)
 
     X[[temp$vars]] <- NULL   # remove strata factors
   } else {
@@ -104,8 +110,7 @@ summary.formula <-
     yname <- if(.R.) as.character(attr(Terms,'variables'))[2]
              else as.character(attr(Terms, "variables"))[1]  ## 25May01
 
-    ylabel <- if(length(laby <- attr(Y,'label'))) laby
-              else yname
+    ylabel <- getlab(Y, yname)
 
     if(!is.matrix(Y))
       Y <- matrix(Y, dimnames=list(names(Y),yname))
@@ -212,8 +217,7 @@ summary.formula <-
            else X[[v]]
       if(inherits(x,'mChoice')) x <- as.numeric(x)
 
-      labels[i] <- if(length(l <- attr(x,'label'))) l
-                   else nams[i]
+      labels[i] <- getlab(x, nams[i])
       
       units[i]  <- if(length(l <- attr(x,'units'))) l
                    else ''
@@ -494,8 +498,7 @@ summary.formula <-
       else if(is.matrix(xi) && ncol(xi) > 1) 
         stop('matrix variables not allowed for method="cross"')
 
-      labels[i] <- if(length(l <- attr(xi,'label'))) l
-                   else nams[i]
+      labels[i] <- getlab(xi, nams[i])
 
       if(is.factor(xi))
         xi <- xi[,drop=TRUE]
@@ -588,7 +591,7 @@ summary.formula <-
     df$Missing <- Missing
       
     a <- list(heading=heading,byvarnames=lab2,Levels=Levels,labels=labels,
-              na.action=nact,formula=formula,call=call,yname=yname,ylab=laby,
+              na.action=nact,formula=formula,call=call,yname=yname,ylabel=ylabel,
               class=c("summary.formula.cross","data.frame"))
     attributes(df) <- c(attributes(df), a)
     df
@@ -695,11 +698,12 @@ print.summary.formula.response <- function(x,
   invisible()
 }
 
-latex.summary.formula.response <- function(object, 
-                                           title=first.word(deparse(substitute(object))), caption,
-                                           trios, vnames=c('labels','names'), prn=TRUE, prUnits=TRUE,
-                                           rowlabel='', cdec=2,
-                                           ncaption=TRUE, ...)
+latex.summary.formula.response <-
+  function(object, 
+           title=first.word(deparse(substitute(object))), caption,
+           trios, vnames=c('labels','names'), prn=TRUE, prUnits=TRUE,
+           rowlabel='', cdec=2,
+           ncaption=TRUE, ...)
 {
   stats <- object
 
@@ -722,8 +726,7 @@ latex.summary.formula.response <- function(object,
       stop('length of trios must be 1/3 the number of statistics computed')
   }
 
-  if(missing(caption))
-    caption <- at$ylabel
+  if(missing(caption)) caption <- latexTranslate(at$ylabel)
   
   if(ns>1) caption <- paste(caption,' by', if(ul)at$strat.label else 
                             at$strat.name)
@@ -752,9 +755,7 @@ latex.summary.formula.response <- function(object,
               length=(if(missing(trios))nstat
                       else 1+(nstat-1)/3)-1)
 
-  cdec <- rep(c(if(prn)0
-                else NULL,cdec),
-              ns)
+  cdec <- rep(c(if(prn)0 else NULL,cdec), ns)
 
   if(missing(trios))
     cstats <- oldUnclass(stats)
@@ -1213,49 +1214,47 @@ dotchart2 <-
   function(data, labels, groups = NULL, gdata = NA, horizontal = TRUE, 
            pch = 16, 
            xlab = "", ylab="", auxdata, auxgdata=NULL, auxtitle,
-           lty = if(.R.)1
-                 else 2,
+           lty = if(.R.)1 else 2,
            lines = TRUE, dotsize = .8, cex = par("cex"), 
            cex.labels = cex, cex.group.labels = cex.labels*1.25, sort.=TRUE, 
            add=FALSE, dotfont=par('font'),
-           groupfont=2,
-           reset.par=add, xaxis=TRUE,
-           width.factor=if(.R.)1.5
-                        else 1,
-           lcolor=if(.R.) 'gray'
-                  else par('col'),
+           groupfont=2, reset.par=add, xaxis=TRUE,
+           width.factor=1.1, lcolor=if(.R.) 'gray' else par('col'),
            ...)
 {
-  if(.R. && !add) {
-    plot.new()   ## needed for strwidth
-    par(new=TRUE)
-  }
+  if(.R. && !add)
+    {
+      plot.new()   ## needed for strwidth
+      par(new=TRUE)
+    }
 
   ieaux <- if(missing(auxdata)) FALSE else is.expression(auxdata)
-    
+  
   mtextsrt <- function(..., srt=0)
-    if(.R.)
-      mtext(..., las=1)
-    else
-      mtext(..., srt=srt)
+    if(.R.) mtext(..., las=1) else mtext(..., srt=srt)
 
   ndata <- length(data)
-  if(missing(labels)) {
-    if(!is.null(names(data)))
-      labels <- names(data)
-    else labels <- paste("#", seq(along = ndata))
-  } else labels <- rep(as.character(labels), length = ndata)
-
-  if(missing(groups)) {
-    glabels <- NULL
-    gdata <- NULL
-  } else {
-    if(!sort.) {
-      ##assume data sorted in groups, but re-number groups
-      ##to be as if groups given in order 1,2,3,...
-      ug <- unique(as.character(groups))
-      groups <- factor(as.character(groups),levels=ug)
+  if(missing(labels))
+    {
+      if(!is.null(names(data)))
+        labels <- names(data)
+      else labels <- paste("#", seq(along = ndata))
     }
+  else labels <- rep(as.character(labels), length = ndata)
+
+  if(missing(groups))
+    {
+      glabels <- NULL
+      gdata <- NULL
+    } else
+  {
+    if(!sort.)
+      {
+        ##assume data sorted in groups, but re-number groups
+        ##to be as if groups given in order 1,2,3,...
+        ug <- unique(as.character(groups))
+        groups <- factor(as.character(groups),levels=ug)
+      }
 
     groups <- oldUnclass(groups)
     glabels <- levels(groups)
@@ -1264,17 +1263,16 @@ dotchart2 <-
     groups <- groups[ord]
     data <- data[ord]
     labels <- labels[ord]
-    if(!missing(auxdata))
-      auxdata <- auxdata[ord]  #FEH
+    if(!missing(auxdata)) auxdata <- auxdata[ord]  #FEH
   }
 
   alldat <- c(data, gdata)
-  if(!missing(auxdata)) {
-    auxdata <- c(auxdata, auxgdata)
-    if(!ieaux)
-      auxdata <- format(auxdata)
-  }
-
+  if(!missing(auxdata))
+    {
+      auxdata <- c(auxdata, auxgdata)
+      if(!ieaux) auxdata <- format(auxdata)
+    }
+  
   alllab <- paste(c(labels, glabels),'')
   ## set up margins and user coordinates, draw box
   tcex <- par('cex')
@@ -1286,130 +1284,146 @@ dotchart2 <-
   par(cex = cex)
   mxlab <- .1+max(strwidth(labels, units='inches',cex=cex.labels),
                   if(length(glabels))
-                    strwidth(glabels,units='inches',cex=cex.group.labels))*
-                      width.factor
-  if(horizontal) {
-    tmai2 <- tmai[3:4]
-    if(!missing(auxdata))
-      tmai2[2] <- .2+width.factor*
-        max(strwidth(if(ieaux) auxdata
-                     else format(auxdata),
-                     units='inches',cex=cex.labels))
-
-    par(mai = c(tmai[1], mxlab, tmai2))
-    if(!add)
-      plot(alldat, seq(along = alldat), type = "n",
-           ylab = '', axes = FALSE, xlab = '', ...)
-
-    logax <- par("xaxt") == "l"
-  } else {
-    par(mai = c(mxlab, tmai[2:4]))
-    if(!add)
-      plot(seq(along = alldat), alldat, type = "n",
-           xlab = "", axes = FALSE, ylab = '', ...)
-
-    logax <- par("yaxt") == "l"
-  }
+                  strwidth(glabels,units='inches',cex=cex.group.labels))*
+                    width.factor
+  if(horizontal)
+    {
+      tmai2 <- tmai[3:4]
+      if(!missing(auxdata))
+        tmai2[2] <- .2+width.factor*
+          max(strwidth(if(ieaux) auxdata else format(auxdata),
+                       units='inches',cex=cex.labels))
+      
+      par(mai = c(tmai[1], mxlab, tmai2))
+      if(!add)
+        plot(alldat, seq(along = alldat), type = "n",
+             ylab = '', axes = FALSE, xlab = '', ...)
+      
+      logax <- par("xaxt") == "l"
+    }
+  else
+    {
+      par(mai = c(mxlab, tmai[2:4]))
+      if(!add)
+        plot(seq(along = alldat), alldat, type = "n",
+             xlab = "", axes = FALSE, ylab = '', ...)
+      
+      logax <- par("yaxt") == "l"
+    }
 
   tusr <- par("usr")
-  if(!add && logax) {
-    if(horizontal)
-      abline(v = 10^tusr[1:2], h = tusr[3:4])
-    else abline(v = tusr[1:2], h = 10^tusr[3:4])
-  } else if(!add)
-    abline(v = tusr[1:2], h = tusr[3:4])
+  if(!add && logax)
+    {
+      if(horizontal)
+        abline(v = 10^tusr[1:2], h = tusr[3:4])
+      else abline(v = tusr[1:2], h = 10^tusr[3:4])
+    }
+  else if(!add) abline(v = tusr[1:2], h = tusr[3:4])
 
   den <- ndata + 2 * length(glabels) + 1
-  if(horizontal) {
-    if(!add && xaxis)
-      mgp.axis(1, axistitle=xlab)
+  if(horizontal)
+    {
+      if(!add && xaxis)
+        mgp.axis(1, axistitle=xlab)
 
-    delt <- ( - (tusr[4] - tusr[3]))/den
-    ypos <- seq(tusr[4], by = delt, length = ndata)
-  } else {
-    if(!add)
-      mgp.axis(2, axistitle=xlab)
-
-    delt <- (tusr[2] - tusr[1])/den
-    ypos <- seq(tusr[1], by = delt, length = ndata)
+      delt <- ( - (tusr[4] - tusr[3]))/den
+      ypos <- seq(tusr[4], by = delt, length = ndata)
   }
+  else
+    {
+      if(!add)
+        mgp.axis(2, axistitle=xlab)
 
-  if(!missing(groups)) {
-    ypos1 <- ypos + 2 * delt * (if(length(groups)>1)
+      delt <- (tusr[2] - tusr[1])/den
+      ypos <- seq(tusr[1], by = delt, length = ndata)
+    }
+
+  if(!missing(groups))
+    {
+      ypos1 <- ypos + 2 * delt * (if(length(groups)>1)
                                   cumsum(c(1, diff(groups) > 0))
-                                else 1)
-    diff2 <- c(3 * delt, diff(ypos1))
-    ypos2 <- ypos1[abs(diff2 - 3 * delt) < abs(0.001 * delt)] - 
-      delt
-    ypos <- c(ypos1, ypos2) - delt
-  }
+      else 1)
+      diff2 <- c(3 * delt, diff(ypos1))
+      ypos2 <- ypos1[abs(diff2 - 3 * delt) < abs(0.001 * delt)] - 
+        delt
+      ypos <- c(ypos1, ypos2) - delt
+    }
 
   ##put on labels and data
   ypos <- ypos + delt
   nongrp <- 1:ndata
-  if(horizontal) {
-    xmin <- par('usr')[1]
-    if(!add && lines)
-      abline(h = ypos[nongrp], lty = lty, lwd=1, col=lcolor)
+  if(horizontal)
+    {
+      xmin <- par('usr')[1]
+      if(!add && lines)
+        abline(h = ypos[nongrp], lty = lty, lwd=1, col=lcolor)
 
-    points(alldat, ypos, pch = pch, cex = dotsize * cex, font=dotfont)
-    if(!add && !missing(auxdata)) {
-      faux <- if(ieaux) auxdata
-              else format(auxdata)
+      points(alldat, ypos, pch = pch, cex = dotsize * cex, font=dotfont)
+      if(!add && !missing(auxdata))
+        {
+          faux <- paste(' ', if(ieaux) auxdata else format(auxdata), sep='')
 
-      upedge <- par('usr')[4]
-      outerText(faux, ypos[nongrp], adj=1, cex=cex.labels)
-      if(!missing(auxtitle))
-        outerText(auxtitle, upedge+strheight(auxtitle,cex=cex.labels)/2,
-                  adj=1, cex=cex.labels, setAside=faux[1])
-    }
-
-    if(!add) {
-      labng <- alllab[nongrp]
-      ## Bug in sending character strings to mtext or text containing
-      ## [ or ] - they don't right-justify in S+
-      bracket <- substring(labng,1,1)=='[' |
-        substring(labng,nchar(labng),nchar(labng))==']'
-      yposng <- ypos[nongrp]
-      s <- !bracket
-      if(!is.na(any(s)) && any(s))
-        mtextsrt(paste(labng[s],''), 2, 0, at=yposng[s],
-                 srt=0, adj=1, cex=cex.labels)
-
-      s <- bracket
-      if(!is.na(any(s)) && any(s)) {
-        if(.R.)
-          text(rep(par('usr')[1],sum(s)),
-               yposng[s], labng[s], adj=1,
-               cex=cex.labels, srt=0,xpd=NA)
-        else if(.SV4. && under.unix)
-          text(rep(par('usr')[1],sum(s)),
-               yposng[s], labng[s], adj=1,
-               cex=cex.labels, srt=0)
-        else {
-          xmin <- par('usr')[1] -
-            max(nchar(labng[s]))*0.5*cex.labels*par('1em')[1]
-          text(rep(xmin,sum(s)), yposng[s], labng[s], adj=0,
-               cex=cex.labels, srt=0)
+          upedge <- par('usr')[4]
+          outerText(faux, ypos[nongrp], adj=1, cex=cex.labels)
+          if(!missing(auxtitle))
+            {
+              auxtitle <- paste(' ', auxtitle, sep='')
+              outerText(auxtitle,
+                        upedge+strheight(auxtitle,cex=cex.labels)/2,
+                        adj=1, cex=cex.labels, setAside=faux[1])
+            }
         }
-      }
 
-      if(!missing(groups))
-        mtextsrt(paste(alllab[ - nongrp],''), 2, 0, at = ypos[ - nongrp], 
-                 srt = 0, adj = 1, cex = cex.group.labels, font=groupfont)
+      if(!add)
+        {
+          labng <- alllab[nongrp]
+          ## Bug in sending character strings to mtext or text containing
+          ## [ or ] - they don't right-justify in S+
+          bracket <- substring(labng,1,1)=='[' |
+          substring(labng,nchar(labng),nchar(labng))==']'
+          yposng <- ypos[nongrp]
+          s <- !bracket
+          if(!is.na(any(s)) && any(s))
+            mtextsrt(paste(labng[s],''), 2, 0, at=yposng[s],
+                     srt=0, adj=1, cex=cex.labels)
+
+          s <- bracket
+          if(!is.na(any(s)) && any(s))
+            {
+              if(.R.)
+                text(rep(par('usr')[1],sum(s)),
+                     yposng[s], labng[s], adj=1,
+                     cex=cex.labels, srt=0,xpd=NA)
+              else if(.SV4. && under.unix)
+                text(rep(par('usr')[1],sum(s)),
+                     yposng[s], labng[s], adj=1,
+                     cex=cex.labels, srt=0)
+              else
+                {
+                  xmin <- par('usr')[1] -
+                    max(nchar(labng[s]))*0.5*cex.labels*par('1em')[1]
+                  text(rep(xmin,sum(s)), yposng[s], labng[s], adj=0,
+                       cex=cex.labels, srt=0)
+                }
+            }
+          
+          if(!missing(groups))
+            mtextsrt(paste(alllab[ - nongrp],''), 2, 0, at = ypos[ - nongrp], 
+                     srt = 0, adj = 1, cex = cex.group.labels, font=groupfont)
+        }
     }
-  } else {
-    if(!add && lines)
-      abline(v = ypos[nongrp], lty = lty, lwd=1, col=lcolor)
+  else
+    {
+      if(!add && lines)
+        abline(v = ypos[nongrp], lty = lty, lwd=1, col=lcolor)
 
-    ## was v=ypos[!is.na(alldat)]
-    points(ypos, alldat, pch = pch, cex = dotsize * cex, font=dotfont)
-    if(!add) mtextsrt(alllab[nongrp], 1, 0,
-                      at = ypos[nongrp], srt = 90, adj = 1,
-                      cex = cex.labels)
-    if(!add && !missing(groups))
-      mtextsrt(alllab[ - nongrp], 1, 0, at = ypos[ - nongrp], 
-               srt = 90, adj = 1, cex = cex.group.labels, font=groupfont)
+      points(ypos, alldat, pch = pch, cex = dotsize * cex, font=dotfont)
+      if(!add) mtextsrt(alllab[nongrp], 1, 0,
+                        at = ypos[nongrp], srt = 90, adj = 1,
+                        cex = cex.labels)
+      if(!add && !missing(groups))
+        mtextsrt(alllab[ - nongrp], 1, 0, at = ypos[ - nongrp], 
+                 srt = 90, adj = 1, cex = cex.group.labels, font=groupfont)
   }
 
   plt <- par("plt")
@@ -1417,11 +1431,13 @@ dotchart2 <-
     frac <- (oldplt[2] - oldplt[1])/(oldplt[2] - plt[1])
     umin <- tusr[2] - (tusr[2] - tusr[1]) * frac
     tusr <- c(umin, tusr[2:4])
-  } else {
-    frac <- (oldplt[4] - oldplt[3])/(oldplt[4] - plt[3])
-    umin <- tusr[4] - (tusr[4] - tusr[3]) * frac
-    tusr <- c(tusr[1:2], umin, tusr[4])
   }
+  else
+    {
+      frac <- (oldplt[4] - oldplt[3])/(oldplt[4] - plt[3])
+      umin <- tusr[4] - (tusr[4] - tusr[3]) * frac
+      tusr <- c(tusr[1:2], umin, tusr[4])
+    }
 
   invisible()
 }
@@ -1544,7 +1560,6 @@ print.summary.formula.reverse <-
   invisible(cstats)
 }
 
-
 ## Function to format subtable for categorical var, for method='reverse'
 formatCats <- function(tab, nam, tr, type, group.freq,
                        npct, pctdig, exclude1, long, prtest,
@@ -1625,7 +1640,49 @@ formatCats <- function(tab, nam, tr, type, group.freq,
   else
     cs[(long+1):nrow(cs),1:nw] <- cpct[jstart:nrow(cpct),gnames]
 
+  if(latex) {
+    locs <- c(3,-3,5,-5,7,-7,9,-9)
+    points <- c("\\circle*{4}","\\circle{4}","\\drawline(0,2)(-1.414213562,-1)(1.414213562,-1)(0,2)")
+    
+    point.loc <- sapply(jstart:nrow(pct),
+                        function(i) {
+                          paste(ifelse(is.na(pct[i,]), "",
+                                       paste("\\put(", pct[i,], ",0){",points[1:ncol(pct)],"}",sep='')),
+                                collapse='')
+                        })
+
+    error.loc <- character(nrow(tab) - exc)
+    k <- 0
+    for(i in jstart:ncol(tab)) {
+      if(i > jstart) {
+        p1prime <- (tab[,i] + 1)/(denom[i] + 2)
+        d1 <- p1prime*(1-p1prime)/denom[i]
+        for(j in jstart:(i-1)) {
+          k <- k + 1
+          p2prime <- (tab[,j] + 1)/(denom[j] + 2)
+          error <- 196 * sqrt(d1 + p2prime * (1 - p2prime)/denom[j])
+          bar <- ifelse(is.na(error), "",
+                        paste("\\put(", (pct[,i] + pct[,j])/2 - error, ",",
+                              locs[k],"){\\line(1,0){",error*2,"}}",
+                              sep=''))
+          error.loc <- paste(error.loc, bar, sep='')
+        }
+      }
+    }
+
+    scale <- character(nrow(tab) - exc)
+    scale[1] <- "\\multiput(0,2)(25,0){5}{\\color[gray]{0.5}\\line(0,-1){4}}\\put(-5,0){\\makebox(0,0){\\tiny 0}}\\put(108,0){\\makebox(0,0){\\tiny 1}}"
+                     
+    cl <- paste("\\setlength\\unitlength{1in/100}\\begin{picture}(100,10)(0,-5)",
+                scale,"\\put(0,0){\\color[gray]{0.5}\\line(1,0){100}}",
+                point.loc, error.loc,
+                "\\end{picture}", sep='')
+    cat("nrow(cs)", nrow(cs), "length(cl)",length(cl), file='')
+    cs[(long+1):nrow(cs),ncol(cs)] <- cl
+  }
+
   if(length(tr)) {
+    str(tr)
     ct <- formatTestStats(tr, type==3,
                           if(type==1)1
                           else 1:nr,

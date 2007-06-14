@@ -1,3 +1,4 @@
+\encoding{latin1}
 \name{latex}
 \alias{latex}
 \alias{latex.default}
@@ -502,6 +503,9 @@ commands which are assumed to be in the system path.
   \code{/tmp} (Unix/Linux) or \code{\\windows\\temp} (Windows), add your
   own \code{tempdir} function such as \code{
 	tempdir <- function() "/yourmaindirectory/yoursubdirectory"}
+
+  To prevent the latex file from being displayed store the result of
+  \code{latex} in an object, e.g. \code{w <- latex(object, file='foo.tex')}.
   }
 \author{
 Frank E. Harrell, Jr.,
@@ -532,7 +536,7 @@ University of Newcastle upon Tyne, UK.
 
 }
 \seealso{
-\code{\link{html}}, \code{\link{format.df}}
+\code{\link{html}}, \code{\link{format.df}}, \code{\link[tools]{texi2dvi}}
 }
 \examples{
 x <- matrix(1:6, nrow=2, dimnames=list(c('a','b'),c('c','d','enLine 2')))
@@ -545,6 +549,8 @@ d            # or show(d) : run xdvi (assumed in path) to display
 w            # or show(w) : run dvi then xdvi
 dvips(d)     # run dvips to print document
 dvips(w)     # run dvi then dvips
+library(tools)
+texi2dvi('/tmp/my.tex')   # compile and produce pdf file in working dir.
 }
 latex(x, file="")   # just write out LaTeX code to screen
 
