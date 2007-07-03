@@ -1,3 +1,13 @@
+3.4-2
+      Removed some debug statements that had been missed.
+
+      Fixed bug with way that dotchart2 displays auxdata when auxdata
+      is an expression.
+
+      Added option to enable to output of a dotchart in the latex
+      table of 'latex.summary.formula.reverse'.  Use arg 'dotchart =
+      TRUE' to enable the feature.
+
 3.4-1 5/02/2007
       Changed mChoice variables to factors up front if data given
       (don't know how to handle this when data is not given) to make
@@ -69,6 +79,9 @@
 
       Added dotplot in test output cells in latex table of
       summary.formula.reverse.
+
+      Changed storage.mode <- "single" calls to mode <- "single" calls
+      in rm.boot.s
 
 3.3-2 3/29/2007
       Fixed bug with combine<- function not handling NULL values.
