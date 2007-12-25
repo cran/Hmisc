@@ -1,4 +1,4 @@
-# $Id: aregImpute.s,v 1.4 2006/10/02 15:46:17 dupontct Exp $
+# $Id: aregImpute.s 350 2006-10-29 14:39:00Z harrelfe $
 aregImpute <- function(formula, data, subset, n.impute=5,
                        group=NULL, nk=3,
                        type=c('pmm','regression'),
@@ -111,9 +111,8 @@ aregImpute <- function(formula, data, subset, n.impute=5,
   rsq <- double(length(wna));
   names(rsq) <- nam[wna]
   
-  if(pr) cat('Iteration:')
   for(iter in 1:(burnin + n.impute)) {
-    if(pr) cat(iter,'')
+    if(pr) cat('Iteration',iter,'\r')
     for(i in wna) {
       nai <- na[[i]]      ## subscripts of NAs on xf[i,]
       j <- (1:n)[-nai]    ## subscripts of non-NAs on xf[i,]

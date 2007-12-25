@@ -1,4 +1,4 @@
-# $Id: cut2.s,v 1.4 2006/10/14 22:29:33 harrelfe Exp $
+# $Id: cut2.s 329 2006-10-14 22:29:33Z harrelfe $
 ## Function like cut but left endpoints are inclusive and labels are of
 ## the form [lower, upper), except that last interval is [lower,upper].
 ## F. Harrell  3 Dec 90, modified 7 Mar 92, mod 30May95 (more efficient digits)

@@ -1,4 +1,4 @@
-## $Id: scat1d.s,v 1.3 2005/07/12 22:01:34 dupontct Exp $
+## $Id: scat1d.s 208 2005-07-12 22:01:34Z dupontct $
 ## -*-S-*- Improvements due to Martin Maechler <maechler@stat.math.ethz.ch>
 
 scat1d <- function(x, side=3, frac=.02, jitfrac=.008, tfrac, 

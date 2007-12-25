@@ -1,4 +1,4 @@
-## $Id: sas.get.s,v 1.37 2006/10/23 18:15:45 dupontct Exp $
+## $Id: sas.get.s 346 2006-10-23 18:15:45Z dupontct $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
            ifs = character(0), 

@@ -1,4 +1,4 @@
-## $Id: valueTags.s,v 1.2 2006/04/17 14:17:06 dupontct Exp $
+## $Id: valueTags.s 258 2006-04-17 14:17:06Z dupontct $
 
 valueTags <- function(x) {
   list(unit = valueUnit(x), label = valueLabel(x),

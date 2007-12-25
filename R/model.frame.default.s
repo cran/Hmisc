@@ -1,4 +1,4 @@
-## $Id: model.frame.default.s,v 1.4 2005/07/12 22:01:34 dupontct Exp $
+## $Id: model.frame.default.s 208 2005-07-12 22:01:34Z dupontct $
 
 dropUnusedLevels <- function()
 {
