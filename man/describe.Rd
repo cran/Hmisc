@@ -25,9 +25,14 @@ deemed discrete if it has <= 10 unique values. In this case,
 quantiles are not printed. A frequency table is printed 
 for any non-binary variable if it has no more than 20 unique
 values.  For any variable with at least 20 unique values, the 5 lowest
-and highest values are printed.  \code{describe} is especially useful for
-describing data frames created by \code{sas.get}, as SAS labels, formats,
-value labels, and frequencies of special missing values are printed.
+and highest values are printed.  This behavior can be overriden for long
+character variables with many levels using the \code{listunique}
+parameter, to get a complete tabulation.
+
+\code{describe} is especially useful for
+describing data frames created by \code{*.get}, as labels, formats,
+value labels, and (in the case of \code{sas.get}) frequencies of special
+missing values are printed.
 
 For a binary variable, the sum (number of 1's) and mean (proportion of
 1's) are printed. If the first argument is a formula, a model frame
@@ -40,21 +45,24 @@ If a variable was created by the special-purpose function \code{substi} (which
 substitutes values of a second variable if the first variable is NA),
 the frequency table of substitutions is also printed.  
 
-A latex method
-exists for converting the \code{describe} object to a LaTeX file.  For
-numeric variables having at least 20 unique values, \code{describe} saves
-in its returned object the frequencies of 100 evenly spaced bins
-running from minimum observed value to the maximum.  \code{latex} inserts a
-spike histogram displaying these frequency counts in the tabular
-material using the LaTeX picture environment.  For example output see
+A latex method exists for converting the \code{describe} object to a
+LaTeX file.  For numeric variables having at least 20 unique values,
+\code{describe} saves in its returned object the frequencies of 100
+evenly spaced bins running from minimum observed value to the maximum.
+\code{latex} inserts a spike histogram displaying these frequency counts
+in the tabular material using the LaTeX picture environment.  For
+example output see
 \url{http://biostat.mc.vanderbilt.edu/twiki/pub/Main/Hmisc/counties.pdf}.
+Note that the latex method assumes you have the following styles
+installed in your latex installation: setspace and relsize.
 
 Sample weights may be specified to any of the functions, resulting
 in weighted means, quantiles, and frequency tables.
 }
 \usage{
 \method{describe}{vector}(x, descript, exclude.missing=TRUE, digits=4,
-         weights, normwt, \dots)
+         listunique=0, listnchar=12,
+         weights=NULL, normwt=FALSE, minlength=NULL, \dots)
 \method{describe}{matrix}(x, descript, exclude.missing=TRUE, digits=4, \dots)
 \method{describe}{data.frame}(x, descript, exclude.missing=TRUE,
     digits=4, \dots)
@@ -91,10 +99,24 @@ in weighted means, quantiles, and frequency tables.
 \item{digits}{
   number of significant digits to print
 }
+\item{listunique}{
+  For a character variable that is not an \code{mChoice} variable, that
+  has its longest string length greater than \code{listnchar}, and that
+  has no more than \code{listunique} unique values, all values are
+  listed in alphabetic order.  Any value having more than one occurrence
+  has the frequency of occurrence after it, in parentheses.  Specify
+  \code{listunique} equal to some value at least as large as the number
+  of observations to ensure that all character variables will have all
+  their values listed.  For purposes of tabulating character strings,
+  multiple white spaces of any kind are translated to a single space,
+  leading and trailing white space are ignored, and case is ignored.
+}
+\item{listnchar}{see \code{listunique}}
 \item{weights}{
   a numeric vector of frequencies or sample weights.  Each observation
   will be treated as if it were sampled \code{weights} times.
 }
+\item{minlength}{value passed to summary.mChoice.}
 \item{normwt}{
   The default, \code{normwt=FALSE} results in the use of \code{weights} as
   weights in computing various statistics.  In this case the sample size

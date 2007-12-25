@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 354 2006-10-31 13:34:49Z harrelfe $
+## $Id: summary.formula.s 439 2007-02-14 15:15:39Z dupontct $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
@@ -163,15 +163,6 @@ summary.formula <-
 
         ## 2nd case is for simple function(x)mean(x) function
       } else funlab <- as.character(substitute(fun))
-
-      ## funlab <- if(.R.)deparse(fun) else as.character(substitute(fun))
-      ## funlab <- funlab[length(funlab)] #handles fun=function(x)mean(x)
-      ## chf <- if(.R.) as.character(as.list(fun)[[2]]) else
-      ## as.character(fun[[2]])
-      ## if(length(chf) > 3 && chf[1]=="apply") funlab <- chf[4]
-      ## The preceeding gets "median" from function(y) apply(y, 2, median)
-      ##  if(length(fun)==2 && length(fun[[2]])>1) funlab <- 
-      ##  if(length(name.stats)==1) name.stats else funname
     }
 
     if(funlab[1]=='')
@@ -219,6 +210,7 @@ summary.formula <-
       i <- i+1
       x <- if(v=='Overall') factor(rep('',n))
            else X[[v]]
+      if(inherits(x,'mChoice')) x <- as.numeric(x)
 
       labels[i] <- if(length(l <- attr(x,'label'))) l
                    else nams[i]
@@ -359,7 +351,7 @@ summary.formula <-
       if(length(attr(w,'units')))
         Units[i]  <- attr(w,'units')
 
-      if(!is.matrix(w)) {
+      if(!inherits(w,'mChoice')) {
           if(!is.factor(w) && length(unique(w[!is.na(w)])) < continuous) 
             w <- as.factor(w)
           s <- !is.na(w)
@@ -435,13 +427,8 @@ summary.formula <-
 
             type[i] <- 2
           }
-        } else {  ## matrix: multiple choice variables
-          if(!is.logical(w)) {
-            if(is.numeric(w)) w <- w==1 else {
-              w <- structure(casefold(w),dim=dim(w))
-              w <- w=='present' | w=='yes'
-            }
-          }
+        } else {
+          w <- as.numeric(w)==1 ## multiple choice variables
           n[i] <- nrow(w)
           g    <- as.factor(group)
           ncat <- ncol(w)
@@ -502,9 +489,8 @@ summary.formula <-
     labels <- character(nvar)
     for(i in 1:nvar) {
       xi <- X[[i]]
-      ## 15feb03:
       if(inherits(xi,'mChoice'))
-        xi <- as.character(xi)
+        xi <- factor(format(xi))
       else if(is.matrix(xi) && ncol(xi) > 1) 
         stop('matrix variables not allowed for method="cross"')
 
@@ -518,7 +504,7 @@ summary.formula <-
         xi <- cut2(xi, g=g, ...)
       X[[i]] <- na.include(as.factor(xi))
       if(.R.)
-        levels(X[[i]])[is.na(levels(X[[i]]))] <- 'NA'  ## 08may02
+        levels(X[[i]])[is.na(levels(X[[i]]))] <- 'NA'
         
       Levels[[i]] <- c(levels(X[[i]]),if(overall)"ALL")
     }
@@ -1219,8 +1205,7 @@ plot.summary.formula.reverse <-
 #Also added: sort. parameter, to allow suppression of rearrangements of data,
 #and added the parameter `add'.  Reference lines are always drawn with lwd=1.
 #There's also a new parameter, groupfont, which specifies a font number for
-#group headings.  Default is 5 for UNIX (usually Helvetica Bold)
-#and 4 for Windows (bold)
+#group headings.
 #cex.labels is a cex to be used only for category labels.  Default is cex.
 #Added reset.par - set to T to reset par() after making plot.  You will
 #need to set reset.par to T for the last call in a sequence.
@@ -1233,8 +1218,7 @@ dotchart2 <-
            lines = TRUE, dotsize = .8, cex = par("cex"), 
            cex.labels = cex, cex.group.labels = cex.labels*1.25, sort.=TRUE, 
            add=FALSE, dotfont=par('font'),
-           groupfont=if(under.unix)5
-                     else 1, 
+           groupfont=2,
            reset.par=add, xaxis=TRUE,
            width.factor=if(.R.)1.5
                         else 1,
@@ -2386,54 +2370,6 @@ cumcategory <- function(y)
 }
 
 
-mChoice <- function(..., label='', 
-                    sort.levels=c('original','alphabetic'),
-                    add.none=TRUE, none.name='none',
-                    na.result=FALSE, drop=TRUE)
-{
-  sort.levels <- match.arg(sort.levels)
-  dotlist <- list(...)
-  lev <- unique(unlist(lapply(dotlist, function(x)levels(as.factor(x)))))
-  if(sort.levels=='alphabetic')
-    lev <- sort(lev)
-
-  X <- as.matrix(as.data.frame(lapply(dotlist,as.character)))
-  vcall <- as.character(sys.call())[-1]  ## 15feb03
-  Y <- matrix(NA, ncol=length(lev), nrow=nrow(X),
-              dimnames=list(names(dotlist[[1]]),lev))
-  if(na.result)
-    anyna <- apply(X=='', 1, any)
-
-  unused <- integer(0)
-  for(j in 1:length(lev)) {
-    Y[,j] <- apply(X==lev[j],1,any)
-    if(na.result)
-      Y[,j] <- ifelse(!Y[,j] & anyna, NA, Y[,j])
-    
-    if(drop && sum(Y[,j],na.rm=TRUE)==0)
-      unused <- c(unused,j)
-  }
-
-  if(length(unused)) Y <- Y[,-unused,drop=FALSE]
-  if(add.none) {
-    isnone <- apply(Y,1,sum,na.rm=TRUE) == 0
-    if(any(isnone))
-      Y <- cbind(Y,none=isnone)
-  }
-  
-  if(label == '')
-    label <- attr(dotlist[[1]],'label')
-  
-  if(!length(label)) {
-    label <- vcall[1]
-    if(length(nn <- names(dotlist)[1]))
-      label <- nn
-  }
-  
-  structure(Y, label=label, class=c('mChoice','labelled',attr(Y,'class')))
-}
-
-
 summarize <- function(X, by, FUN, ..., 
                       stat.name=deparse(substitute(X)), 
                       type=c('variables','matrix'), subset=TRUE)
@@ -2607,14 +2543,6 @@ if(FALSE) {
   } else ans <- cbind(ans, S)
   ans
 }
-
-
-as.character.mChoice <- function(x, sep=",", ...)
-{
-  lev <- dimnames(x)[[2]]
-  apply(x, 1, FUN=function(x) paste(lev[x], collapse=sep))
-}
-
 
 smean.cl.normal <- function(x, mult=qt((1+conf.int)/2,n-1),
                             conf.int=.95, na.rm=TRUE)

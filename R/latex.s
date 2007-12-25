@@ -530,6 +530,7 @@ latex.default <-
     cxx <- cxi[[1]]
     col.justxx <- col.just[col.subs[[1]]]
     collabel.justxx <- collabel.just[col.subs[[1]]]
+    extracolheadsxx <- extracolheads[col.subs[[1]]]
 
     cgroupxx <- cgroup[1]
     n.cgroupxx <- n.cgroup[1]
@@ -540,6 +541,8 @@ latex.default <-
                            collabel.just[col.subs[[i]]])
       cgroupxx <- c(cgroupxx, "", cgroup[i])
       n.cgroupxx <- c(n.cgroupxx, 1, n.cgroup[i])
+      extracolheadsxx <- c(extracolheadsxx, "",
+                                         extracolheads[col.subs[[i]]])
     }
     
     cgroup.colsxx <- cgroup.cols + 0:(nrow(cgroup.cols)-1)
@@ -550,6 +553,7 @@ latex.default <-
     n.cgroup <- n.cgroupxx
     cgroup.cols <- cgroup.colsxx[cgroup!="",,drop=FALSE]
     cgroup <- cgroupxx
+    extracolheads <- extracolheadsxx
     nc <- ncol(cx)
   }
 
@@ -1303,14 +1307,18 @@ html.data.frame <-
     x <- cbind('Name'=r, x)
   
   cat('<TABLE BORDER>\n', file=file, append=append)
-  cat('<tr>', paste('<td>', dimnames(x)[[2]], '</td>',sep=''), '</tr>\n',
+  cat('<tr>', paste('<td><h3>', dimnames(x)[[2]], '</h3></td>',sep=''), '</tr>\n',
       sep='', file=file, append=file!='')
   
-  if(length(link))
+  if(length(link)) {
+    if(is.matrix(link)) 
+      x[link!=''] <- paste('<a ',linkType,'="', link[link!=''],'">',
+                           x[link!=''],'</a>',sep='') else
     x[,linkCol] <- ifelse(link=='',x[,linkCol],
                           paste('<a ',linkType,'="',link,'">',
                                 x[,linkCol],'</a>',sep=''))
-
+  }
+  
   for(i in 1:nrow(x))
     cat('<tr>',paste('<td>',x[i,],'</td>',sep=''),'</tr>\n',
         sep='', file=file, append=file!='')
@@ -1353,7 +1361,7 @@ latexSN <- function(x) {
                   'e+0*',
                   'e+*'),
              c('',
-               '\\\\!\\times\\\\!10^{-*}','\\\\!\\times\\\\!10^{-*}',
-               '\\\\!\\times\\\\!10^{*}','\\\\!\\times\\\\!10^{*}'))
+               '\\!\\times\\!10^{-*}','\\!\\times\\!10^{-*}',
+               '\\!\\times\\!10^{*}','\\!\\times\\!10^{*}'))
   x
 }

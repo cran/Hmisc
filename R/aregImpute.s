@@ -1,16 +1,19 @@
-# $Id: aregImpute.s 350 2006-10-29 14:39:00Z harrelfe $
+# $Id: aregImpute.s 433 2007-02-09 23:28:35Z harrelfe $
 aregImpute <- function(formula, data, subset, n.impute=5,
-                       group=NULL, nk=3,
+                       group=NULL, nk=3, tlinear=TRUE,
                        type=c('pmm','regression'),
                        match=c('weighted','closest'), fweighted=0.2,
+                       curtail=TRUE,
+                       boot.method=c('simple', 'approximate bayesian'),
                        burnin=3, x=FALSE,
                        pr=TRUE, plotTrans=FALSE,
-                       tolerance=NULL)
+                       tolerance=NULL, B=75)
 {
   
   acall   <- match.call()
   type    <- match.arg(type)
   match   <- match.arg(match)
+  boot.method <- match.arg(boot.method)
 
   if(!inherits(formula,'formula'))
     stop('formula must be a formula')
@@ -20,8 +23,9 @@ aregImpute <- function(formula, data, subset, n.impute=5,
   m <- match.call(expand = FALSE)
   Terms <- terms(formula, specials='I')
   m$formula <- formula
-  m$match <- m$fweighted <- m$x <- m$n.impute <- m$nk <- m$burnin <-
-    m$type <- m$group <- m$pr <- m$plotTrans <- m$tolerance <- NULL
+  m$match <- m$fweighted <- m$curtail <- m$x <- m$n.impute <- m$nk <-
+    m$tlinear <- m$burnin <- m$type <- m$group <- m$pr <-
+      m$plotTrans <- m$tolerance <- m$boot.method <- m$B <- NULL
   m$na.action <- na.retain
 
   m[[1]] <- as.name("model.frame")
@@ -33,6 +37,8 @@ aregImpute <- function(formula, data, subset, n.impute=5,
 
   lgroup <- length(group)
   if(lgroup) {
+    if(boot.method == 'approximate bayesian')
+      stop('group not implemented for boot.method="approximate bayesian"')
     if(lgroup != n)
       stop('group should have length equal to number of observations')
     
@@ -94,7 +100,7 @@ aregImpute <- function(formula, data, subset, n.impute=5,
       if(length(u) == 1)
         stop(paste(ni,'is constant'))
       else
-        if(nk==0 || length(u) == 2 || ni %in% linear)
+        if((length(nk)==1 && nk==0) || length(u) == 2 || ni %in% linear)
           vtype[ni] <- 'l'
     }
     xf[,i] <- xi
@@ -105,11 +111,14 @@ aregImpute <- function(formula, data, subset, n.impute=5,
   }
   z <- NULL
   wna <- (1:p)[nna > 0]
+
   
   ## xf = original data matrix (categorical var -> integer codes)
   ## with current imputations
   rsq <- double(length(wna));
   names(rsq) <- nam[wna]
+  resampacc <- list()
+  if(curtail) xrange <- apply(xf, 2, range)
   
   for(iter in 1:(burnin + n.impute)) {
     if(pr) cat('Iteration',iter,'\r')
@@ -117,6 +126,31 @@ aregImpute <- function(formula, data, subset, n.impute=5,
       nai <- na[[i]]      ## subscripts of NAs on xf[i,]
       j <- (1:n)[-nai]    ## subscripts of non-NAs on xf[i,]
       npr <- length(j)
+      ytype <- if(tlinear && vtype[i]=='s')'l' else vtype[i]
+      
+      if(iter==(burnin + n.impute) && length(nk) > 1) {
+        rn <- c('Bootstrap bias-corrected R^2',
+                '10-fold cross-validated  R^2',
+                'Bootstrap bias-corrected mean   |error|',
+                '10-fold cross-validated  mean   |error|',
+                'Bootstrap bias-corrected median |error|',
+                '10-fold cross-validated  median |error|')
+        racc <- matrix(NA, nrow=6, ncol=length(nk),
+                       dimnames=list(rn, paste('nk=',nk,sep='')))
+        jj <- 0
+        for(k in nk) {
+          jj <- jj + 1
+          f <- areg(xf[,-i,drop=FALSE], xf[,i],
+                    xtype=vtype[-i], ytype=ytype,
+                    nk=k, na.rm=FALSE,
+                    tolerance=tolerance, B=B, crossval=10)
+          w <- c(f$r2boot, f$rsquaredcv, f$madboot, f$madcv,
+                 f$medboot, f$medcv)
+          racc[,jj] <- w
+        }
+        resampacc[[nam[i]]] <- racc
+      }
+
       if(lgroup) {        ## insure orig. no. obs from each level of group
         s <- rep(NA, npr)
         for(ji in 1:ngroup) {
@@ -124,16 +158,18 @@ aregImpute <- function(formula, data, subset, n.impute=5,
           s[gi] <- sample(gi, length(gi), replace=TRUE)
         }
       }
-      else
-        s <- sample(j, npr, replace=TRUE)  ## sample of non-NAs
-      
+      else { ## sample of non-NAs
+        s <- sample(j, npr, replace=TRUE)
+        if(boot.method == 'approximate bayesian')
+          s <- sample(s, replace=TRUE)
+      }
       nami <- nam[i]
       nm <- c(nami, nam[-i])
 
       X <- xf[,-i,drop=FALSE]
 
-      f <- areg(X[s,], xf[s,i], xtype=vtype[-i], ytype=vtype[i],
-                na.rm=FALSE, tolerance=tolerance)
+      f <- areg(X[s,], xf[s,i], xtype=vtype[-i], ytype=ytype,
+                nk=min(nk), na.rm=FALSE, tolerance=tolerance)
       dof[names(f$xdf)] <- f$xdf
       dof[nami] <- f$ydf
       
@@ -141,19 +177,19 @@ aregImpute <- function(formula, data, subset, n.impute=5,
       
       rsq[nami] <- f$rsquared
       pti <- predict(f, X)  # predicted transformed xf[,i]
-      if(vtype[i]=='l') pti <- (pti - mean(pti))/sqrt(var(pti))
       
       if(type=='pmm') {
+        if(ytype=='l') pti <- (pti - mean(pti))/sqrt(var(pti))
         whichclose <- if(match=='closest') {
           
           ## Jitter predicted transformed values for non-NAs to randomly
           ## break ties in matching with predictions for NAs in xf[,i]
-          ## Becuase of normalization used by fitter, pti usually ranges from
-          ## about -4 to 4
+          ## Becuase of normalization used by fitter, pti usually ranges
+          ## from about -4 to 4
           pti[j] <- pti[j] + runif(npr,-.0001,.0001)
           
-          ## For each orig. missing xf[,i] impute with non-missing xf[,i] that
-          ## has closest predicted transformed value
+          ## For each orig. missing xf[,i] impute with non-missing xf[,i]
+          ## that has closest predicted transformed value
           j[whichClosest(pti[j], pti[nai])]  ## see Misc.s
         }
         else
@@ -161,16 +197,17 @@ aregImpute <- function(formula, data, subset, n.impute=5,
         impi <- xf[whichclose,i]
       } else {
         ## residuals off of transformed predicted values
-        res <- f$ty - pti[s]
+        res <- f$residuals
         
         ## predicted transformed target var + random sample of res,
         ## for NAs
-        ptir <- pti[nai] +
-          sample(res, length(nai),
-                 replace=length(nai) > length(res))
+        r <- sample(res, length(nai),
+                    replace=length(nai) > length(res))
+        ptir <- pti[nai] + r
         
         ## predicted random draws on untransformed scale
-        impi <- approxExtrap(f$ty, f$y, xout=ptir)$y
+        impi <- f$yinv(ptir, what='sample', coef=f$ycoefficients)
+        if(curtail) impi <- pmin(pmax(impi, xrange[1,i]), xrange[2,i])
       }
       xf[nai,i] <- impi
       if(iter > burnin) imp[[nam[i]]][,iter-burnin] <- impi
@@ -185,13 +222,14 @@ aregImpute <- function(formula, data, subset, n.impute=5,
   structure(list(call=acall, formula=formula,
                  match=match, fweighted=fweighted,
                  n=n, p=p, na=na, nna=nna,
-                 type=vtype, nk=nk,
+                 type=vtype, tlinear=tlinear, nk=min(nk),
                  cat.levels=cat.levels, df=dof,
-                 n.impute=n.impute, imputed=imp, x=xf, rsq=rsq),
+                 n.impute=n.impute, imputed=imp, x=xf, rsq=rsq,
+                 resampacc=resampacc),
             class='aregImpute')
 }
 
-print.aregImpute <- function(x, ...)
+print.aregImpute <- function(x, digits=3, ...)
 {
   cat("\nMultiple Imputation using Bootstrap and PMM\n\n")
   dput(x$call)
@@ -202,16 +240,31 @@ print.aregImpute <- function(x, ...)
   info <- data.frame(type=x$type, d.f.=x$df,
                      row.names=names(x$type))
   print(info)
+  if(x$tlinear)
+    cat('\nTransformation of Target Variables Forced to be Linear\n')
   
   cat('\nR-squares for Predicting Non-Missing Values for Each Variable\nUsing Last Imputations of Predictors\n')
-  print(round(x$rsq,3))
+  print(round(x$rsq, digits))
+
+  racc <- x$resampacc
+  if(length(racc)) {
+    cat('\nResampling results for determining the complexity of imputation models\n\n')
+    for(i in 1:length(racc)) {
+      cat('Variable being imputed:', names(racc)[i], '\n')
+      print(racc[[i]], digits=digits)
+      cat('\n')
+    }
+    cat('\n')
+  }
   invisible()
 }
 
 plot.aregImpute <- function(x, nclass=NULL, type=c('ecdf','hist'),
+                            datadensity=c("hist","none","rug","density"),
                             diagnostics=FALSE, maxn=10, ...)
 {
   type <- match.arg(type)
+  datadensity <- match.arg(datadensity)
   i <- x$imputed
   catg <- x$categorical
   lev  <- x$cat.levels
@@ -223,7 +276,6 @@ plot.aregImpute <- function(x, nclass=NULL, type=c('ecdf','hist'),
     
     if(diagnostics) {
       r <- range(xi)
-      ## cat(min(maxn,nrow(xi)))
       for(j in 1:min(maxn,nrow(xi))) {
         plot(1:n.impute, xi[j,], ylim=r, xlab='Imputation',
              ylab=paste("Imputations for Obs.",j,"of",n))
@@ -241,7 +293,7 @@ plot.aregImpute <- function(x, nclass=NULL, type=c('ecdf','hist'),
     }
     else {
       if(type=='ecdf')
-        Ecdf(ix, xlab=lab, datadensity='hist', subtitles=FALSE)
+        Ecdf(ix, xlab=lab, datadensity=datadensity, subtitles=FALSE)
       else {
         if(length(nclass))
           hist(ix, xlab=n, nclass=nclass, main='')
