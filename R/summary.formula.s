@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 528 2007-07-18 14:47:48Z dupontct $
+## $Id: summary.formula.s 562 2007-11-01 15:38:34Z dupontct $
 ##note: ars may always be T
 summary.formula <-
   function(formula, data, subset, na.action, 
