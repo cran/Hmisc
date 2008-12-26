@@ -1,7 +1,6 @@
 ##!!WRONG ARG x in !.SV4. def latex generic!
 ##Changed x to object inside latex() for !.SV4. (Thanks David Lovell)
 
-
 ##Thanks to David R. Lovell <David.Lovell@cmis.csiro.au> CSIRO
 ##for scientific=    8Feb2000
 
@@ -362,7 +361,8 @@ latex.default <-
            title=first.word(deparse(substitute(object))),
            file=paste(title, ".tex", sep=""),
            append=FALSE, label=title,
-           rowlabel=title, rowlabel.just="l", cgroup=NULL, n.cgroup=NULL,
+           rowlabel=title, rowlabel.just="l",
+           cgroup=NULL, n.cgroup=NULL,
            rgroup=NULL, n.rgroup=NULL,
            cgroupTexCmd="bfseries",
            rgroupTexCmd="bfseries",
@@ -432,7 +432,7 @@ latex.default <-
     if(ctable)
       paste(sl, 'NN', sep='')
     else
-      paste(sl,sl,sep='')
+      paste(sl,"tabularnewline",sep='')
   
   if(booktabs) {  # 27may02
     toprule    <- paste(sl,"toprule",sep="")
@@ -476,11 +476,11 @@ latex.default <-
   ## If there are column groups, add a blank column
   ## of formats between the groups.
   if (length(cgroup) & !is.null(cellTexCmds)) {
-    my.index <- cumsum(n.cgroup)
+    my.index <- split(1:NCOL(cellTexCmds), rep(cumsum(n.cgroup), times=n.cgroup))
     new.index <- NULL
     new.col <- dim(cx)[2] + 1
-    for (i in seq(along=my.index))
-      new.index <- c(new.index, my.index[i], new.col)
+    for (i in my.index)
+      new.index <- c(new.index, i, new.col)
     
     new.index <- new.index[-length(new.index)]
     cellTexCmds <- cbind(cellTexCmds, "")[, new.index]
@@ -520,9 +520,7 @@ latex.default <-
     last.col <- cumsum(n.cgroup)
     first.col <- c(1, 1+last.col[-length(last.col)])
     cgroup.cols <- cbind(first.col,last.col)
-    col.subs <- list()	
-    for (i in seq(along=first.col))
-      col.subs[[i]] <- first.col[i]:last.col[i]
+    col.subs <- split(seq(length.out=nc), rep.int(seq_along(n.cgroup), times=n.cgroup))
     
     cxi <- list()
     for (i in seq(along=col.subs))
@@ -531,6 +529,7 @@ latex.default <-
     cxx <- cxi[[1]]
     col.justxx <- col.just[col.subs[[1]]]
     collabel.justxx <- collabel.just[col.subs[[1]]]
+    colheadsxx <-  colheads[col.subs[[1]]]
     extracolheadsxx <- extracolheads[col.subs[[1]]]
 
     cgroupxx <- cgroup[1]
@@ -542,8 +541,11 @@ latex.default <-
                            collabel.just[col.subs[[i]]])
       cgroupxx <- c(cgroupxx, "", cgroup[i])
       n.cgroupxx <- c(n.cgroupxx, 1, n.cgroup[i])
-      extracolheadsxx <- c(extracolheadsxx, "",
-                                         extracolheads[col.subs[[i]]])
+      colheadsxx <- c(colheadsxx, "", colheads[col.subs[[i]]])
+      if(!is.null(extracolheads)) {
+        extracolheadsxx <- c(extracolheadsxx, "",
+                             extracolheads[col.subs[[i]]])
+      }
     }
     
     cgroup.colsxx <- cgroup.cols + 0:(nrow(cgroup.cols)-1)
@@ -554,6 +556,7 @@ latex.default <-
     n.cgroup <- n.cgroupxx
     cgroup.cols <- cgroup.colsxx[cgroup!="",,drop=FALSE]
     cgroup <- cgroupxx
+    colheads <- colheadsxx
     extracolheads <- extracolheadsxx
     nc <- ncol(cx)
   }
@@ -639,8 +642,10 @@ latex.default <-
                        'rotate',
                      paste(']{',tabular.cols, '}',sep=''),
                      if(length(insert.bottom))
-                       paste('{',sl,'tnote[]{',sedit(insert.bottom,'\\\\',' '),
-                             '}}',
+                       paste('{',
+                             paste(sl,'tnote[]{',sedit(insert.bottom,'\\\\',' '),'}',
+                                   sep='', collapse=''),
+                             '}',
                              sep='')
                      else '{}',
                      ## tnote does not allow \\ in its argument
@@ -682,7 +687,7 @@ latex.default <-
                    if(caption.loc=='bottom' && !missing(caption))
                      paste(caption,'\n'),   # 3oct03
                    if(length(insert.bottom))
-                     insert.bottom,
+                     paste(insert.bottom, collapse='\\\\'),
                    if(table.env)
                      paste(sl, "end{table}\n", sep=""),
                    if(landscape)
@@ -699,7 +704,7 @@ latex.default <-
                            paste(sl,"begin{longtable}{", tabular.cols, "}",sep=""),
                            sep="\n"),
                      if(caption.loc=='top' && !missing(caption))
-                       paste(caption, sl,sl,"\n", sep=""),
+                       paste(caption, eol,"\n", sep=""),
                      paste(toprule, "\n", sep="")    #11Jun95
                      )
     
@@ -806,12 +811,12 @@ latex.default <-
           sep="",file=file, append=file!='')
       cat(midrule, "\n", sep="",file=file, append=file!='')
       cat(labs, file=file, sep="&", append=file!='')
-      cat(sl, sl, " ", midrule, "\n", sl, "endhead", midrule, "\n",
+      cat(eol, " ", midrule, "\n", sl, "endhead", midrule, "\n",
           sep="", file=file, append=file!='')
       if(length(insert.bottom)) {
-        cat(sl, 'multicolumn{', nc, '}{l}{', sl, "parbox[t]", sl, 'LTcapwidth{',
-            insert.bottom, '}}', sl, sl, '\n',
-            sep="", file=file, append=file!='')
+        cat(paste(sl, 'multicolumn{', nc, '}{', sl, "p{",sl,'linewidth}{', 
+                  insert.bottom, '}', eol, sep='', collapse='\n'), '\n',
+                  sep="", file=file, append=file!='')
       }
     
       cat(sl,"endfoot\n", sep="",file=file, append=file!='')
@@ -1167,22 +1172,23 @@ show.dvi <- function(object, width=5.5, height=7)
 {
   viewer <- optionsCmds('xdvi')
   cmd <-
-    if(viewer=='yap') {
-      paste(viewer,object$file)
+    if(viewer == 'yap') {
+      paste(viewer, object$file)
     }
-    else {
-      if(viewer=='kdvi') {
-        paste(viewer,object$file,'&')
-      }
-      else {
-        paste(viewer, ' -paper ',
-              width,'x',height,'in -s 0 ',
-              object$file,' &',sep='')
-      }
+    else if(viewer == 'kdvi') {
+      paste(viewer, object$file)
     }
+    else if(viewer == 'xdvi') {
+      paste(viewer, ' -paper ',
+            width, 'x', height, 'in -s 0 ',
+            object$file, sep='')
+    } else {
+      paste(viewer, object$file)
+    }
+
   
-  sys(cmd)
-  invisible()
+  system(cmd, intern = TRUE, wait=TRUE)
+  invisible(NULL)
 }
 
 
@@ -1366,3 +1372,28 @@ latexSN <- function(x) {
                '\\!\\times\\!10^{*}','\\!\\times\\!10^{*}'))
   x
 }
+
+latexTabular <- function(x, headings=colnames(x), 
+                         align =paste(rep('c',ncol(x)),collapse=''),
+                         halign=paste(rep('c',ncol(x)),collapse=''),
+                         helvetica=TRUE, ...)
+  {
+    x <- latexTranslate(x)
+    if(length(list(...))) x <- format.df(x, ...)
+    xhalign <- substring(halign, 1:nchar(halign), 1:nchar(halign))
+    w <- paste('\\begin{tabular}{', align, '}', sep='')
+    if(helvetica) w <- paste('{\\fontfamily{phv}\\selectfont', w, sep='')
+    if(length(headings))
+      {
+        headings <- latexTranslate(headings)
+        h <- if(halign != align)
+          latexTranslate(paste(paste(paste('\\multicolumn{1}{', xhalign, '}{', 
+                                           headings, '}',sep=''),
+                                     collapse='&'), '\\\\', sep=''))
+        else paste(paste(headings, collapse='&'), '\\\\', sep='')
+      }
+    v <- apply(x, 1, paste, collapse='&')
+    v <- paste(paste(v, '\\\\'), collapse='\n')
+    if(length(headings)) v <- paste(h, v, sep='\n')
+    paste(w, v, '\\end{tabular}', if(helvetica)'}', sep='\n')
+  }

@@ -1,4 +1,5 @@
-if(.R.) units <- function(x,...)  UseMethod("units")
+units <- function(x, ...)
+  UseMethod("units")
 
 "units<-.default"  <- function(x, value)
 {

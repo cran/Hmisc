@@ -20,14 +20,20 @@ score.binary <- function(..., fun=max, points=1:p,
   if(!missing(retfactor) && retfactor && funtext!='max')
     stop('retfactor=T only applies to fun=max')
 
-  hasNaRm <- FALSE
-  if(.R.) {
-    if(any(names(as.list(args(fun)))=='na.rm'))
-      hasNaRm <- TRUE
-  } else fun$na.rm <- na.rm
-
   xna <- apply(x, 1, function(x) any(is.na(x)))
-  x <- if(hasNaRm) apply(x, 1, fun, na.rm=na.rm) else apply(x, 1, fun)
+  if(.R.) {
+    funargs <- as.list(args(fun))
+    funargs <- funargs[-length(funargs)]
+
+    if(any(names(funargs) == "na.rm")) {
+      x <- apply(x, 1, fun, na.rm=na.rm)
+    } else {
+      x <- apply(x, 1, fun)
+    }
+  } else {
+    fun$na.rm <- na.rm
+    x <- apply(x, 1, fun)
+  }
 
   if(!na.rm)
     x[x==0 & xna] <- NA
