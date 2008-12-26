@@ -8,12 +8,8 @@
 \alias{Function}
 \alias{Function.transcan}
 \alias{fit.mult.impute}
-\alias{Varcov}
-\alias{Varcov.default}
-\alias{Varcov.fit.mult.impute}
-\alias{Varcov.glm}
-\alias{Varcov.lm}
-\alias{Varcov.multinom}
+\alias{vcov.default}
+\alias{vcov.fit.mult.impute}
 \alias{[.transcan}
 \alias{invertTabulated}
 \title{
@@ -124,12 +120,11 @@
   for getting predicted values with predictors set to values on the original
   scale.
 
-  \code{Varcov} methods are defined here so that imputation-corrected
+  \code{vcov} methods are defined here so that imputation-corrected
   variance-covariance matrices are readily extracted from
   \code{fit.mult.impute} objects, and so that \code{fit.mult.impute} can easily
   compute traditional covariance matrices for individual completed
-  datasets.  Specific \code{Varcov} methods are defined for \code{lm},
-  \code{glm}, and \code{multinom} fits.
+  datasets.
 
   The subscript function preserves attributes.
 
@@ -184,17 +179,9 @@ invertTabulated(x, y, freq=rep(1,length(x)),
                 inverse=c('linearInterp','sample'),
                 tolInverse=0.05, rule=2)
 
-Varcov(object, ...)
+\method{vcov}{default}(object, regcoef.only=FALSE, ...)
 
-\method{Varcov}{default}(object, regcoef.only=FALSE, ...)
-
-\method{Varcov}{lm}(object, ...)
-
-\method{Varcov}{glm}(object, ...)
-
-\method{Varcov}{multinom}(object, ...)
-
-\method{Varcov}{fit.mult.impute}(object, ...)
+\method{vcov}{fit.mult.impute}(object, ...)
 
 
 }
@@ -224,7 +211,7 @@ Varcov(object, ...)
   }
   \item{fitter}{
     any S or Design modeling function (not in quotes) that computes a
-    vector of \code{coefficients} and for which \code{Varcov} will return a
+    vector of \code{coefficients} and for which \code{vcov} will return a
     variance-covariance matrix.  E.g., \code{fitter = lm}, \code{glm}, \code{ols}.  At present models
     involving non-regression parameters (e.g., scale parameters in
     parametric survival models) are not handled fully.
@@ -508,6 +495,8 @@ Varcov(object, ...)
     If \code{var} is not specified, you can set \code{list.out = TRUE} to have
     \code{impute.transcan} return a list containing variables with needed
     values imputed.  This list will contain a single imputation.
+	Variables not needing imputation are copied to the list as-is.  You
+	can use this list for analysis just like a data frame.
   }
   \item{check}{
     set to \code{FALSE} to suppress certain warning messages
@@ -605,7 +594,7 @@ Varcov(object, ...)
     see \code{approx}.  \code{transcan} assumes \code{rule} is always 2.
   }
   \item{regcoef.only}{
-    set to \code{TRUE} to make \code{Varcov.default}
+    set to \code{TRUE} to make \code{vcov.default}
     delete positions in the covariance matrix for any non-regression
     coefficients (e.g., log scale parameter from \code{psm} or
     \code{survreg})
@@ -756,7 +745,7 @@ Varcov(object, ...)
   \code{fit.mult.impute} (e.g., \code{lm}, \code{glm}), running the result of
   \code{fit.mult.impute} through that fit's \code{summary} method will not use the
   imputation-adjusted variances.  You may obtain the new variances using
-  \code{fit$var} or \code{Varcov(fit)}.  
+  \code{fit$var} or \code{vcov(fit)}.  
 
 
   When you specify a Design function to \code{fit.mult.impute} (e.g.,
@@ -905,12 +894,12 @@ h <- fit.mult.impute(y ~ x1 + x2, lm, f, data=d)
 # for(i in 1:length(h$fits)) print(summary(h$fits[[i]]))
 
 
-diag(Varcov(h))
+diag(vcov(h))
 
 
 h.complete <- lm(y ~ x1 + x2, na.action=na.omit)
 h.complete
-diag(Varcov(h.complete))
+diag(vcov(h.complete))
 
 
 # Note: had Design's ols function been used in place of lm, any
@@ -932,8 +921,15 @@ table(x1)/sum(table(x1))
 x2 <- runif(1000)
 z  <- transcan(~ x1 + I(x2), n.impute=20, impcat='multinom')
 table(z$imputed$x1)/sum(table(z$imputed$x1))
-}
 
+# Here is how to create a completed dataset
+d <- data.frame(x1, x2)
+z <- transcan(~x1 + I(x2), n.impute=5, data=d)
+imputed <- impute(z, imputation=1, data=d,
+                  list.out=TRUE, pr=FALSE, check=FALSE)
+sapply(imputed, function(x)sum(is.imputed(x)))
+sapply(imputed, function(x)sum(is.na(x)))
+}
 
 # Example where multiple imputations are for basic variables and
 # modeling is done on variables derived from these

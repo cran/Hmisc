@@ -416,7 +416,7 @@ par(mfrow=c(1,1))
 plot(orig.x2, apply(f$imputed$x2, 1, mean))
 fmi <- fit.mult.impute(y ~ x1 + x2 + x3, lm, f, 
                        data=d)
-sqrt(diag(Varcov(fmi)))
+sqrt(diag(vcov(fmi)))
 fcc <- lm(y ~ x1 + x2 + x3)
 summary(fcc)   # SEs are larger than from mult. imputation
 
@@ -456,7 +456,7 @@ plot(orig.x2, apply(f$imputed$x2, 1, mean))
 
 fmi <- fit.mult.impute(y ~ x1 + x2, lm, f, 
                        data=d)
-sqrt(diag(Varcov(fmi)))
+sqrt(diag(vcov(fmi)))
 fcc <- lm(y ~ x1 + x2)
 summary(fcc)   # SEs are larger than from mult. imputation
 
@@ -484,11 +484,8 @@ f <- aregImpute(~ x + y, n.impute=10, match='closest', data=d)
 # As an aside here is how to create a completed dataset for imputation
 # number 3 as fit.mult.impute would do automatically.  In this degenerate
 # case changing 3 to 1-2,4-10 will not alter the results.
-completed <- d
 imputed <- impute.transcan(f, imputation=3, data=d, list.out=TRUE,
                            pr=FALSE, check=FALSE)
-completed[names(imputed)] <- imputed
-completed
 sd <- sqrt(mean(apply(f$imputed$y, 1, var)))
 
 ss <- c(0, .01, .02, seq(.05, 1, length=20))

@@ -10,9 +10,9 @@ errbar(x, y, yplus, yminus, cap=0.015, main = NULL,
        sub=NULL, xlab=as.character(substitute(x)),
        ylab=if(is.factor(x) || is.character(x)) ""
            else as.character(substitute(y)),
-       add=FALSE, lty=1, xlim=NULL, ylim=NULL,
-       lwd=1, pch=16, Type=rep(1, length(y)), axes=FALSE, ann=par("ann"),
-       panel.first=NULL, panel.last=NULL, asp=NA, \dots)
+       add=FALSE, lty=1, type='p', ylim=NULL,
+       lwd=1, pch=16, Type=rep(1, length(y)), 
+       \dots)
 }
 \arguments{
   \item{x}{
@@ -52,8 +52,8 @@ errbar(x, y, yplus, yminus, cap=0.015, main = NULL,
   \item{lty}{
     type of line for error bars
   }
-  \item{xlim}{
-    x-axis limits.  Default is range of \code{x} values.
+  \item{type}{
+    type of point.  Use \code{type="b"} to connect dots.
   }
   \item{ylim}{
     y-axis limits.  Default is to use range of \code{y}, \code{yminus}, and \code{yplus}.  For
@@ -71,31 +71,12 @@ errbar(x, y, yplus, yminus, cap=0.015, main = NULL,
     if corresponding values represent simple estimates, \code{2} if they
     represent differences.
   }
-  \item{ann}{
-    a logical value indicating whether the default annotation
-    (title and x and y axis labels) should appear on the plot.
-  }
-  \item{axes}{
-    a logical value indicating whether both axes should be drawn on
-    the plot.
-  }
-  \item{panel.first}{
-    an expression to be evaluated after the plot axes
-    are set up but before any plotting takes place.
-  }
-  \item{panel.last}{
-    an expression to be evaluated after plotting has
-    taken place.
-  }
-  \item{asp}{
-    the \eqn{y/x} aspect ratio, see \code{\link{plot.window}}.
-  }
   \item{...}{
     other parameters passed to all graphics functions.
   }
 }
 \details{
-  \preformatted{errbar} adds vertical error bars to an existing plot or makes a new
+  \code{errbar} adds vertical error bars to an existing plot or makes a new
   plot with error bars.  It can also make a horizontal error bar plot
   that shows error bars for group differences as well as bars for
   groups.  For the latter type of plot, the lower x-axis scale

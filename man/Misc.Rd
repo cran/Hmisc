@@ -7,9 +7,11 @@
 \alias{km.quick}
 \alias{lm.fit.qr.bare}
 \alias{matxv}
+\alias{makeSteps}
 \alias{nomiss}
 \alias{outerText}
 \alias{sepUnitsTrans}
+\alias{strgraphwrap}
 \alias{trap.rule}
 \alias{trellis.strip.blank}
 \alias{under.unix}
@@ -51,7 +53,7 @@
   means given a response variable (which may be binary) and a grouping
   indicator.
 
-  \code{km.quick} provides a fast way to invoke \code{survfit.km} in the
+  \code{km.quick} provides a fast way to invoke \code{survfitKM} in the
   \code{survival} package to get Kaplan-Meier estimates for a
   single stratum for a vector of time points (if \code{times} is given) or to
   get a vector of survival time quantiles (if \code{q} is given).
@@ -63,6 +65,12 @@
   \code{matxv} multiplies a matrix by a vector, handling automatic
   addition of intercepts if the matrix does not have a column of ones.
   If the first argument is not a matrix, it will be converted to one.
+
+  \code{makeSteps} is a copy of the dostep function inside the
+  \code{survival} package's \code{plot.survfit} function.  It expands a
+  series of points to include all the segments needed to plot step
+  functions.  This is useful for drawing polygons to shade confidence
+  bands for step functions.
 
   \code{nomiss} returns a data frame (if its argument is one) with rows
   corresponding to \code{NA}s removed, or it returns a matrix with rows
@@ -81,6 +89,9 @@
   and if those units are present in the character strings they are
   ignored.  The target units are added to the resulting vector as the
   \code{"units"} attribute.
+
+  \code{strgraphwrap} is like \code{strwrap} but is for the current
+  graphics environment.
   
   \code{trap.rule} computes the area under a curve using the trapezoidal
   rule, assuming \code{x} is sorted.
@@ -134,6 +145,9 @@ outerText(string, y, setAside=string[1], side=4, space=1,
           adj=1, cex=par('cex'))
 sepUnitsTrans(x, conversion=c(day=1, month=365.25/12, year=365.25, week=7),
               round=FALSE, digits=0)
+strgraphwrap(x, width = 0.9 * getOption("width"),
+             indent = 0, exdent = 0,
+             prefix = "", simplify = TRUE, units='user', cex=NULL)
 trap.rule(x, y)
 trellis.strip.blank()
 unPaste(str, sep="/", extended=FALSE)
@@ -196,7 +210,8 @@ xless(x, \dots, title)
 	\code{'cvs'}, which is now outdated as Subversion has replaced CVS
 	in the Vanderbilt Biostatistics server.}
   \item{w}{a numeric vector}
-  \item{width}{width of confidence rectanges in user units}
+  \item{width}{width of confidence rectanges in user units, or see
+	\code{\link{strwrap}}} 
   \item{x}{a numeric vector (matrix for \code{lm.fit.qr.bare}) or data
 	frame.  For \code{xless} may be any object that is sensible to
 	\code{print}.  For \code{sepUnitsTrans} is a character or factor
@@ -206,14 +221,20 @@ xless(x, \dots, title)
 	\code{clowess}, \code{x} may also be a list with x and y
 	components.  For \code{inverseFunction}, \code{x} and \code{y}
 	contain evaluations of the function whose inverse is needed.
-	\code{x} is typically an equally-spaced grid of 1000 points.}
+	\code{x} is typically an equally-spaced grid of 1000 points.  For
+	\code{strgraphwrap} is a character vector.}
   \item{xpxi}{set to \code{TRUE} to add an element to the result
 	containing the inverse of \eqn{X'X}}
   \item{y}{a numeric vector.  For \code{inverseFunction} \code{y} is the
-  evaluated function values at \code{x}.}
+	evaluated function values at \code{x}.}
+  \item{indent}{}
+  \item{exdent}{}
+  \item{prefix}{see \code{\link{strwrap}}}
+  \item{simplify}{see \code{\link{sapply}}}
+  \item{units}{see \code{\link{par}}}
   \item{\dots}{arguments passed through to another function}
 }
-\author{Frank Harrell}
+\author{Frank Harrell and Charles Dupont}
 \examples{
 
 
@@ -251,3 +272,4 @@ getLatestSource(avail=TRUE) # list available files and latest versions
 }
 \keyword{programming}
 \keyword{utilities}
+\keyword{iplot}
