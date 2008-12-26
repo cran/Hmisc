@@ -425,7 +425,7 @@ cumcategory(y)
     a list containing other arguments to pass to \code{format.default} such as
     \code{scientific}, e.g., \code{formatArgs=list(scientific=c(-5,5))}.  For
     \code{print.summary.formula.reverse} and
-    \code{format.summary.formula.reverse}, \code{formatArgs} applies only to
+	\code{format.summary.formula.reverse}, \code{formatArgs} applies only to
     statistics computed on continuous variables, not to percents,
     numerators, and denominators.  The \code{round} argument may be preferred.
   }
@@ -485,11 +485,11 @@ cumcategory(y)
     \code{plot} methods for \code{method='reverse'}.
   }
   \item{round}{
-    for \code{print.summary.formula.reverse} and
-    \code{latex.summary.formula.reveres} specify \code{round} to round
-    the quantiles and optional mean and standard deviation to
-    \code{round} digits after the decimal point
-    }
+	for \code{print.summary.formula.reverse} and
+	\code{latex.summary.formula.reveres} specify \code{round} to round
+	the quantiles and optional mean and standard deviation to
+	\code{round} digits after the decimal point
+	}
   \item{prmsd}{
     set to \code{TRUE} to print mean and SD after the three quantiles, for
     continuous variables with \code{method="reverse"}
@@ -853,7 +853,7 @@ g <- function(y) c(Mean=mean(y), Median=median(y))
 for(sub in c("D-penicillamine", "placebo")) {
   ss <- summary(bili ~ age.groups + ascites + chol, fun=g,
                 subset=drug==sub)
-  cat('\\n',sub,'\\n\\n')
+  cat('\n',sub,'\n\n')
   print(ss)
 
 

@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 684 2009-08-30 15:52:24Z harrelfe $
+## $Id: summary.formula.s 713 2010-04-26 16:57:35Z dupontct $
 ##note: ars may always be T
 
 summary.formula <-
@@ -1367,7 +1367,7 @@ dotchart2 <-
       if(!add && lines)
         abline(h = ypos[nongrp], lty = lty, lwd=1, col=lcolor)
 
-      points(alldat, ypos, pch = pch, cex = dotsize * cex, font=dotfont)
+      points(alldat, ypos, pch = pch, cex = dotsize * cex, font=dotfont, ...)
       if(!add && !missing(auxdata))
         {
           faux <- if(ieaux) auxdata else paste(' ', format(auxdata), sep='')
@@ -1426,7 +1426,7 @@ dotchart2 <-
       if(!add && lines)
         abline(v = ypos[nongrp], lty = lty, lwd=1, col=lcolor)
 
-      points(ypos, alldat, pch = pch, cex = dotsize * cex, font=dotfont)
+      points(ypos, alldat, pch = pch, cex = dotsize * cex, font=dotfont, ...)
       if(!add) mtextsrt(alllab[nongrp], 1, 0,
                         at = ypos[nongrp], srt = 90, adj = 1,
                         cex = cex.labels)

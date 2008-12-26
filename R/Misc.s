@@ -1,5 +1,5 @@
-## $Id: Misc.s 687 2009-09-01 20:39:10Z dupontct $
-        
+## $Id: Misc.s 713 2010-04-26 16:57:35Z dupontct $
+		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
     if (is.array(x) || is.data.frame(x)) nrow(x) else length(x)
@@ -60,7 +60,7 @@ spearman <- function(x, y)
   x <- as.numeric(x)
   y <- as.numeric(y)  ## 17Jul97
   
-  notna <- !is.na(x+y)  ##exclude NAs
+  notna <- !is.na(x+y)	##exclude NAs
   if(sum(notna) < 3)
     c(rho=NA)
   else
@@ -366,7 +366,7 @@ rowsumFast <- if(.R.) rowsum else function(x, group, reorder=TRUE)
   if(any(is.na(group)))
     stop("Missing values for 'group'")
   
-  na.indicator <- max(1, x[!is.na(x)]) * n  #larger than any possible sum
+  na.indicator <- max(1, x[!is.na(x)]) * n	#larger than any possible sum
   x[is.na(x)] <- na.indicator
   if(!is.numeric(group))
     group <- as.factor(group)
@@ -1279,16 +1279,16 @@ xless <-
   ## Usage: xless(x) - uses print method for x, puts in persistent window with
   ## xless using name of x as title (unless title= is specified)
   if(under.unix) {
-    file <- tempfile()
-    sink(file)
-    print(x, ...)
-    sink()
-    cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
+	file <- tempfile()
+  	sink(file)
+  	print(x, ...)
+  	sink()
+  	cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
                file,'" &',sep='')
-    if(.R.)
-        system(cmd)
-    else
-        sys(cmd)
+  	if(.R.)
+    	system(cmd)
+  	else
+  		sys(cmd)
   } else page(x, method='print', title=title, ...)
 invisible()
 }
@@ -1763,6 +1763,7 @@ prselect <- function(x, start=NULL, stop=NULL, i=0, j=0, pr=TRUE)
   }
 
 ## The following is taken from survival:::plot.survfit internal dostep function
+## Remove code to remove duplicates in y
 
 makeSteps <- function(x, y)
 {
@@ -1774,10 +1775,8 @@ makeSteps <- function(x, y)
   n <- length(x)
   if (n > 2)
     {
-      dupy <- c(!duplicated(y)[-n], TRUE)
-      n2 <- sum(dupy)
-      xrep <- rep(x[dupy], c(1, rep(2, n2 - 1)))
-      yrep <- rep(y[dupy], c(rep(2, n2 - 1), 1))
+      xrep <- rep(x, c(1, rep(2, n - 1)))
+      yrep <- rep(y, c(rep(2, n - 1), 1))
       list(x = xrep, y = yrep)
     }
   else if (n == 1)

@@ -1,4 +1,4 @@
-## $Id: describe.s 553 2007-09-18 18:37:57Z harrelfe $
+## $Id: describe.s 713 2010-04-26 16:57:35Z dupontct $
 describe <- function(x, ...) UseMethod("describe")  #13Mar99
 
 
@@ -848,7 +848,7 @@ print.contents.data.frame <-
         varsUsingSame <- NULL
         if(sum(reusingLevels))
           {
-            for(k in which(reusingLevels)) if(L[[k]] == nam[j]) 
+            for(k in which(reusingLevels)) if(L[[k]] == namf[j]) 
               varsUsingSame <- c(varsUsingSame, nam[k])
             if(length(varsUsingSame))
               namf[j] <- paste(c(namf[j], varsUsingSame), collapse='\n')
