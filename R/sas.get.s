@@ -1,4 +1,4 @@
-## $Id: sas.get.s 477 2007-04-11 22:21:23Z harrelfe $
+## $Id: sas.get.s 603 2008-12-15 17:01:05Z dupontct $
 sas.get <- if(under.unix || .R.)
   function(library, member, variables = character(0), 
            ifs = character(0), 
@@ -164,7 +164,7 @@ sas.get <- if(under.unix || .R.)
         file = sasin, append = TRUE, sep = "")
   }
   
-  status <- sys(paste(shQuote(sasprog), shQuote(sasin), "-log", shQuote(log.file)), output=FALSE)
+  status <- sys(paste(shQuote(sasprog), shQuote(sasin), "-log", shQuote(log.file)))
   ## 24nov03 added output=F
   if(status != 0) {
     if(!quiet && fexists(log.file)) fileShow(log.file)  ## 4oct03
@@ -1808,7 +1808,7 @@ if(.R.) {
 
     if(method=='read.xport' && (length(keep) | length(drop)))
       ds <- ds[whichds]
-  
+
     ## PROC FORMAT CNTLOUT= dataset present?
     fds <- NULL
     if(!length(formats)) {
@@ -1878,8 +1878,12 @@ if(.R.) {
       funout <- vector('list', length(dsn))
       names(funout) <- gsub('_','.',dsn)
     }
-    possiblyConvertChar <- (is.logical(as.is) && !as.is) ||
+    possiblyConvertChar <- if(method=='read.xport')
+      (is.logical(as.is) && as.is)  ||
+    (is.numeric(as.is) && as.is < 1) else
+      (is.logical(as.is) && !as.is) ||
     (is.numeric(as.is) && as.is > 0)
+    ## reverse logic because read.xport always converts characters to factors
     j <- 0
     for(k in which.regular) {
       j   <- j + 1
@@ -1916,7 +1920,6 @@ if(.R.) {
             changed <- TRUE
           }
         }
-
         if(is.numeric(x)) {
           if(fi %in% sasdateform) {
             x <- importConvertDateTime(x, 'date', rootsoftware)
@@ -1936,6 +1939,12 @@ if(.R.) {
               storage.mode(x) <- 'integer'
               changed <- TRUE
             }
+          }
+        } else if(method=='read.xport' && possiblyConvertChar && is.factor(x)) {
+          if((is.logical(as.is) && as.is) ||
+             (is.numeric(as.is) && length(unique(x)) >= as.is*length(x))) {
+            x <- as.character(x)
+            changed <- TRUE
           }
         } else if(possiblyConvertChar && is.character(x)) {
           if((is.logical(as.is) && !as.is) || 

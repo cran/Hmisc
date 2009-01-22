@@ -7,7 +7,7 @@ dataRep <- function(formula, data, subset, na.action)
     y$na.action <- na.delete
   
   y[[1]] <- as.name("model.frame")
-  
+    
   X <- eval(y, sys.parent())
   nact <- attr(X,"na.action")
   n <- nrow(X)
@@ -145,6 +145,8 @@ predict.dataRep <- function(object, newdata, ...)
   types    <- object$types
   X        <- object$X
 
+  ##Xn <- if(length(model.frame.default$Des))   3Aug02
+  ##        model.frame(object$formula, newdata, na.action=na.keep, Des=FALSE) else
   Xn <- model.frame(object$formula, newdata, na.action=na.keep)
   names(Xn) <- nam
 

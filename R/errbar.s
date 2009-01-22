@@ -41,7 +41,7 @@ errbar <-
     
     axis(2, at=c(1:n1,w), labels=c(x[t1],x[t2]), las=1,adj=1)
     points(y[t1], 1:n1, pch=16, ...)
-    segments(yplus[t1], 1:n1, yminus[t1], 1:n1, ...)
+    segments(yplus[t1], 1:n1, yminus[t1], 1:n1, lwd=lwd, ...)
 
     if(any(Type==2)) {
       abline(h=n1+1, lty=2, ...)
@@ -50,7 +50,7 @@ errbar <-
         lines(c(0,0)+offset, c(n1+1,par('usr')[4]), lty=2, ...)
       
       points(y[t2] + offset, w, pch=16, ...)
-      segments(yminus[t2]+offset, w, yplus[t2]+offset, w, ...)
+      segments(yminus[t2]+offset, w, yplus[t2]+offset, w, lwd=lwd, ...)
       at <- pretty(range(y[t2],yplus[t2],yminus[t2]))
       axis(3, at=at+offset, label=format(round(at,6)))
     }
@@ -63,9 +63,17 @@ errbar <-
     plot(x, y, ylim=ylim, xlab=xlab, ylab=ylab, ...)
   
   xcoord <- par()$usr[1:2]
-  segments(x, yminus, x, yplus , lty=lty, lwd=lwd, ...)
   smidge <- cap * ( xcoord[2] - xcoord[1] ) / 2
-  segments( x - smidge, yminus, x + smidge, yminus, lwd=lwd, ...)
-  segments( x - smidge, yplus, x + smidge, yplus, lwd=lwd, ...)
+
+  segments(x, yminus, x, yplus , lty=lty, lwd=lwd, ...)
+  if(par()$xlog) {
+    xstart <- x * 10 ^ (-smidge)
+    xend <- x * 10 ^ (smidge)
+  } else {
+    xstart <- x - smidge
+    xend <- x + smidge
+  }
+  segments( xstart, yminus, xend, yminus, lwd=lwd, ...)
+  segments( xstart, yplus, xend, yplus, lwd=lwd, ...)
   invisible()
 }

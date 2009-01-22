@@ -1,13 +1,13 @@
-## $Id: summary.formula.s 562 2007-11-01 15:38:34Z dupontct $
+## $Id: summary.formula.s 613 2009-01-22 22:43:48Z dupontct $
 ##note: ars may always be T
+
 summary.formula <-
   function(formula, data, subset, na.action, 
            fun=NULL,
            method=c('response','reverse','cross'),
            overall=method=='response'|method=='cross', 
            continuous=10, na.rm=TRUE, na.include=method!='reverse',
-           g=4, 
-           quant=c(.025,.05,.125,.25,.375,.5,.625,.75,.875,.95,.975),
+           g=4, quant = c(0.025, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 0.95, 0.975),
            nmin=if(method=='reverse') 100
                 else 0,
            test=FALSE,
@@ -25,7 +25,13 @@ summary.formula <-
                if(!is.matrix(tab) || nrow(tab) < 2 | ncol(tab) < 2)
                  list(p.value=NA, statistic=NA, parameter=NA)
                else
-                 chisq.test(tab, correct=FALSE)
+                 {
+                   rowcounts <- tab %*% rep(1, ncol(tab))
+                   tab <- tab[rowcounts > 0,]
+                   if(!is.matrix(tab)) 
+                     list(p.value=NA, statistic=NA, parameter=NA)
+                   else chisq.test(tab, correct=FALSE)
+                 }
 
              list(P=st$p.value, stat=st$statistic,
                   df=st$parameter,
@@ -49,20 +55,20 @@ summary.formula <-
   method <- match.arg(method)
     
   X <- match.call(expand=FALSE)
-  X$fun <- X$method <- X$na.rm <- X$na.include <- X$g <- 
+  X$fun <- X$method <- X$na.rm <- X$na.include <- X$g <-
     X$overall <- X$continuous <- X$quant <- X$nmin <- X$test <-
       X$conTest <- X$catTest <- X$... <- NULL
   if(missing(na.action))
     X$na.action <- na.retain
 
   Terms <- if(missing(data)) terms(formula,'stratify')
-           else terms(formula,'stratify',data=data)
+  else terms(formula,'stratify',data=data)
 
   X$formula <- Terms
   X[[1]] <- as.name("model.frame")
-    
+
   X <- eval(X, sys.parent())
-  
+
   Terms <- attr(X,"terms")
   resp <- attr(Terms,"response")
     
@@ -321,6 +327,7 @@ summary.formula <-
   }
 
   if(method=='reverse') {
+    quants <- unique(c(quant, 0.025, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 0.95, 0.975))
     if(resp) {
       group <- as.factor(X[[resp]])[,drop=TRUE]
       group.freq <- table(group)
@@ -411,17 +418,17 @@ summary.formula <-
               c(quantile(x,quant), Mean=mean(x), SD=sqrt(var(x)))
             }
 
-            qu <- tapply(w, g, sfn, simplify=TRUE, quant)
+            qu <- tapply(w, g, sfn, simplify=TRUE, quants)
             ## Added simplify=TRUE to work with R 7Jun01
             if(test)
               testresults[[i]] <- conTest(g, w)
 
             if(overall)
-              qu$Combined <- sfn(w, quant)
+              qu$Combined <- sfn(w, quants)
 
-            comp[[i]] <- matrix(unlist(qu),ncol=length(quant)+2,byrow=TRUE,
+            comp[[i]] <- matrix(unlist(qu),ncol=length(quants)+2,byrow=TRUE,
                                 dimnames=list(names(qu),
-                                              c(format(quant),'Mean','SD')))
+                                              c(format(quants),'Mean','SD')))
             if(any(group.freq <= nmin))
               dat[[i]] <-
                 lapply(split(w,g),nmin=nmin,
@@ -1159,6 +1166,29 @@ plot.summary.formula.reverse <-
                     dotfont=dotfont[1],
                     add=j > 1, ...)
         }
+
+        Key2 <- function(x=NULL, y=NULL, quant, ...)
+          {
+            quant <- format(quant)
+            txt <- paste('(',quant[2],',',quant[3],',',quant[4], 
+                         ') quantiles shown\nx-axes scaled to (',quant[1],',',
+                         quant[5],') quantiles', sep='')
+            if(length(x)) {
+              if(is.list(x)) {
+                y <- x$y;
+                x <- x$x
+              }
+
+              text(x,y,txt, cex=.8, adj=0, ...)
+            } else
+            mtitle(lr=txt, cex.l=.8, line=1, ...)
+
+            invisible()
+          }
+
+        formals(Key2) <- list(x=NULL,y=NULL,quant=obj$quant)
+        storeTemp(Key2)
+        
       } else if(conType=='bp')
         bpplt(st, xlab=nam, cex.points=cex.means)
       else
@@ -1171,28 +1201,6 @@ plot.summary.formula.reverse <-
         title(fts, line=.5)  ## .5 ignored in S-Plus
       }
     }
-
-    Key2 <- function(x=NULL, y=NULL, quant, ...)
-    {
-      quant <- format(quant)
-      txt <- paste('(',quant[2],',',quant[3],',',quant[4], 
-                   ') quantiles shown\nx-axes scaled to (',quant[1],',',
-                   quant[5],') quantiles', sep='')
-      if(length(x)) {
-        if(is.list(x)) {
-          y <- x$y;
-          x <- x$x
-        }
-
-        text(x,y,txt, cex=.8, adj=0, ...)
-      } else
-        mtitle(lr=txt, cex.l=.8, line=1, ...)
-
-      invisible()
-    }
-
-    formals(Key2) <- list(x=NULL,y=NULL,quant=obj$quant)
-    storeTemp(Key2)
   }
 
   invisible(npages)
@@ -1449,7 +1457,7 @@ print.summary.formula.reverse <-
            exclude1=TRUE, vnames=c("labels","names"), prUnits=TRUE,
            sep="/", abbreviate.dimnames=FALSE, 
            prefix.width=max(nchar(lab)), 
-           min.colwidth, formatArgs=NULL,
+           min.colwidth, formatArgs=NULL, round=NULL,
            prtest=c('P','stat','df','name'), prmsd=FALSE, long=FALSE,
            pdig=3, eps=0.001, ...)
 {
@@ -1502,7 +1510,7 @@ print.summary.formula.reverse <-
                        pdig=pdig, eps=eps)
       nn <- c(nn, rep(NA, nrow(cs)-1))
     } else cs <- formatCons(stats[[i]], nam, tr, x$group.freq, prmsd,
-                            sep, formatArgs, prtest,
+                            sep, formatArgs, round, prtest,
                             pdig=pdig, eps=eps)
 
     cstats <- rbind(cstats, cs)
@@ -1699,7 +1707,7 @@ formatCats <- function(tab, nam, tr, type, group.freq,
 
 ## Function to format subtable for continuous var, for method='reverse'
 formatCons <- function(stats, nam, tr, group.freq, prmsd, sep='/',
-                       formatArgs=NULL, prtest,
+                       formatArgs=NULL, round=NULL, prtest,
                        latex=FALSE, testUsed=character(0),
                        middle.bold=FALSE, outer.size=NULL, msdsize=NULL,
                        pdig=3, eps=.001, footnoteTest=TRUE)
@@ -1717,7 +1725,7 @@ formatCons <- function(stats, nam, tr, group.freq, prmsd, sep='/',
   qu <- stats[,c(q1,med,q3),drop=FALSE]
   if(prmsd)
     qu <- cbind(qu,stats[,c('Mean','SD'),drop=FALSE])
-
+  if(length(round)) qu <- round(qu, round)
   ww <- c(list(qu), formatArgs)
   cqu <- do.call('format', ww)
   cqu[is.na(qu)] <- ''
@@ -1886,7 +1894,7 @@ latex.summary.formula.reverse <-
            exclude1=TRUE,  vnames=c("labels","names"), prUnits=TRUE,
            middle.bold=FALSE, outer.size="scriptsize",
            caption, rowlabel="",
-           insert.bottom=TRUE, dcolumn=FALSE,
+           insert.bottom=TRUE, dcolumn=FALSE, formatArgs=NULL, round=NULL,
            prtest=c('P','stat','df','name'), prmsd=FALSE, msdsize=NULL,
            long=dotchart, pdig=3, eps=.001, auxCol=NULL, dotchart=FALSE, ...)
 {
@@ -1960,10 +1968,11 @@ latex.summary.formula.reverse <-
                        npct, pctdig, exclude1, long, prtest,
                        latex=TRUE, testUsed=testUsed,
                        npct.size=npct.size,
+                       pdig=pdig, eps=eps,
                        footnoteTest=gt1.test, dotchart=dotchart)
       nn <- c(nn, rep(NA, nrow(cs)-1))
     } else cs <- formatCons(stats[[i]], nam, tr, x$group.freq, prmsd,
-                            prtest=prtest,
+                            prtest=prtest, formatArgs=formatArgs, round=round,
                             latex=TRUE, testUsed=testUsed,
                             middle.bold=middle.bold,
                             outer.size=outer.size, msdsize=msdsize,
@@ -2020,47 +2029,31 @@ latex.summary.formula.reverse <-
   if(!insert.bottom)
     legend <- NULL
   else {
-    legend <- paste(if(any(type==2)) {
-                      paste("\\noindent {\\",outer.size," $a$\\ }{",bld,"$b$\\ }{\\",
-                            outer.size," $c$\\ } represent the lower quartile $a$, the median $b$, and the upper quartile $c$\\ for continuous variables.",
-                            if(prmsd) '~~$x\\pm s$ represents $\\bar{X}\\pm 1$ SD.'
-                            else '',
-                            '\\\\', sep="")
-                    } else NULL,
-                    if(prn) '$N$\\ is the number of non--missing values.\\\\',
-                    if(any(type==1) && npct=='numerator')
-                      'Numbers after percents are frequencies.\\\\',
-                    sep="\n")
-    legend <- NULL
+    legend <- character()
     if(any(type==2)) {
       legend <- paste("\\noindent {\\", outer.size, " $a$\\ }{", bld,
                       "$b$\\ }{\\", outer.size,
                       " $c$\\ } represent the lower quartile $a$, the median $b$, and the upper quartile $c$\\ for continuous variables.",
                       if(prmsd) '~~$x\\pm s$ represents $\\bar{X}\\pm 1$ SD.'
                       else '',
-                      '\\\\\n', sep="")
+                      sep="")
     }
     
     if(prn) {
-      legend <- paste(legend,
-                      '$N$\\ is the number of non--missing values.\\\\\n',
-                      sep='')
+      legend <- c(legend, '$N$\\ is the number of non--missing values.')
     }
 
     if(any(type==1) && npct=='numerator') {
-      legend <- paste(legend,
-                      'Numbers after percents are frequencies.\\\\\n',
-                      sep='')
+      legend <- c(legend, 'Numbers after percents are frequencies.')
     }
       
     if(length(testUsed))
-      legend <-paste(legend,
-                     if(length(testUsed)==1)'\\noindent Test used:'
-                     else '\\indent Tests used:',
-                     if(length(testUsed)==1) paste(testUsed,'test')
-                     else
-                       paste(paste('$^{',1:length(testUsed),'}$',testUsed,
-                                   ' test',sep=''),collapse='; '))
+      legend <-c(legend,
+                 if(length(testUsed)==1)'\\noindent Test used:'
+                 else '\\indent Tests used:',
+                 if(length(testUsed)==1) paste(testUsed,'test')
+                 else paste(paste('\textsuperscript{\normalfont ',1:length(testUsed),'}',testUsed,
+                                  ' test',sep=''),collapse='; '))
 
     ## added rowname=lab 12aug02  added '\n\n' 4mar03 for ctable=T
   }
@@ -2367,20 +2360,19 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
 }
 
 
-'[.summary.formula.response' <- function(x,i,j,drop=FALSE, ...)
+'[.summary.formula.response' <- function(x,i,j,drop=FALSE)
 {
-  z <- x
-  at <- attributes(z)
+  at <- attributes(x)
   at$dim <- at$dimnames <- NULL
 
   if(!missing(j)) {
-    z <- oldUnclass(z)[,j,drop=FALSE]
+    x <- oldUnclass(x)[,j,drop=FALSE]
     at$ycolname <- at$ycolname[j]
-    attributes(z) <- c(attributes(z), at)
+    attributes(x) <- c(attributes(x), at)
   }
 
   if(missing(i))
-    return(z)
+    return(x)
 
   if(is.character(i)) {
     vn <- at$vname[at$vname!='']
@@ -2408,9 +2400,9 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
   at$nlevels <- at$nlevels[i]
   at$labels  <- at$labels[i]
 
-  z <- oldUnclass(z)[j,,drop=FALSE]
-  attributes(z) <- c(attributes(z), at)
-  z
+  x <- oldUnclass(x)[j,,drop=FALSE]
+  attributes(x) <- c(attributes(x), at)
+  x
 }
 
 
@@ -2656,7 +2648,7 @@ smean.cl.boot <- if(.R.) {
                           'if(na.rm) x <- x[!is.na(x)]',
                           'n <- length(x)',
                           'xbar <- mean(x)',
-                          'if(n < 2) return(Mean=xbar, Lower=NA, Upper=NA)',
+                          'if(n < 2) return(c(Mean=xbar, Lower=NA, Upper=NA))',
                           'z <- unlist(lapply(1:B, function(i,x,N)',
                           'sum(x[.Internal(sample(N, N, TRUE, NULL))]),',
                           'x=x, N=n)) / n',
@@ -2675,7 +2667,7 @@ smean.cl.boot <- if(.R.) {
   n <- length(x)
   xbar <- mean(x)
   if(n < 2)
-    return(Mean=xbar, Lower=NA, Upper=NA)
+    return(c(Mean=xbar, Lower=NA, Upper=NA))
 
   z <- unlist(lapply(1:B, function(i,x,N)
                      sum(x[.Internal(sample.index(N, N, TRUE),
@@ -2746,6 +2738,9 @@ matrix2dataFrame <- function(x, at=origAttributes, restoreAll=TRUE)
         a$levels <- NULL
         if(length(a$class)) a$class <- setdiff(a$class, 'factor')
       }
+      if('factor' %in% a$class) storage.mode(xi) <- 'integer'
+      ## R won't let something be assigned class factor by brute
+      ## force unless it's an integer object
       attributes(xi) <- a
     } else {
       if(length(l   <- a$label))

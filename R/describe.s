@@ -1,4 +1,4 @@
-## $Id: describe.s 443 2007-02-26 20:37:37Z harrelfe $
+## $Id: describe.s 553 2007-09-18 18:37:57Z harrelfe $
 describe <- function(x, ...) UseMethod("describe")  #13Mar99
 
 
@@ -344,12 +344,13 @@ print.describe <- function(x, condense=TRUE, ...)
         ' Observations\n')
     
     if(length(at$naprint)) cat('\n',at$naprint,'\n')
-    cat('---------------------------------------------------------------------------\n')
+    w <- paste(rep('-', .Options$width), collapse='')
+    cat(w, '\n', sep='')
     for(z in x) {
       if(length(z)==0)
         next
       print.describe.single(z, condense=condense)
-      cat('---------------------------------------------------------------------------\n')
+      cat(w, '\n', sep='')
     }
     if(length(at$missing.vars)) {
       cat('\nVariables with all observations missing:\n\n')
@@ -802,7 +803,8 @@ contents.data.frame <- function(object, ...)
 
 
 print.contents.data.frame <-
-  function(x, sort=c('none','names','labels','NAs'), prlevels=TRUE, ...)
+  function(x, sort=c('none','names','labels','NAs'),
+           prlevels=TRUE, number=FALSE, ...)
 {
   sort <- match.arg(sort)
   d <- x$dim
@@ -811,23 +813,24 @@ print.contents.data.frame <-
       ' variables    Maximum # NAs:',maxnas,'\n\n',sep='')
   cont <- x$contents
   nam <- row.names(cont)
+  if(number) row.names(cont) <- paste(format(1:d[2]), row.names(cont))
 
   switch(sort,
          names={
-           cont <- cont[order(nam),]
+           cont <- cont[order(nam),,drop=FALSE]
          },
          labels={
            if(length(cont$Labels)) 
-             cont <-  cont[order(cont$Labels, nam),]
+             cont <-  cont[order(cont$Labels, nam),,drop=FALSE]
          },
          NAs={
            if(maxnas>0)
-             cont <- cont[order(cont$NAs,nam),]
+             cont <- cont[order(cont$NAs,nam),,drop=FALSE]
          })
 
   if(length(cont$Levels))
     cont$Levels <- ifelse(cont$Levels==0,'',format(cont$Levels))
-  
+
   print(cont)
 
   if(prlevels && length(L <- x$Levels)) {
@@ -883,7 +886,7 @@ html.contents.data.frame <-
   function(object, sort=c('none','names','labels','NAs'), prlevels=TRUE,
            file=paste('contents',object$dfname,'html',sep='.'),
            levelType=c('list','table'),
-           append=FALSE, ...)
+           append=FALSE, number=FALSE, ...)
 {
   sort <- match.arg(sort)
   levelType <- match.arg(levelType)
@@ -896,15 +899,21 @@ html.contents.data.frame <-
       file=file, append=append)
   cont <- object$contents
   nam <- row.names(cont)
+  if(number)
+    {
+      rn <- paste(format(1:d[2]), row.names(cont))
+      rn <- sedit(rn, ' ', '&#XA0;&#XA0;')
+      row.names(cont) <- rn
+    }
 
   switch(sort,
-         names={cont <- cont[order(nam),]},
+         names={cont <- cont[order(nam),,drop=FALSE]},
          labels={
            if(length(cont$Labels)) 
-             cont <-  cont[order(cont$Labels, nam),]
+             cont <-  cont[order(cont$Labels, nam),,drop=FALSE]
          },
          NAs={
-           if(maxnas>0) cont <- cont[order(cont$NAs,nam),]
+           if(maxnas>0) cont <- cont[order(cont$NAs,nam),,drop=FALSE]
          })
   
   link <- matrix('', nrow=nrow(cont), ncol=1+ncol(cont),

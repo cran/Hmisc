@@ -6,6 +6,7 @@
 \alias{latex.list}
 \alias{latexTranslate}
 \alias{latexSN}
+\alias{latexTabular}
 \alias{latexVerbatim}
 \alias{dvi}
 \alias{print.dvi}
@@ -51,6 +52,9 @@ e.g. \code{[) [] (] ()}, and that surrounding  by \code{$$} is OK.
 strings using LaTeX exponents.  Dollar signs to enter math mode are not
 added.
 
+\code{latexTabular} creates a character vector representing a matrix or
+data frame in a simple \code{tabular} environment.
+
 \code{latexVerbatim} on an object executes the object's \code{print} method,
 capturing the output for a file inside a LaTeX verbatim environment.
 
@@ -93,7 +97,8 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
     title=first.word(deparse(substitute(object))),
     file=paste(title, ".tex", sep=""),
     append=FALSE, label=title,
-    rowlabel=title, rowlabel.just="l", cgroup=NULL, n.cgroup=NULL,
+    rowlabel=title, rowlabel.just="l",
+    cgroup=NULL, n.cgroup=NULL,
     rgroup=NULL, n.rgroup=NULL,
     cgroupTexCmd="bfseries",
     rgroupTexCmd="bfseries",
@@ -141,6 +146,11 @@ latexTranslate(object, inn=NULL, out=NULL, pb=FALSE, greek=FALSE, \dots)
 
 latexSN(x)
 
+latexTabular(x, headings=colnames(x), 
+             align =paste(rep('c',ncol(x)),collapse=''),
+             halign=paste(rep('c',ncol(x)),collapse=''),
+             helvetica=TRUE, ...)
+
 latexVerbatim(x, title=first.word(deparse(substitute(x))),
     file=paste(title, ".tex", sep=""),
     append=FALSE, size=NULL, hspace=NULL,
@@ -165,7 +175,8 @@ dvigv(object, \dots)
   }
   \item{x}{
     any object to be \code{print}ed verbatim for \code{latexVerbatim}.  For
-    \code{latexSN} \code{x} is a numeric vector.
+    \code{latexSN} \code{x} is a numeric vector.  For
+	\code{latexTabular} \code{x} is a matrix or data frame.
   }
   \item{title}{
     name of file to create without the \code{.tex} extension.  If this
@@ -189,7 +200,7 @@ dvigv(object, \dots)
     postscript file.
   }
   \item{append}{
-    defaults to \code{FALSE}. Set to \code{TRUE} to append output to an existing file.
+   defaults to \code{FALSE}. Set to \code{TRUE} to append output to an existing file.
   }
   \item{label}{
     a text string representing a symbolic label for the table for referencing
@@ -236,9 +247,8 @@ dvigv(object, \dots)
     the current font to 'bold'.  It is possible to supply a vector of
     strings so that each column group label is formatted differently.
     Please note that the first item of the vector is used to format the
-    title (even if a title is not used), and that there is an empty
-    column between each column group. Currently the user needs to handle
-    these issues.  Multiple effects can be achieved by creating custom
+    title (even if a title is not used). Currently the user needs to handle
+    these issue.  Multiple effects can be achieved by creating custom
     LaTeX commands; for example,
     \code{\providecommand{\redscshape}{\color{red}\scshape}} creates a
     LaTeX command called \code{redscshape} that formats the text in red
@@ -262,8 +272,7 @@ dvigv(object, \dots)
     label differently. If column groups are not used, the first item in
     the vector will be used to format the title. Please note that if
     column groups are used the first item of \code{cgroupTexCmd} and not
-    \code{colnamesTexCmd} is used to format the title, and that there
-    are empty columns between each group. The user needs to allow for
+    \code{colnamesTexCmd} is used to format the title. The user needs to allow for
     these issues when supplying a vector of commands.  See also
     \code{cgroupTexCmd} above regarding multiple effects.
   }
@@ -312,7 +321,7 @@ dvigv(object, \dots)
     size for \code{extracolheads} or for any second lines in column names;
     default is \code{"scriptsize"} 
   }
-  \item{dcolumn} {see \code{format.df}}
+  \item{dcolumn}{see \code{\link{format.df}}}
   \item{numeric.dollar}{
     logical, default \code{!dcolumn}.  Set to \code{TRUE} to place dollar
     signs around numeric values when \code{dcolumn=FALSE}.  This 
@@ -433,7 +442,9 @@ dvigv(object, \dots)
     passes arguments to \code{format.df} (e.g., \code{col.just} and other
     formatting options like \code{dec}, \code{rdec}, and \code{cdec}).  For
     \code{latexVerbatim} these arguments are passed to the \code{print}
-    function.  Ignored for \code{latexTranslate}.
+    function.  Ignored for \code{latexTranslate}.  For
+	\code{latexTabular} if these extra arguments are specified, \code{x}
+	is run through \code{format.df} with those arguments.
   }
   \item{inn, out}{
     specify additional input and translated strings over the usual
@@ -445,6 +456,17 @@ dvigv(object, \dots)
   }
   \item{greek}{set to \code{TRUE} to have \code{latexTranslate} put names
     for greek letters in math mode and add backslashes}
+  \item{headings}{a vector of character strings specifying column
+	headings for \code{latexTabular}, defaulting to \code{x}'s
+	\code{colnames}}
+  \item{align}{a character strings specifying column
+	alignments for \code{latexTabular}, defaulting to
+	\code{paste(rep('c',ncol(x)),collapse='')} to center.  You may
+	specify \code{align='c|c'} and other LaTeX tabular formatting.}
+  \item{halign}{a character strings specifying alignment for
+	column headings, defaulting to centered.}
+  \item{helvetica}{set to \code{FALSE} to use default LaTeX font in
+	\code{latexTabular} instead of helvetica.}
   \item{hspace}{
     horizontal space, e.g., extra left margin for verbatim text.  Default
     is none.  Use e.g. \code{hspace="10ex"} to add 10 extra spaces to the left
@@ -493,11 +515,23 @@ commands which are assumed to be in the system path.
   \code{geometry} and \code{ctable} styles in MikTeX to make optimum use
   of \code{latex()}.
 
+  On Mac OS X, you may have to append the /usr/texbin directory to the
+  system path.  Thanks to Kevin Thorpe
+  (\email{kevin.thorpe@utoronto.ca}) one way to set up Mac OS X is
+  to install \code{X11} and \code{X11SDK} if not already installed,
+  start \code{X11} within the R GUI, and issue the command
+  \code{Sys.setenv( PATH=paste(Sys.getenv("PATH"),"/usr/texbin",sep=":")
+  )}.  To avoid any complications of using \code{X11} under MacOS, users
+  can install the \code{TeXShop} package, which will associate
+  \code{.dvi} files with a viewer that displays a \code{pdf} version of
+  the file after a hidden conversion from \code{dvi} to \code{pdf}.
+
   System options can be used to specify external commands to be used.
   Defaults are given by \code{options(xdvicmd='xdvi')} or
   \code{options(xdvicmd='yap')}, \code{options(dvipscmd='dvips')},
   \code{options(latexcmd='latex')}.  For MacOS specify
-  \code{options(xdvicmd='MacdviX')}.
+  \code{options(xdvicmd='MacdviX') or if TeXShop is installed,
+  \code{options(xdvicmd='open')}}.
   
   If running S-Plus and your directory for temporary files is not
   \code{/tmp} (Unix/Linux) or \code{\\windows\\temp} (Windows), add your
@@ -539,10 +573,21 @@ University of Newcastle upon Tyne, UK.
 \code{\link{html}}, \code{\link{format.df}}, \code{\link[tools]{texi2dvi}}
 }
 \examples{
-x <- matrix(1:6, nrow=2, dimnames=list(c('a','b'),c('c','d','enLine 2')))
+x <- matrix(1:6, nrow=2, dimnames=list(c('a','b'),c('c','d','this that')))
 \dontrun{
 latex(x)   # creates x.tex in working directory
+# The result of the above command is an object of class "latex"
+# which here is automatically printed by the latex print method.
+# The latex print method prepends and appends latex headers and
+# calls the latex program in the PATH.  If the latex program is
+# not in the PATH, you will get error messages from the operating
+# system.
+
 w <- latex(x, file='/tmp/my.tex')
+# Does not call the latex program as the print method was not invoked
+print.default(w)
+# Shows the contents of the w variable without attempting to latex it.
+
 d <- dvi(w)  # compile LaTeX document, make .dvi
              # latex assumed to be in path
 d            # or show(d) : run xdvi (assumed in path) to display

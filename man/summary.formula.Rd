@@ -81,8 +81,7 @@
         method = c("response", "reverse", "cross"),
         overall = method == "response" | method == "cross",
         continuous = 10, na.rm = TRUE, na.include = method != "reverse",
-        g = 4, quant  = c(0.025, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625,
-                          0.75, 0.875, 0.95, 0.975),
+        g = 4, quant  = c(0.025, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875, 0.95, 0.975),
         nmin = if (method == "reverse") 100
                else 0,
          test = FALSE,
@@ -100,23 +99,26 @@
                 else chisq.test(tab, correct = FALSE)
           list(P = st$p.value, stat = st$statistic, df = st$parameter,
                testname = "Pearson", statname = "Chi-square",
-               latexstat = "\\chi^{2}_{df}", plotmathstat = "chi[df]^2")
+               latexstat = "\\\\chi^{2}_{df}", plotmathstat = "chi[df]^2")
         },
         ordTest = function(group, x) {
           f <- lrm(x ~ group)$stats
           list(P = stats["P"], stat = stats["Model L.R."],
                df = stats["d.f."],
                testname = "Proportional odds likelihood ratio",
-               statname = "Chi-square", latexstat = "\\chi^{2}_{df}",
+               statname = "Chi-square", latexstat = "\\\\chi^{2}_{df}",
                plotmathstat = "chi[df]^2")
         }, \dots)
 
 % \method{summary}{formula}(formula, data, subset, na.action, fun, method='response',
 %               overall=TRUE, continuous=10, na.rm=FALSE, na.include=TRUE,
 % g=4, nmin=0, \dots)
+
+\method{[}{summary.formula.response}(x,i,j,drop=FALSE)
+
 \method{print}{summary.formula.response}(x, vnames=c('labels','names'), prUnits=TRUE,
       abbreviate.dimnames=FALSE,
-      prefix.width, min.colwidth, formatArgs, \dots)
+      prefix.width, min.colwidth, formatArgs=NULL, \dots)
 
 \method{plot}{summary.formula.response}(x, which = 1, vnames = c('labels','names'), xlim, xlab,
      pch = c(16, 1, 2, 17, 15, 3, 4, 5, 0), superposeStrata = TRUE,
@@ -126,8 +128,6 @@
 \method{latex}{summary.formula.response}(object, title = first.word(deparse(substitute(object))), caption,
       trios, vnames = c('labels', 'names'), prn = TRUE, prUnits = TRUE,
       rowlabel = '', cdec = 2, ncaption = TRUE, \dots)
-
-\method{[}{summary.formula.response}(x, i, j, drop=FALSE, \dots)
 
 
 % \method{summary}{formula}(formula, data, subset, na.action, method='reverse',
@@ -156,7 +156,7 @@
       npct = c('numerator', 'both', 'denominator', 'none'),
       exclude1 = TRUE, vnames = c('labels', 'names'), prUnits = TRUE,
       sep = '/', abbreviate.dimnames = FALSE,
-      prefix.width = max(nchar(lab)), min.colwidth, formatArgs,
+      prefix.width = max(nchar(lab)), min.colwidth, formatArgs=NULL, round=NULL,
       prtest = c('P','stat','df','name'), prmsd = FALSE, long = FALSE,
       pdig = 3, eps = 0.001, \dots)
 
@@ -177,7 +177,7 @@
       npct.size = 'scriptsize', Nsize = 'scriptsize', exclude1 = TRUE,
       vnames=c("labels", "names"), prUnits = TRUE, middle.bold = FALSE,
       outer.size = "scriptsize", caption, rowlabel = "",
-      insert.bottom = TRUE, dcolumn = FALSE,
+      insert.bottom = TRUE, dcolumn = FALSE, formatArgs=NULL, round=NULL,
       prtest = c('P', 'stat', 'df', 'name'), prmsd = FALSE,
       msdsize = NULL, long = dotchart, pdig = 3, eps = 0.001,
       auxCol = NULL, dotchart=FALSE, \dots)
@@ -221,6 +221,10 @@ cumcategory(y)
   \item{y}{
     a numeric, character, category, or factor vector for \code{cumcategory}.
     Is converted to a categorical variable is needed.
+  }
+  \item{drop}{
+    logical. If \code{TRUE} the result is coerced to the
+    lowest possible dimension.
   }
   \item{data}{
     name or number of a data frame.  Default is the current frame.
@@ -373,9 +377,6 @@ cumcategory(y)
     to just be printed to standard output rather than be stored in a
     permanent file.
   }
-  \item{drop}{logical.  If 'TRUE' the result is coerced to the lowest
-              possible dimension.  The default is to drop if only one
-              column is left, but *not* to drop if only one row is left.}
   \item{object}{an object created by \code{summary.formula}}
   \item{quant}{
     vector of quantiles to use for summarizing data with
@@ -423,9 +424,10 @@ cumcategory(y)
   \item{formatArgs}{
     a list containing other arguments to pass to \code{format.default} such as
     \code{scientific}, e.g., \code{formatArgs=list(scientific=c(-5,5))}.  For
-    \code{print.summary.formula.reverse}, \code{formatArgs} applies only to
+    \code{print.summary.formula.reverse} and
+	\code{format.summary.formula.reverse}, \code{formatArgs} applies only to
     statistics computed on continuous variables, not to percents,
-    numerators, and denominators.
+    numerators, and denominators.  The \code{round} argument may be preferred.
   }
   \item{digits}{
     number of significant digits to print.  Default is to use the current
@@ -482,6 +484,12 @@ cumcategory(y)
     print any tests.  This applies to \code{print}, \code{latex}, and
     \code{plot} methods for \code{method='reverse'}.
   }
+  \item{round}{
+	for \code{print.summary.formula.reverse} and
+	\code{latex.summary.formula.reveres} specify \code{round} to round
+	the quantiles and optional mean and standard deviation to
+	\code{round} digits after the decimal point
+	}
   \item{prmsd}{
     set to \code{TRUE} to print mean and SD after the three quantiles, for
     continuous variables with \code{method="reverse"}

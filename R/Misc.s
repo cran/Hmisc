@@ -1,4 +1,4 @@
-## $Id: Misc.s 472 2007-04-03 14:56:56Z dupontct $
+## $Id: Misc.s 593 2008-09-08 15:41:07Z dupontct $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -306,27 +306,26 @@ all.is.numeric <- function(x, what=c('test','vector'),
 Lag <- function(x, shift=1)
 {
   ## Lags vector x shift observations, padding with NAs or blank strings
-  ## on the left, preserving attributes of x
+  ## preserving attributes of x
 
-  # check to see if shift == 0
-  if(shift == 0)
-    return(x)
-
+  xLen <- length(x)
+  if(shift == 0) return(x)
+  
   # Create base vector use character to generate "" for mode "character"
   # Coerce base vector to be type of x
-  xLen <- length(x)
   ret <- as.vector(character(xLen), mode=storage.mode(x))
   
   # set resp attributes equal to x attributes
   attrib <- attributes(x)
 
-  if(!is.null(attrib$label))
+  if(length(attrib$label))
     atr$label <- paste(attrib$label, 'lagged', shift, 'observations')
 
-  if(xLen > shift){
-    retrange = 1:shift
-    ret[-retrange] <- x[1:(xLen - shift)]
-  }
+  if(abs(shift) < xLen)
+    {
+      if(shift > 0) ret[-(1:shift)] <- x[1:(xLen - shift)]
+      else ret[1:(xLen+shift)] <- x[(1-shift):xLen]
+    }
   
   attributes(ret) <- attrib
   return(ret)
@@ -351,11 +350,11 @@ xySortNoDupNoNA <- function(x, y)
 }
 
 ## Lifted from rowsum in 4.5
-rowsumFast <- function(x, group, reorder=FALSE)
+rowsumFast <- if(.R.) rowsum else function(x, group, reorder=TRUE)
 {
   ## assumes x is a matrix
-  ## by default, results are in order that unique group values
-  ## encountered
+  ## by default, results are not in order that unique group values
+  ## encountered but by sorted group values
   ## is fast and solves error that reorder= omitted from S+ 2000
   
   if(!is.numeric(x))
@@ -1365,9 +1364,9 @@ formatDateTime <- function(x, at, roundDay=FALSE)
          fmt <- at$format
          if(roundDay) {
            if(length(fmt)==2 && is.character(fmt))
-             format.dates(x, fmt[1])
+             format(dates(x), fmt[1])
            else
-             format.dates(x)
+             format(dates(x))
          }
          else x
        } else if(.R.) {
@@ -1661,22 +1660,21 @@ getLatestSource <- function(x=NULL, package='Hmisc',
   w <- w[i]
   
   files <- switch(type,
-                  cvs=sub('href=\"\\(.*\\)\\?.*','\\1', w),
-                  svn=sub('href=\".*/trunk/R/\\(.*\\)\\?.*','\\1', w))
+                  cvs=sub('href=\"(.*)\\?.*','\\1', w),
+                  svn=sub('href=\".*/trunk/R/(.*)\\?.*','\\1', w))
   files <- sub('\\.s$','',files)
   ver <- switch(type,
                 cvs=if(length(recent))
-                sub('^.*rev=\\(.*\\);.*','\\1',w) else
+                sub('^.*rev=(.*);.*','\\1',w) else
                 sub('\"$','',sub('^.*rev=','',w)),
                 svn=if(length(recent))
-                sub('^.*rev=\\(.*\\)&amp.*', '\\1', w) else
-                sub('^.*rev=\\(.*\\)\"', '\\1', w))
+                sub('^.*rev=(.*)&amp.*', '\\1', w) else
+                sub('^.*rev=(.*)\"', '\\1', w))
 
   if(avail) return(data.frame(file=files, version=ver))
 
   if(length(recent)) x <- files[1:recent]
   if(length(x)==1 && x=='all') x <- files
-
   for(fun in x) {
     i <- which(files==fun)
     if(!length(i)) stop(paste('no file ', fun,' in ',package, sep=''))

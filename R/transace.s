@@ -1,4 +1,4 @@
-# $Id: transace.s 506 2007-06-14 20:14:06Z dupontct $
+# $Id: transace.s 564 2007-11-27 22:01:51Z harrelfe $
 transace <- function(x, monotonic=NULL, categorical=NULL, binary=NULL,
                      pl=TRUE)
 {
@@ -700,7 +700,7 @@ Quantile.areg.boot <- function(object, q=.5, ...)
     approxExtrap(trantab, xout=lp+residualQuantile)$y
 
   formals(g) <- list(lp=numeric(0), trantab=object$fit[[1]],
-                     residualQuantile <- quantile(object$residuals, q))
+                     residualQuantile = quantile(object$residuals, q))
   g
 }
 

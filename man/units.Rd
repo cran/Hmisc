@@ -14,7 +14,7 @@ retain the \code{"units"} attribute.  For S-Plus 6 which uses version 4
 of the S language, the latter does not work.
 }
 \usage{
-units(x, ...)
+units(x, \dots)
 \method{units}{default}(x, none='', \dots)
 \method{units}{default}(x) <- value
 }
