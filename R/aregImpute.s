@@ -1,4 +1,4 @@
-# $Id: aregImpute.s 567 2007-12-31 03:39:52Z harrelfe $
+# $Id: aregImpute.s 625 2009-03-17 14:51:35Z harrelfe $
 aregImpute <- function(formula, data, subset, n.impute=5,
                        group=NULL, nk=3, tlinear=TRUE,
                        type=c('pmm','regression'),
@@ -96,6 +96,15 @@ aregImpute <- function(formula, data, subset, n.impute=5,
       }
       if(iscat)
         {
+          if(length(lev) < 2) stop(paste(ni,'is constant'))
+          tab <- table(xi)
+          if(any(tab==0))
+            stop(paste(ni,'has the following levels with no observations:',
+                       paste(names(tab)[tab==0],collapse=' ')))
+          if(any(tab < 5))
+            warning(paste(ni,'has the following levels with < 5 observations:',
+                          paste(names(tab)[tab < 5],collapse=' '),
+                          '\nConsider using the group parameter to balance bootstrap samples'))
           cat.levels[[ni]] <- lev
           xi <- as.integer(xi)
           vtype[ni] <- 'c'
@@ -170,6 +179,7 @@ aregImpute <- function(formula, data, subset, n.impute=5,
                   gi <- (group.inds[[i]])[[ji]]
                   s[gi] <- sample(gi, length(gi), replace=TRUE)
                 }
+              s <- s[!is.na(s)]
             }
           else
             { ## sample of non-NAs
@@ -209,7 +219,7 @@ aregImpute <- function(formula, data, subset, n.impute=5,
                 
                 ## Jitter predicted transformed values for non-NAs to randomly
                 ## break ties in matching with predictions for NAs in xf[,i]
-                ## Becuase of normalization used by fitter, pti usually ranges
+                ## Because of normalization used by fitter, pti usually ranges
                 ## from about -4 to 4
                 pti[j] <- pti[j] + runif(npr,-.0001,.0001)
                 

@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 613 2009-01-22 22:43:48Z dupontct $
+## $Id: summary.formula.s 628 2009-03-27 19:28:59Z dupontct $
 ##note: ars may always be T
 
 summary.formula <-
@@ -592,6 +592,7 @@ summary.formula <-
     heading <- paste(funlab,"by",lab2)
     ##if(length(name.stats)) yname <- funlab <- name.stats
 
+    S <- S[,,drop=TRUE]
     attr(S,"label") <- yname    #funlab
     df$S <- S
     df$N <- N
@@ -2052,7 +2053,7 @@ latex.summary.formula.reverse <-
                  if(length(testUsed)==1)'\\noindent Test used:'
                  else '\\indent Tests used:',
                  if(length(testUsed)==1) paste(testUsed,'test')
-                 else paste(paste('\textsuperscript{\normalfont ',1:length(testUsed),'}',testUsed,
+                 else paste(paste('\\textsuperscript{\\normalfont ',1:length(testUsed),'}',testUsed,
                                   ' test',sep=''),collapse='; '))
 
     ## added rowname=lab 12aug02  added '\n\n' 4mar03 for ctable=T
