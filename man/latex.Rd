@@ -106,7 +106,7 @@ latex(object, title=first.word(deparse(substitute(object))), \dots)
     colnamesTexCmd=NULL,
     cellTexCmds=NULL,
     rowname, cgroup.just=rep("c",length(n.cgroup)),
-    colheads=dimnames(cx)[[2]],
+    colheads=NULL,
     extracolheads=NULL, extracolsize='scriptsize',
     dcolumn=FALSE, numeric.dollar=!dcolumn, cdot=FALSE,
     longtable=FALSE, draft.longtable=TRUE, ctable=FALSE, booktabs=FALSE,
@@ -343,7 +343,7 @@ dvigv(object, \dots)
     The \code{"style"} element is set to \code{"longtable"}. The \code{latex} \code{\\usepackage}
     must reference \code{[longtable]}.
     The file \code{longtable.sty} will
-    need to be in a directory in your \code{$TEXINPUTS} path.
+    need to be in a directory in your \env{TEXINPUTS} path.
   }
   \item{draft.longtable}{
     I forgot what this does.
@@ -373,7 +373,7 @@ dvigv(object, \dots)
     that the table will appear exactly where you think it will in the text.
     The \code{"style"} element is set to \code{"here"}. The \code{latex} \code{\\usepackage}
     must reference \code{[here]}.  The file \code{here.sty} will
-    need to be in a directory in your \code{$TEXINPUTS} path.  \code{here} is
+    need to be in a directory in your \env{TEXINPUTS} path.  \code{here} is
     largely obsolete with LaTeX2e.
   }
   \item{lines.page}{

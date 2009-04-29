@@ -1,4 +1,4 @@
-## $Id: Misc.s 593 2008-09-08 15:41:07Z dupontct $
+## $Id: Misc.s 638 2009-04-16 13:47:46Z dupontct $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -68,7 +68,7 @@ spearman <- function(x, y)
 }
 
 plotCorrPrecision <- function(rho=c(0,0.5), n=seq(10,400,length=100),
-                              conf.int=0.95)
+                              conf.int=0.95, offset=.025, ...)
 {
   ## Thanks to Xin Wang for computations
   curves <- vector('list', length(rho))
@@ -84,7 +84,7 @@ plotCorrPrecision <- function(rho=c(0,0.5), n=seq(10,400,length=100),
     precision <- pmax(rhi-r, r-rlo)
     curves[[i]] <- list(N=n, Precision=precision)
   }
-  labcurve(curves, pl=TRUE, xrestrict=quantile(n,c(.25,1)), offset=.025)
+  labcurve(curves, pl=TRUE, xrestrict=quantile(n,c(.25,1)), offset=offset, ...)
   invisible()
 }
 
@@ -112,11 +112,9 @@ stepfun.eval <- function(x, y, xout, type=c("left","right"))
   approx(x[s], y[s], xout=xout, method="constant", f=if(type=="left")0 else 1)$y
 }
 
+
 km.quick <- function(S, times, q)
 {
-  if(.R. && !existsFunction('survfit.km'))
-    survfit.km <- getFromNamespace('survfit.km','survival')
-
   S <- S[!is.na(S),]
   n <- nrow(S)
   stratvar <- factor(rep(1,nrow(S)))
