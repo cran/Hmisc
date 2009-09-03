@@ -1,25 +1,87 @@
 spower <- function(rcontrol, rinterv, rcens, nc, ni,
-                   test=logrank, nsim=500, alpha=.05, pr=TRUE)
+                   test=logrank, cox=FALSE, nsim=500, alpha=.05, pr=TRUE)
 {
   crit <- qchisq(1-alpha, 1)
   group <- c(rep(1,nc), rep(2,ni))
   nexceed <- 0
+  if(cox)
+    {
+      require(survival)
+      beta <- numeric(nsim)
+    }
 
+  maxfail <- 0; maxcens <- 0
   for(i in 1:nsim) {
-    if(pr && i %% 10 == 0)
-      cat(i,'')
+    if(pr && i %% 10 == 0) cat(i,'\r')
 
     yc <- rcontrol(nc)
     yi <- rinterv(ni)
     cens <- rcens(nc+ni)
     y <- c(yc, yi)
+    maxfail <- max(maxfail, max(y))
+    maxcens <- max(maxcens, max(cens))
     S <- cbind(pmin(y,cens), 1*(y <= cens))
     nexceed <- nexceed + (test(S, group) > crit)
+    if(cox)
+      {
+        fit <- coxph.fit(as.matrix(group), S, strata=NULL,
+                         offset=NULL, init=NULL,
+                         control=coxph.control(iter.max=10, eps=.0001), 
+                         method="efron", rownames=NULL)
+        beta[i] <- fit$coefficients
+      }
   }
-  nexceed/nsim
-}
-  
+  cat('\n')
+  if(maxfail < 0.99*maxcens)
+      stop(paste('Censoring time distribution defined at later times than\nsurvival time distribution. There will likely be uncensored failure times\nstacked at the maximum allowed survival time.\nMaximum simulated failure time:', max(y),'\nMaximum simulated censoring time:', max(cens)))
 
+  power <- nexceed/nsim
+  if(cox) structure(list(power=power, betas=beta, nc=nc, ni=ni,
+                         alpha=alpha, nsim=nsim), class='spower') else power
+}
+
+print.spower <- function(x, conf.int=.95, ...)
+  {
+    b <- x$betas
+    hr <- exp(b)
+    pp <- (1+conf.int)/2
+    cl <- quantile(hr, c((1-conf.int)/2, pp))
+    meanbeta <- mean(b)
+    medbeta <- median(b)
+    hrmean <- exp(meanbeta)
+    hrmed  <- exp(medbeta)
+    moehi <- cl[2]/hrmed
+    moelo <- hrmed/cl[1]
+    g <- function(w) round(w, 4)
+    mmoe <- max(moehi, moelo)
+    cat('\nTwo-Group Event Time Comparison Simulation\n\n',
+        x$nsim,' simulations\talpha: ', x$alpha, '\tpower: ', x$power,
+        '\t', conf.int, ' confidence interval\n',
+        '\nHazard ratio from mean   beta     : ', g(hrmean),
+        '\nHazard ratio from median beta     : ', g(hrmed),
+        '\nStandard error of log hazard ratio: ', g(sd(b)),
+        '\nConfidence limits for hazard ratio: ', g(cl[1]), ', ', g(cl[2]),
+        '\nFold-change margin of error high  : ', g(moehi),
+        '\t(upper CL/median HR)',
+        '\nFold-change margin of error low   : ', g(moelo),
+        '\t(median HR/lower CL)',
+        '\nMax fold-change margin of error   : ', g(mmoe),'\n\n')
+
+    cat('The fold change margin of error of', g(mmoe),
+        'represents the margin of error\n',
+        'the study is likely to achieve in estimating the intervention:control\n',
+        'hazard ratio. It is the ratio of a', conf.int, 'confidence limit on the\n',
+        'hazard ratio to the median hazard ratio obtained over the', x$nsim, 'simulations.\n',
+        'The confidence limit was obtained by computing the', pp, 'quantile of the\n',
+        x$nsim, 'observed hazard ratios.  The standard error is the standard deviation\n',
+        'of the', x$nsim, 'simulated log hazard ratios.\n\n')
+
+    res <- c(cl, hrmean, hrmed, sd(b), moelo, moehi, x$power)
+    names(res) <- c('CLlower','CLupper','HRmean','HRmedian','SE',
+                    'MOElower','MOEupper','Power')
+    invisible(res)
+  }
+      
 Quantile2 <- function(scontrol, hratio, 
                       dropin=function(times)0, 
                       dropout=function(times)0,

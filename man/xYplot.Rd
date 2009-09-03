@@ -228,7 +228,9 @@ examples below.
 }
 \item{abline}{
 a list of arguments to pass to \code{panel.abline} for each panel, e.g.
-\code{list(a=0, b=1, col=3)} to draw the line of identity using color 3.
+\code{list(a=0, b=1, col=3)} to draw the line of identity using color
+3.  To make multiple calls to \code{panel.abline}, pass a list of
+unnamed lists as \code{abline}, e.g., \code{abline=list(list(h=0),list(v=1))}.
 }
 \item{probs}{
 a vector of three quantiles with the quantile corresponding to the central
@@ -342,8 +344,8 @@ mbauer@usc.edu
 }
 \seealso{
 \code{\link[lattice]{xyplot}}, \code{\link[lattice]{panel.xyplot}}, \code{\link{summarize}}, \code{\link{label}}, \code{\link{labcurve}},
-\code{\link{errbar}}, \code{\link[lattice]{dotplot}}, 
-\code{\link{reShape}}, \code{\link{setps}}, \code{\link{cut2}}, \code{\link[lattice]{panel.abline}}
+\code{\link{errbar}}, \code{\link[lattice:xyplot]{dotplot}}, 
+\code{\link{reShape}}, \code{\link{setps}}, \code{\link{cut2}}, \code{\link[lattice:panel.functions]{panel.abline}}
 }
 \examples{
 # Plot 6 smooth functions.  Superpose 3, panel 2.

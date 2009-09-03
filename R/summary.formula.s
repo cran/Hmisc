@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 628 2009-03-27 19:28:59Z dupontct $
+## $Id: summary.formula.s 684 2009-08-30 15:52:24Z harrelfe $
 ##note: ars may always be T
 
 summary.formula <-
@@ -40,7 +40,7 @@ summary.formula <-
                   plotmathstat='chi[df]^2')
            },
            ordTest=function(group, x) {
-             requirePackage('Design')
+             require(Design)
 
              f <- lrm(x ~ group)$stats
              list(P=f['P'], stat=f['Model L.R.'], df=f['d.f.'],
@@ -2491,6 +2491,7 @@ summarize <- function(X, by, FUN, ...,
   rdimn <- dimnames(r)[[1]]
   if(.R.) {   # someday can use unpaste defined in Misc.s
     ans <- strsplit(if(nc==1) names(r) else rdimn,'\\|')
+    ans <- sapply(ans, function(x)if(length(x))x else '')
 
     ## strsplit returns list "transpose" of unpaste
     bb <- matrix(unlist(ans), nrow=nby)

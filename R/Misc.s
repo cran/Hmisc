@@ -1,4 +1,4 @@
-## $Id: Misc.s 638 2009-04-16 13:47:46Z dupontct $
+## $Id: Misc.s 687 2009-09-01 20:39:10Z dupontct $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -118,7 +118,7 @@ km.quick <- function(S, times, q)
   S <- S[!is.na(S),]
   n <- nrow(S)
   stratvar <- factor(rep(1,nrow(S)))
-  f <- survfit.km(stratvar, S, se.fit=FALSE, conf.type='none')
+  f <- survfitKM(stratvar, S, se.fit=FALSE, conf.type='none')
   tt <- c(0, f$time)
   ss <- c(1, f$surv)
   if(missing(times))
@@ -817,7 +817,20 @@ ordGridFun <- function(grid)
                     else
                       function(...) arrows(...),
          rect     = function(...) rect(...),
-         polygon  = function(...) polygon(...),
+         polygon  = function(x, y=NULL, ..., type=c('l','s'))
+         {
+           type <- match.arg(type)
+           if(!length(y))
+             {
+               y <- x$y
+               x <- x$x
+             }
+           j <- !is.na(x+y)
+           x <- x[j]
+           y <- y[j]
+           if(type=='s') polygon(makeSteps(x, y), ..., border=NA)
+           else polygon(x, y, ..., border=NA)
+         },
          abline   = function(...) abline(...),
          unit     = function(x, units='native')
                     {
@@ -885,8 +898,23 @@ ordGridFun <- function(grid)
                      height=ytop-ybottom, just='left',
                      default.units='native', gp=gpar(...))
          },
-         polygon = function(x, y, col=par('col'), ...)
-         grid.polygon(x, y, default.units='native', gp=gpar(fill=col,...)),
+         polygon  = function(x, y=NULL, col=par('col'), type=c('l','s'), ...)
+         {
+           type <- match.arg(type)
+           if(!length(y))
+             {
+               y <- x$y
+               x <- x$x
+             }
+           j <- !is.na(x+y)
+           x <- x[j]
+           y <- y[j]
+           if(type=='s') grid.polygon(makeSteps(x, y),
+                default.units='native',
+                gp=gpar(fill=col, col='transparent', ...))
+           else grid.polygon(x, y, default.units='native',
+                      gp=gpar(fill=col,col='transparent',...))
+              },
          abline=function(...) panel.abline(...),
          unit = function(x, units='native', ...) unit(x, units=units, ...),
        
@@ -895,8 +923,9 @@ ordGridFun <- function(grid)
          {
            if(!length(at))stop('not implemented for at= unspecified')
            if(side > 2) stop('not implemented for side=3 or 4')
-           if(side==1) grid.xaxis(at=at, label=labels, ticks=ticks, gp=gpar(...))
-           if(side==2) grid.yaxis(at=at, label=labels, ticks=ticks, gp=gpar(...))
+           ## ticks=ticks removed from grid.?axis FEH 30Aug09
+           if(side==1) grid.xaxis(at=at, label=labels, gp=gpar(...))
+           if(side==2) grid.yaxis(at=at, label=labels, gp=gpar(...))
          })
   }
 }
@@ -1694,3 +1723,64 @@ clowess <- function(x, y=NULL, iter=3, ...) {
   f
 }
 
+prselect <- function(x, start=NULL, stop=NULL, i=0, j=0, pr=TRUE)
+  {
+    f <- function(pattern, x)
+      {
+        y <- grep(pattern, x)
+        if(length(y) > 1) y <- y[1]
+        y
+      }
+    lx <- length(x)
+    k <- if(length(start)) f(start, x) else 1
+    if(length(k))
+      {
+        k <- k + i
+        m <- if(length(stop))
+          {
+            w <- f(stop, x[k:lx])
+            if(length(w)) w + k - 1 + j else -1
+          }
+        else lx
+        if(m > 0) x <- if(k==1) (if(m==lx) '...' else c('...', x[-(k:m)]))
+        else
+          {
+            if(m==lx) c(x[-(k:m)], '...')
+            else c(x[1:(k-1)], '...', x[(m+1):lx])
+          }
+      }
+    else # no start specified; keep lines after stop
+      {
+        m <- f(stop, x)
+        if(length(m) > 0)
+          {
+            m <- if(length(m)) m + j - 1 else lx
+            x <- if(m==lx) '...' else c('...', x[-(1:m)])
+          }
+      }
+    if(pr) cat(x, sep='\n')
+    invisible(x)
+  }
+
+## The following is taken from survival:::plot.survfit internal dostep function
+
+makeSteps <- function(x, y)
+{
+  if (is.na(x[1] + y[1]))
+    {
+      x <- x[-1]
+      y <- y[-1]
+    }
+  n <- length(x)
+  if (n > 2)
+    {
+      dupy <- c(!duplicated(y)[-n], TRUE)
+      n2 <- sum(dupy)
+      xrep <- rep(x[dupy], c(1, rep(2, n2 - 1)))
+      yrep <- rep(y[dupy], c(rep(2, n2 - 1), 1))
+      list(x = xrep, y = yrep)
+    }
+  else if (n == 1)
+    list(x = x, y = y)
+  else list(x = x[c(1, 2, 2)], y = y[c(1, 1, 2)])
+}

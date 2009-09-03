@@ -1,4 +1,4 @@
-## $Id: labcurve.s 613 2009-01-22 22:43:48Z dupontct $
+## $Id: labcurve.s 684 2009-08-30 15:52:24Z harrelfe $
 
 labcurve <- function(curves, labels=names(curves), 
                      method=NULL, keys=NULL, keyloc=c('auto','none'),
@@ -1060,7 +1060,7 @@ largest.empty <- function(x, y,
     else
       .Fortran('largrec', x, y, as.integer(length(x)), 
                xlim, ylim, 
-               width, height, as.integer(numbins), as.interger(itype),
+               width, height, as.integer(numbins), as.integer(itype),
                rx=double(2), ry=double(2))
   
   x <- a$rx
