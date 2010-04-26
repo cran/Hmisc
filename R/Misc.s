@@ -1,4 +1,4 @@
-## $Id: Misc.s 706 2010-03-01 15:39:37Z harrelfe $
+## $Id: Misc.s 774 2011-11-08 15:58:47Z dupontct $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -699,7 +699,7 @@ if(.R.) print.char.matrix <-
     rpref <- c(rpref, 0)
   
   ## print to screen or file
-  if (top.border) {
+  if(top.border && line.sep !='') {
     write(line.sep, file = file, append = append)
     append <- TRUE
   }
@@ -713,7 +713,7 @@ if(.R.) print.char.matrix <-
     append <- TRUE
 
     ## print separator if row prefix is not same as next one
-    if (rpref[i] != rpref[i + 1]) 
+    if (rpref[i] != rpref[i + 1] && line.sep != '') 
       write(line.sep, file = file, append = TRUE)
   }
 }
@@ -1204,11 +1204,6 @@ inverseFunction <- function(x, y) {
   h
 }
 
-
-if(!existsFunction('reorder.factor'))
-  reorder.factor <- function(x, v, FUN = mean, ...)
-    ordered(x, levels(x)[order(tapply(v, x, FUN, ...))])
-
 Names2names <- function(x)
 {
   if(is.list(x)) {
@@ -1436,16 +1431,18 @@ if(.R.) {
     fn <- as.character(substitute(file))
     ads <-
       scan(paste(where,'Rcontents.txt',sep='/'),list(''),quiet=TRUE)[[1]]
-    a <- unlist(strsplit(ads,'.sav'))
+    a <- unlist(strsplit(ads,'.sav|.rda'))
     if(missing(file))
       return(a)
 
-    wds <- paste(substitute(file),'sav',sep='.')
-    if(wds %nin% ads)
-      stop(paste(wds,'is not on the web site.\nAvailable datasets:\n',
+    wds <- paste(substitute(file),c('rda','sav'),sep='.')
+    if(!any(wds %in% ads))
+      stop(paste(paste(wds, collapse=','),
+                 'are not on the web site.\nAvailable datasets:\n',
                  paste(a, collapse=' ')))
+    wds <- wds[wds %in% ads]
     if(what %in% c('contents','all')) {
-      w <- paste('C',fn,'.html',sep='')
+      w <- paste(if(fn=='nhgh')'' else 'C',fn,'.html',sep='')
       browseURL(paste(where,w,sep='/'))
     }
     
