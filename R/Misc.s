@@ -1,5 +1,5 @@
 ## $Id: Misc.s 687 2009-09-01 20:39:10Z dupontct $
-		
+        
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
     if (is.array(x) || is.data.frame(x)) nrow(x) else length(x)
@@ -60,7 +60,7 @@ spearman <- function(x, y)
   x <- as.numeric(x)
   y <- as.numeric(y)  ## 17Jul97
   
-  notna <- !is.na(x+y)	##exclude NAs
+  notna <- !is.na(x+y)  ##exclude NAs
   if(sum(notna) < 3)
     c(rho=NA)
   else
@@ -366,7 +366,7 @@ rowsumFast <- if(.R.) rowsum else function(x, group, reorder=TRUE)
   if(any(is.na(group)))
     stop("Missing values for 'group'")
   
-  na.indicator <- max(1, x[!is.na(x)]) * n	#larger than any possible sum
+  na.indicator <- max(1, x[!is.na(x)]) * n  #larger than any possible sum
   x[is.na(x)] <- na.indicator
   if(!is.numeric(group))
     group <- as.factor(group)
@@ -718,9 +718,9 @@ if(.R.) print.char.matrix <-
   }
 }
 
-unPaste <- if(.R.) function(str, sep='/', extended=FALSE)
+unPaste <- if(.R.) function(str, sep='/')
 {
-  w <- strsplit(str, sep, extended=extended)
+  w <- strsplit(str, sep)
   w <- matrix(unlist(w), ncol=length(str))
   nr <- nrow(w)
   ans <- vector('list', nr)
@@ -1279,16 +1279,16 @@ xless <-
   ## Usage: xless(x) - uses print method for x, puts in persistent window with
   ## xless using name of x as title (unless title= is specified)
   if(under.unix) {
-	file <- tempfile()
-  	sink(file)
-  	print(x, ...)
-  	sink()
-  	cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
+    file <- tempfile()
+    sink(file)
+    print(x, ...)
+    sink()
+    cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
                file,'" &',sep='')
-  	if(.R.)
-    	system(cmd)
-  	else
-  		sys(cmd)
+    if(.R.)
+        system(cmd)
+    else
+        sys(cmd)
   } else page(x, method='print', title=title, ...)
 invisible()
 }
