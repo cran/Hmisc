@@ -159,10 +159,10 @@ xless(x, \dots, title)
   \item{a}{a numeric matrix or vector}
   \item{adj}{0 for left justification, 0.5 for centered, 1 for right}
   \item{at}{x-coordinate for vertical confidence intervals, y-coordinate
-    for horizontal}
+	for horizontal}
   \item{avail}{set to \code{TRUE} to have \code{getLatestSource} return
-    a data frame of available files and latest versions instead of
-    fetching any}
+	a data frame of available files and latest versions instead of
+	fetching any}
   \item{b}{a numeric vector}
   \item{cex}{character expansion factor}
   \item{clip}{interval to truncate limits}
@@ -174,29 +174,29 @@ xless(x, \dots, title)
   \item{fun}{function to transform scale}
   \item{group}{a categorical grouping variable}
   \item{intercept}{set to \code{FALSE} to not automatically add a column
-    of ones to the \code{x} matrix}
+	of ones to the \code{x} matrix}
   \item{kint}{which element of \code{b} to add to the result if \code{a}
-    does not contain a column for intercepts}
+	does not contain a column for intercepts}
   \item{labels}{set to \code{FALSE} to omit drawing confidence
-    coefficients}
+	coefficients}
   \item{lwd}{line widths}
   \item{package}{name of package for \code{getLatestSource}, default is
-    \code{'Hmisc'}}
+	\code{'Hmisc'}}
   \item{q}{vector of confidence coefficients or quantiles}
   \item{qfun}{quantiles on transformed scale}
   \item{recent}{an integer telling \code{getLatestSource} to get the
-    \code{recent} most recently modified files from the package}
+	\code{recent} most recently modified files from the package}
   \item{round}{set to \code{TRUE} to round converted values}
   \item{S}{a \code{\link[survival]{Surv}} object}
   \item{se}{vector of standard errors}
   \item{sep}{a single character string specifying the delimiter}
   \item{setAside}{for \code{adj=1 side=4}, is a character string used to
-    determine the space to set aside for all strings.}
+	determine the space to set aside for all strings.}
   \item{side}{for \code{confbar} is \code{"b","l","t","r"} for bottom,
-    left, top, right.  For \code{outText} is the using integers 1-4
-    corresponding to these.}
+	left, top, right.  For \code{outText} is the using integers 1-4
+	corresponding to these.}
   \item{space}{the number of extra characters to leave to the left of
-    the string(s) (\code{adj=0}) or to the right (\code{adj=1})}
+	the string(s) (\code{adj=0}) or to the right (\code{adj=1})}
   \item{str}{a character string vector}
   \item{string}{a character string vector}
   \item{ticks}{set to \code{TRUE} to draw lines between rectangles}
@@ -204,31 +204,29 @@ xless(x, \dots, title)
   \item{title}{a character string to title a window or plot}
   \item{tolerance}{tolerance for judging singularity in matrix}
   \item{type}{\code{"v"} for vertical, \code{"h"} for horizontal.  For
-    \code{getLatestSource} this specifies the type of source code
-    repository, \code{'svn'} (the default) or 
-    \code{'cvs'}, which is now outdated as Subversion has replaced CVS
-    in the Vanderbilt Biostatistics server.}
+	\code{getLatestSource} this specifies the type of source code
+	repository, \code{'svn'} (the default) or 
+	\code{'cvs'}, which is now outdated as Subversion has replaced CVS
+	in the Vanderbilt Biostatistics server.}
   \item{w}{a numeric vector}
   \item{width}{width of confidence rectanges in user units, or see
-    \code{\link{strwrap}}} 
+	\code{\link{strwrap}}} 
   \item{x}{a numeric vector (matrix for \code{lm.fit.qr.bare}) or data
-    frame.  For \code{xless} may be any object that is sensible to
-    \code{print}.  For \code{sepUnitsTrans} is a character or factor
-    variable.  For \code{getLatestSource} is a character string or
-    vector of character strings containing base file names to retrieve
-    from CVS.  Set \code{x='all'} to retrieve all source files.  For
-    \code{clowess}, \code{x} may also be a list with x and y
-    components.  For \code{inverseFunction}, \code{x} and \code{y}
-    contain evaluations of the function whose inverse is needed.
-    \code{x} is typically an equally-spaced grid of 1000 points.  For
-    \code{strgraphwrap} is a character vector.}
+	frame.  For \code{xless} may be any object that is sensible to
+	\code{print}.  For \code{sepUnitsTrans} is a character or factor
+	variable.  For \code{getLatestSource} is a character string or
+	vector of character strings containing base file names to retrieve
+	from CVS.  Set \code{x='all'} to retrieve all source files.  For
+	\code{clowess}, \code{x} may also be a list with x and y
+	components.  For \code{inverseFunction}, \code{x} and \code{y}
+	contain evaluations of the function whose inverse is needed.
+	\code{x} is typically an equally-spaced grid of 1000 points.  For
+	\code{strgraphwrap} is a character vector.}
   \item{xpxi}{set to \code{TRUE} to add an element to the result
-    containing the inverse of \eqn{X'X}}
+	containing the inverse of \eqn{X'X}}
   \item{y}{a numeric vector.  For \code{inverseFunction} \code{y} is the
-    evaluated function values at \code{x}.}
-  \item{indent}{}
-  \item{exdent}{}
-  \item{prefix}{see \code{\link{strwrap}}}
+	evaluated function values at \code{x}.}
+  \item{indent, exdent, prefix}{see \code{\link{strwrap}}}
   \item{simplify}{see \code{\link{sapply}}}
   \item{units}{see \code{\link{par}}}
   \item{\dots}{arguments passed through to another function}

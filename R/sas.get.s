@@ -1,4 +1,4 @@
-## $Id: sas.get.s 666 2009-07-21 13:40:54Z dupontct $
+## $Id: sas.get.s 713 2010-04-26 16:57:35Z dupontct $
 sas.get <- if(under.unix || .R.)
   function(libraryName,
            member,
@@ -176,7 +176,7 @@ sas.get <- if(under.unix || .R.)
   }
   
   status <- system(paste(shQuote(sasprog), shQuote(sasin), "-log",
-                         shQuote(log.file)), intern=TRUE)
+                         shQuote(log.file)), intern=FALSE)
   ## 24nov03 added output=F
   if(status != 0) {
     if(!quiet && fexists(log.file)) fileShow(log.file)  ## 4oct03

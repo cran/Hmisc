@@ -561,7 +561,7 @@ xYplot <- if(.R.)
             groups, subset,
             xlab=NULL, ylab=NULL, ylim=NULL,
             panel=panel.xYplot, prepanel=prepanel.xYplot,
-            scales=NULL, minor.ticks=NULL, ...)
+            scales=NULL, minor.ticks=NULL, sub=NULL, ...)
 {
   require(grid)
   require(lattice)
@@ -583,7 +583,7 @@ xYplot <- if(.R.)
   xv <- eval(xvname, data)
   if(!length(xlab))
     xlab <- label(xv, units=TRUE, plot=TRUE,
-                  default=as.character(xvname),
+                  default=as.character(xvname)[1],
                   grid=TRUE)
   
   if(!length(scales$x))
@@ -614,6 +614,7 @@ xYplot <- if(.R.)
                       if(length(minor.ticks))list(minor.ticks=minor.ticks),
                       if(!missing(groups))list(groups=groups),
                       if(!missing(subset))list(subset=subset),
+                      if(!missing(sub))   list(sub=sub),
                       list(...)))
 } else function(formula, data = sys.parent(1), 
                 groups = NULL, 

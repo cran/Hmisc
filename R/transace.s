@@ -1,4 +1,4 @@
-# $Id: transace.s 684 2009-08-30 15:52:24Z harrelfe $
+# $Id: transace.s 713 2010-04-26 16:57:35Z dupontct $
 transace <- function(x, monotonic=NULL, categorical=NULL, binary=NULL,
                      pl=TRUE)
 {

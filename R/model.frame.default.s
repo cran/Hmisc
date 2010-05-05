@@ -1,4 +1,4 @@
-## $Id: model.frame.default.s 608 2008-12-26 20:20:35Z dupontct $
+## $Id: model.frame.default.s 713 2010-04-26 16:57:35Z dupontct $
 GetModelFrame <- function(formula, specials, default.na.action=NULL) {
   if(missing(formula) || !inherits(formula, "formula"))
     stop("GetModelFrame needs a function argument specified",
