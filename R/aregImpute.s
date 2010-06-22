@@ -1,4 +1,4 @@
-# $Id: aregImpute.s 713 2010-04-26 16:57:35Z dupontct $
+# $Id: aregImpute.s 625 2009-03-17 14:51:35Z harrelfe $
 aregImpute <- function(formula, data, subset, n.impute=5,
                        group=NULL, nk=3, tlinear=TRUE,
                        type=c('pmm','regression'),

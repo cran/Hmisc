@@ -1,4 +1,4 @@
-## $Id: curveRep.s 713 2010-04-26 16:57:35Z dupontct $
+## $Id: curveRep.s 344 2006-10-20 22:32:24Z harrelfe $
 curveRep <- function(x, y, id, kn=5, kxdist=5, k=5, p=5, force1=TRUE,
                      metric=c('euclidean','manhattan'),
                      smooth=FALSE, extrap=FALSE, pr=FALSE) {
