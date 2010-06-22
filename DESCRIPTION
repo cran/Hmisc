@@ -1,5 +1,5 @@
 Package: Hmisc
-Version: 3.8-2
+Version: 3.8-3
 Date: 2010-06-22
 Title: Harrell Miscellaneous
 Author: Frank E Harrell Jr <f.harrell@vanderbilt.edu>, with
@@ -20,6 +20,6 @@ License: GPL (>= 2)
 LazyLoad: Yes
 URL: http://biostat.mc.vanderbilt.edu/wiki/Main/Hmisc,
         http://biostat.mc.vanderbilt.edu/trac/Hmisc
-Packaged: 2010-06-23 12:49:48 UTC; dupontct
+Packaged: 2010-09-07 16:14:27 UTC; dupontct
 Repository: CRAN
-Date/Publication: 2010-06-29 16:42:27
+Date/Publication: 2010-09-08 06:44:29
