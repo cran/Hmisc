@@ -1,4 +1,4 @@
-## $Id: labcurve.s 713 2010-04-26 16:57:35Z dupontct $
+## $Id: labcurve.s 684 2009-08-30 15:52:24Z harrelfe $
 
 labcurve <- function(curves, labels=names(curves), 
                      method=NULL, keys=NULL, keyloc=c('auto','none'),
