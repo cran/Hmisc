@@ -46,6 +46,7 @@
 \alias{naresid.keep}
 \alias{naprint.delete}
 \alias{naresid.delete}
+\alias{napredict.delete}
 \alias{oldUnclass}
 \alias{oPar}
 \alias{optionsCmds}
@@ -76,6 +77,8 @@
 \alias{latex.responseSummary}
 \alias{print.responseSummary}
 \alias{responseSummary}
+\alias{combine}
+\alias{combine<-}
 \description{Internal Hmisc functions.}
 \details{These are not to be called by the user or are undocumented.}
 \keyword{internal}
