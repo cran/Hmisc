@@ -1,4 +1,4 @@
-## $Id: describe.s 728 2010-07-13 16:18:57Z dupontct $
+## $Id: describe.s 783 2011-12-14 16:12:00Z dupontct $
 describe <- function(x, ...) UseMethod("describe")  #13Mar99
 
 
@@ -603,9 +603,9 @@ latex.describe.single <-
     ct('\\begin{tabular}{',
        paste(rep('r',length(object$counts)),collapse=''),'}\n',
        file=file, append=TRUE)
-    ct(latexTranslate(paste(names(object$counts), collapse='&')), '\\\\ \n',
+    ct(paste(latexTranslate(names(object$counts)), collapse='&'), '\\\\\n',
        file=file, append=TRUE)
-    ct(latexTranslate(paste(object$counts, collapse='&')), '\\end{tabular}\n',
+    ct(paste(latexTranslate(object$counts), collapse='&'), '\\end{tabular}\n',
        file=file, append=TRUE)
   }
   
