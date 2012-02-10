@@ -1,5 +1,5 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-10adb08be2f584f083ffcfebbd2e3c75 *DESCRIPTION
+e4094cb8d890880860ee3e5bc1df3ec0 *DESCRIPTION
 2257abefea81e943cec0ef9670918dea *INDEX
 0329a88329056d49f31d8f1297e623c1 *NAMESPACE
 64bd33d24c19e89443353e4341772c29 *R/AFirst.lib.s
@@ -113,7 +113,7 @@ b47544f6b133f394f2fda329de60f733 *R/strgraphwrap.s
 b42e6d7953adef86625842fa4bdbe291 *R/strwrap.s
 055ef617ac4b0362b6466e6436ba69fb *R/subplot.s
 a06f3a849ab469a8d4cdb2cd446096a0 *R/substi.s
-953d07c9c8e29ea835ac2731d1797f8e *R/summary.formula.s
+88aabd0355f51bcc88d089cbb4dff916 *R/summary.formula.s
 8d72aa7fe34a4eef94b71850a9f2340b *R/survfit.km.s
 b99a7f7d12447d11a52f5ce24e27fea7 *R/symbol.freq.s
 b043ec7945e9e4deb6a2b3d185c2b636 *R/sys.s
