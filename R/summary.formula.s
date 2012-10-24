@@ -1,4 +1,4 @@
-## $Id: summary.formula.s 797 2012-02-09 15:32:42Z dupontct $
+## $Id: summary.formula.s 828 2012-10-25 12:22:44Z dupontct $
 ##note: ars may always be T
 
 summary.formula <-
@@ -1234,13 +1234,14 @@ plot.summary.formula.reverse <-
 dotchart2 <- 
   function(data, labels, groups = NULL, gdata = NA, horizontal = TRUE, 
            pch = 16, 
-           xlab = "", ylab="", auxdata, auxgdata=NULL, auxtitle,
+           xlab = "", ylab="", xlim=NULL, auxdata, auxgdata=NULL, auxtitle,
            lty = if(.R.)1 else 2,
            lines = TRUE, dotsize = .8, cex = par("cex"), 
            cex.labels = cex, cex.group.labels = cex.labels*1.25, sort.=TRUE, 
            add=FALSE, dotfont=par('font'),
            groupfont=2, reset.par=add, xaxis=TRUE,
            width.factor=1.1, lcolor=if(.R.) 'gray' else par('col'),
+           leavepar=FALSE, axisat=NULL, axislabels=NULL,
            ...)
 {
   if(.R. && !add)
@@ -1299,7 +1300,7 @@ dotchart2 <-
   tcex <- par('cex')
   tmai <- par("mai")
   oldplt <- par("plt")
-  if(reset.par)
+  if(reset.par && !leavepar)
     on.exit(par(mai = tmai, cex = tcex)) #, usr = tusr))
 
   par(cex = cex)
@@ -1315,16 +1316,16 @@ dotchart2 <-
           max(strwidth(if(ieaux) auxdata else format(auxdata),
                        units='inches',cex=cex.labels))
       
-      par(mai = c(tmai[1], mxlab, tmai2))
+      if(!leavepar) par(mai = c(tmai[1], mxlab, tmai2))
       if(!add)
         plot(alldat, seq(along = alldat), type = "n",
-             ylab = '', axes = FALSE, xlab = '', ...)
+             ylab = '', axes = FALSE, xlab = '', xlim=xlim,  ...)
       
       logax <- par("xaxt") == "l"
     }
   else
     {
-      par(mai = c(mxlab, tmai[2:4]))
+      if(!leavepar) par(mai = c(mxlab, tmai[2:4]))
       if(!add)
         plot(seq(along = alldat), alldat, type = "n",
              xlab = "", axes = FALSE, ylab = '', ...)
@@ -1345,7 +1346,7 @@ dotchart2 <-
   if(horizontal)
     {
       if(!add && xaxis)
-        mgp.axis(1, axistitle=xlab)
+        mgp.axis(1, axistitle=xlab, at=axisat, labels=axislabels)
 
       delt <- ( - (tusr[4] - tusr[3]))/den
       ypos <- seq(tusr[4], by = delt, length = ndata)
@@ -1353,7 +1354,7 @@ dotchart2 <-
   else
     {
       if(!add)
-        mgp.axis(2, axistitle=xlab)
+        mgp.axis(2, axistitle=xlab, at=axisat, labels=axislabels)
 
       delt <- (tusr[2] - tusr[1])/den
       ypos <- seq(tusr[1], by = delt, length = ndata)
@@ -1382,19 +1383,16 @@ dotchart2 <-
       points(alldat, ypos, pch = pch, cex = dotsize * cex, font=dotfont, ...)
       if(!add && !missing(auxdata))
         {
-          faux <- if(ieaux) auxdata else paste(' ', format(auxdata), sep='')
+          faux <- if(ieaux) auxdata else format(auxdata)
 
           upedge <- par('usr')[4]
-          outerText(faux, ypos[nongrp], adj=1, cex=cex.labels)
+          outerText(faux, ypos[nongrp], cex=cex.labels)
           if(!missing(auxtitle))
-            {
-              auxtitle <- paste(' ', auxtitle, sep='')
-              outerText(auxtitle,
-                        upedge+strheight(auxtitle,cex=cex.labels)/2,
-                        adj=1, cex=cex.labels, setAside=faux[1])
-            }
+            outerText(auxtitle,
+                      upedge+strheight(auxtitle,cex=cex.labels)/2,
+                      cex=cex.labels)
         }
-
+      
       if(!add)
         {
           labng <- alllab[nongrp]

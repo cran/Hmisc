@@ -1,4 +1,4 @@
-## $Id: scat1d.s 711 2010-04-26 03:23:46Z harrelfe $
+## $Id: scat1d.s 804 2012-03-03 00:46:39Z harrelfe $
 ## -*-S-*- Improvements due to Martin Maechler <maechler@stat.math.ethz.ch>
 
 scat1d <- function(x, side=3, frac=.02, jitfrac=.008, tfrac, 
@@ -381,7 +381,7 @@ datadensity.data.frame <-
     ## las=1 for R (also 3 lines down)
 
     if(show.na && nna > 0)
-      outerText(fnumna[i], y, setAside='Missing', cex=cex.var)
+      outerText(fnumna[i], y, cex=cex.var)
     }
   
   invisible()

@@ -9,13 +9,14 @@ with several new options.
 }
 \usage{
 dotchart2(data, labels, groups=NULL, gdata=NA, horizontal=TRUE, pch=16,
-          xlab='', ylab='', auxdata, auxgdata=NULL, auxtitle,
+          xlab='', ylab='', xlim=NULL, auxdata, auxgdata=NULL, auxtitle,
           lty=if(.R.) 1 else 2, lines=TRUE, dotsize = .8,
           cex = par("cex"), cex.labels = cex,
           cex.group.labels = cex.labels*1.25, sort.=TRUE, 
 	      add=FALSE, dotfont=par('font'), groupfont=2, 
 	      reset.par=add, xaxis=TRUE, width.factor=1.1,
-          lcolor=if(.R.)'gray' else par('col'), ...)
+          lcolor=if(.R.)'gray' else par('col'), leavepar=FALSE,
+          axisat=NULL, axislabels=NULL, ...)
 }
 \arguments{
   \item{data}{a numeric vector whose values are shown on the x-axis}
@@ -33,6 +34,7 @@ dotchart2(data, labels, groups=NULL, gdata=NA, horizontal=TRUE, pch=16,
 	The default is 16.}
   \item{xlab}{x-axis title}
   \item{ylab}{y-axis title}
+  \item{xlim}{x-axis limits.  Applies only to \code{horizontal=TRUE}.}
   \item{auxdata}{
 	a vector of auxiliary data given to \code{dotchart2}, of the same length
 	as the first (\code{data}) argument.  If present, this
@@ -91,6 +93,13 @@ dotchart2(data, labels, groups=NULL, gdata=NA, horizontal=TRUE, pch=16,
   \item{lcolor}{
 	color for horizontal reference lines.  Default is \code{"gray"} for R,
 	\code{par("col")} for S-Plus.}
+  \item{leavepar}{set to \code{TRUE} to leave \code{par()} unchanged.
+	This assumes the user has allocated sufficient left and right
+	margins for a horizontal dot chart.}
+  \item{axisat}{a vector of tick mark locations to pass to \code{axis}.
+	Useful if transforming the data axis}
+  \item{axislabels}{a vector of strings specifying axis tick mark
+	labels.  Useful if transforming the data axis}
   \item{...}{arguments passed to \code{plot.default}}
 }
 \section{Side Effects}{
@@ -119,5 +128,8 @@ dotchart2(y1, g, groups=maj, auxdata=n, auxtitle='n', xlab='Y')
 dotchart2(y2, g, groups=maj, pch=17, add=TRUE)
 ## Compare with dotchart function (no superpositioning or auxdata allowed):
 ## dotchart(y1, g, groups=maj, xlab='Y')
+
+## To plot using a transformed scale add for example
+## axisat=sqrt(pretty(y)), axislabels=pretty(y)
 }
 \keyword{hplot}

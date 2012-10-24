@@ -52,7 +52,7 @@ evenly spaced bins running from minimum observed value to the maximum.
 \code{latex} inserts a spike histogram displaying these frequency counts
 in the tabular material using the LaTeX picture environment.  For
 example output see
-\url{http://biostat.mc.vanderbilt.edu/twiki/pub/Main/Hmisc/counties.pdf}.
+\url{http://biostat.mc.vanderbilt.edu/wiki/pub/Main/Hmisc/counties.pdf}.
 Note that the latex method assumes you have the following styles
 installed in your latex installation: setspace and relsize.
 
@@ -71,9 +71,11 @@ in weighted means, quantiles, and frequency tables.
 \method{print}{describe}(x, condense=TRUE, \dots)
 \method{latex}{describe}(object, title=NULL, condense=TRUE, 
       file=paste('describe',first.word(expr=attr(object,'descript')),'tex',sep='.'),
-      append=FALSE, size='small', tabular=TRUE, greek=TRUE, \dots)
+      append=FALSE, size='small', tabular=TRUE, greek=TRUE,
+      spacing=0.7, lspace=c(0,0), \dots)
 \method{latex}{describe.single}(object, title=NULL, condense=TRUE, vname,
-      file, append=FALSE, size='small', tabular=TRUE, greek=TRUE, \dots)
+      file, append=FALSE, size='small', tabular=TRUE, greek=TRUE,
+      lspace=c(0,0), \dots)
 }
 \arguments{
 \item{x}{
@@ -175,6 +177,18 @@ LaTeX text size (\code{"small"}, the default, or \code{"normalsize"}, \code{"tin
   labels to appropriate LaTeX symbols in math mode unless
   \code{greek=FALSE}.  \code{greek=TRUE} is not implemented in S-Plus
   versions older than 6.2.}
+\item{spacing}{By default, the \code{latex} method for \code{describe} run
+  on a matrix or data frame uses the \code{setspace} LaTeX package with a
+  line spacing of 0.7 so as to no waste space.  Specify \code{spacing=0}
+  to suppress the use of the \code{setspace}'s \code{spacing} environment,
+  or specify another positive value to use this environment with a
+  different spacing.}
+\item{lspace}{extra vertical scape, in character size units (i.e., "ex"
+  as appended to the space).  When using certain font sizes, there is
+  too much space left around LaTeX verbatim environments.  This
+  two-vector specifies space to remove (i.e., the values are negated in
+  forming the \code{vspace} command) before (first element) and after
+  (second element of \code{lspace}) verbatims}
 \item{vname}{unused argument in \code{latex.describe.single}}
 }
 \value{
@@ -200,6 +214,14 @@ When the response is a \code{Surv} object and the mean is used, this will
 result in the crude proportion of events being used to summarize
 the response.  The actual summary function can be designated through
 \code{options(na.fun.response = "function name")}.
+
+If you are modifying LaTex \code{parskip} or certain other parameters,
+you may need to shrink the area around \code{tabular} and
+\code{verbatim} environments produced by \code{latex.describe}.  You can
+do this using for example
+\code{\\usepackage{etoolbox}\\makeatletter\\preto{\\@verbatim}{\\topsep=-1.4pt
+	\\partopsep=0pt}\\preto{\\@tabular}{\\parskip=2pt
+	\\parsep=0pt}\\makeatother} in the LaTeX preamble.
 }
 \author{
 Frank Harrell
