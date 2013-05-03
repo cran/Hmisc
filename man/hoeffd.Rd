@@ -22,11 +22,9 @@ the data.  \code{print.hoeffd} prints the information derived by
 absolute values of the difference between the joint empirical CDF and
 the product of the marginal empirical CDFs.
 }
-\synopsis{hoeffd(x, y)}
+%\synopsis{hoeffd(x, y)}
 \usage{
-hoeffd(x)
 hoeffd(x, y)
-\method{print}{hoeffd}(x, \dots)
 }
 \arguments{
 \item{x}{
@@ -36,7 +34,6 @@ a numeric matrix with at least 5 rows and at least 2 columns (if
 \item{y}{
 a numeric vector or matrix which will be concatenated to \code{x}
 }
-\item{\dots}{ignored}
 }
 \value{
 a list with elements \code{D}, the

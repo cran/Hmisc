@@ -1,5 +1,5 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-b8f2a4cd31ffca739590677c5d1b8f3e *DESCRIPTION
+80dcc40b19f5d2e864fbfaf54de528af *DESCRIPTION
 2257abefea81e943cec0ef9670918dea *INDEX
 0329a88329056d49f31d8f1297e623c1 *NAMESPACE
 64bd33d24c19e89443353e4341772c29 *R/AFirst.lib.s
@@ -187,7 +187,7 @@ ef9bb3e1fef268791751fda958b79e7c *man/format.df.Rd
 bd30d6597a6591b2d3b6202931502245 *man/hdquantile.Rd
 c362516ad3a6dd71363ff3733dbcd29d *man/hist.data.frame.Rd
 901875cc993a500f248fb22af00183d4 *man/histbackback.Rd
-53b300ac7cc6c71855c711d0c5faf127 *man/hoeffd.Rd
+eab1a29302d36a63bb0251c0f5624e3a *man/hoeffd.Rd
 7876d3c695693616c76ae9b0b5befc0a *man/html.Rd
 c7c3c2b2e87271ab3efc21dea205f510 *man/impute.Rd
 216bb0989ebf4378cb87841082451438 *man/inc-dec.Rd
@@ -277,10 +277,10 @@ edcf05627a85e73dea9b7ea4bafd4f51 *src/Hmisc.c
 49cd1f68a9ee96ef99b5ce5e0962d2e3 *src/Hmisc.h
 06d9b6e7e6a7e22898fc0134691889b3 *src/cidxcn.f
 ac182f4144cfd7853f252be1e4b3d75b *src/cidxcp.f
-1dc5284ddd0a26775ad74e953e32461a *src/hoeffd.f
+460787b60091f7f62fb07e5d7c0e7f09 *src/hoeffd.f
 f1af3dfa93855e177f438e9c0989d028 *src/jacklins.f
 bffae56a2552fd897a70ed573edf0620 *src/largrec.f
-3caed271f280f153f98e1a5bd7f936b1 *src/mChoice.c
+062a6e0760af8617b6ea4f79afb0b246 *src/mChoice.c
 703f73252fe6efaf8244b0713aaabe6b *src/maxempr.f
 69d3a08b2cd911161ba22af68f97f611 *src/nstr.c
 f698976ca9ef8a852edd2c37939b66a2 *src/ranksort.c
@@ -291,7 +291,7 @@ e79b029e11a49ff8a206e77ca34dd8a7 *src/ratfor/hoeffd.r
 daae316a69a5b013bdf334c4302725cd *src/ratfor/maxempr.r
 7a605562b93b12b1f3c3ae95a1341c3d *src/ratfor/rcorr.r
 aa3a41104a7731568ce59a05ce65d235 *src/ratfor/wclosest.r
-688185eea905002420e1711492687f86 *src/rcorr.f
+3c781927c142d6d9b17e54ef066df74e *src/rcorr.f
 6391fc48464e9b488b3626eaacbe967d *src/string_box.c
 4966ee836b899392c07d690265906264 *src/wclosest.f
 85b5b81d790bbc9bc28d1a4ba1d0d461 *tests/ace.s
