@@ -1,4 +1,4 @@
-## $Id: Misc.s 825 2012-09-10 13:31:42Z harrelfe $
+## $Id: Misc.s 891 2013-07-01 19:30:53Z dupontct $
 		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
@@ -93,9 +93,9 @@ trap.rule <- function(x,y) sum(diff(x)*(y[-1]+y[-length(y)]))/2
 uncbind <- function(x, prefix="", suffix="")
 {
   nn <- dimnames(x)[[2]]
-  warning("You are using uncbind.  This is a really bad idea. It will if you had any variables in the global environment named ", paste(prefix, nn, suffix, sep=""), " they are now over writen.\n\nYou have been warned.", immediate. = TRUE, )
+  warning("You are using uncbind.  That was a really bad idea. If you had any variables in the global environment named ", paste(prefix, nn, suffix, sep="", collapse=", "), " they are now over writen.\n\nYou are now warned.", immediate. = TRUE, )
   for(i in 1:ncol(x))
-    assign(paste(prefix,nn[i],suffix,sep=""), x[,i], pos=1)
+    assign(paste(prefix,nn[i],suffix,sep=""), x[,i], pos=parent.env())
   invisible()
 }
 
@@ -878,6 +878,22 @@ whichClosePW <- function(x, w, f=0.2) {
            PACKAGE="Hmisc")$j
 }              
 
+whichClosek <- function(x, w, k) {
+  ## x: vector of reference values
+  ## w: vector of values for which to lookup close matches in x
+  ## Returns: subscripts in x corresponding to w
+  ## Assumes no NAs in x or w
+  ## First jitters x so there are no ties
+  ## Finds the k closest matches and takes a single random pick of these k
+  y <- diff(sort(x))
+  mindif <- if(all(y == 0)) 1 else min(y[y > 0])
+  x <- x + runif(length(x), -mindif/100, mindif/100)
+  z <- abs(outer(w, x, "-"))
+  s <- apply(z, 1, function(u) order(u)[1:k])
+  if(k == 1) return(s)
+  apply(s, 2, function(u) sample(u, 1))
+}
+                        
 if(FALSE) {
   sampWtdDist <- function(x, w)
   {

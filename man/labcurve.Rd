@@ -141,7 +141,7 @@ drawPlot(\dots, xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
 
 # Abline(\dots)
 
-\method{plot}{drawPlot}(x, file, xlab, ylab, ticks,
+\method{plot}{drawPlot}(x, xlab, ylab, ticks,
      key=x$key, keyloc=x$keyloc, \dots)
 
 largest.empty(x, y, width=0, height=0, 
@@ -183,8 +183,7 @@ For \code{drawPlot} is a series of invocations of \code{Points} and
 \code{Curve} (see example).  Any number of point groups can be defined
 in this way.  For \code{Abline} these may be any arguments to
 \code{abline}. 
-For \code{labcurve}, other parameters to pass to \code{text}.  For
-\code{plot.drawPlot} other parameters to pass to \code{setps}.
+For \code{labcurve}, other parameters to pass to \code{text}.
 }
 \item{width}{
 }
@@ -434,11 +433,6 @@ group.  Is a single plotting character for \code{Points}, with the default
 being the next unused value from among 1, 2, 3, 4, 16, 17, 5, 6, 15,
 18, 19.
 }
-\item{file}{
-a file name suffix.  If specified, \code{plot.drawPlot} will send its
-output to a postscript file "file.ps" using the \code{setps} function to
-get nice defaults for inclusion in reports.
-}
 \item{plot}{
 set to \code{FALSE} to keep \code{putKey} or \code{putKeyEmpty} from actually drawing the
 key.  Instead, the size of the key will be return by \code{putKey}, or the
@@ -516,7 +510,8 @@ Vanderbilt University
 \email{f.harrell@vanderbilt.edu}
 }
 \seealso{
-\code{\link{approx}}, \code{\link{text}}, \code{\link{legend}}, \code{\link{setps}}, \code{\link{scat1d}}, \code{\link{xYplot}}, \code{\link{abline}}
+	\code{\link{approx}}, \code{\link{text}}, \code{\link{legend}},
+	\code{\link{scat1d}}, \code{\link{xYplot}}, \code{\link{abline}}
 }
 \examples{
 n <- 2:8
@@ -617,7 +612,7 @@ polygon(z$rect, col='blue')  # to draw the rectangle, or
 
 
 # d <- drawPlot(Points(), Curve(), Curve())
-# plot(d, file='/tmp/z')  # send result to /tmp/z.ps
+# plot(d)
 
 
 \dontrun{

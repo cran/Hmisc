@@ -77,17 +77,14 @@ naprint.delete <- function(x, ...)
   invisible()
 }
    
-
+globalVariables("naresid.omit")
 naresid.delete <- napredict.delete <- function(omit, x, ...)
 {
   omit <- omit$omit
-  ## 28Oct99:
-  if(exists('naresid.omit'))
-    naresid.omit(omit, x)
+  if(exists('naresid.omit')) naresid.omit(omit, x)
   else {
-    if(.R. && !existsFunction('naresid.exclude'))
+    if(!existsFunction('naresid.exclude'))
       naresid.exclude <- getFromNamespace('naresid.exclude','stats')
-    
     naresid.exclude(omit, x)
   }
 }
@@ -99,5 +96,5 @@ nafitted.delete <- function(obj, x)
   if(exists('naresid.omit'))
     naresid.omit(omit, x)
   else
-    naresid.exclude(omit, x)
+    getFromNamespace('naresid.exclude','stats')(omit, x)
 }

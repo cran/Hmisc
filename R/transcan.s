@@ -1,4 +1,4 @@
-## $Id: transcan.s 828 2012-10-25 12:22:44Z dupontct $
+## $Id: transcan.s 903 2013-07-07 02:41:39Z harrelfe $
 
 transcan <-
   function(x, method=c("canonical","pc"),
@@ -6,7 +6,7 @@ transcan <-
            imputed=FALSE, n.impute, 
            boot.method=c('approximate bayesian', 'simple'),
            trantab=FALSE, transformed=FALSE,
-           impcat=c("score","multinom","rpart","tree"),
+           impcat=c("score","multinom","rpart"),
            mincut=40,
            inverse=c('linearInterp','sample'), tolInverse=.05,
            pr=TRUE, pl=TRUE, allpl=FALSE, show.na=TRUE,
@@ -21,55 +21,8 @@ transcan <-
   ##This is a non-.Internal version of the approx function.  The
   ##S-Plus version of approx sometimes bombs with a bus error.
 
-  asing <- if(.R.) function(x)x else as.single
+  asing <- function(x)x
   
-  if(version$major < 4 && !.R.)
-    approx <- function(x, y, xout, method = "linear", n = 50, rule =
-                       1, f = 0){
-      nx <- length(x)
-      if(any(is.na(x)) || any(is.na(y)))
-        stop("Missing values not allowed")
-      
-      if(nx != length(y))
-        stop("Lengths of x and y must match")
-      
-      if(nx < 2)
-        stop("need at least 2 points")
-      
-      i <- order(x)
-      x <- x[i]
-      y <- y[i]
-      if(missing(xout))
-        xout <- seq(x[1], x[nx], length = n)
-      else n <- length(xout)
-
-      methods <- c("linear", "constant")
-      if(!(imeth <- pmatch(method, methods, nomatch = 0)))
-        stop("method must be \"linear\" or \"constant\"")
-      
-      method <- methods[imeth]
-      if(method == "linear") {
-        f <- -1
-      }
-      else if(method == "constant") {
-        if(f < 0 || f > 1)
-          stop("f must be in [0,1]")
-      }
-
-      val <-  .Fortran("approx",
-                       x = as.single(x),
-                       y = as.single(y),
-                       nx = as.integer(nx),
-                       xout = as.single(xout),
-                       m = as.integer(n),
-                       rule = as.integer(rule),
-                       f = as.single(f),
-                       yout = single(n),
-                       iscr = single(n))[c("xout", "yout")]
-      names(val) <- c("x", "y")
-      val
-    }
-
   call        <- match.call()
   method      <- match.arg(method)
   impcat      <- match.arg(impcat)
@@ -83,8 +36,8 @@ transcan <-
   
   if(n.impute > 0) {
     imputed <- TRUE
-    if(impcat %in% c('rpart','tree'))
-      stop('n.impute not supported for impcat="tree" or "rpart"')
+    if(impcat == 'rpart')
+      stop('n.impute not supported for impcat="rpart"')
     
     warning('transcan provides only an approximation to true multiple imputation.\nA better approximation is provided by the aregImpute function.\nThe MICE and other S libraries provide imputations from Bayesian posterior distributions.')
   }
@@ -92,14 +45,10 @@ transcan <-
   if(imputed.actual!='none')
     imputed <- TRUE
 
-  if(impcat=='multinom') {
-    if(.R.)
-      require('nnet')
-    else if(!existsFunction('multinom'))
-      require(nnet)
-  }
+  if(impcat=='multinom') require(nnet)
+  if(impcat=='rpart') require(rpart)
 
-  if(.R. & missing(data))
+  if(missing(data))
     stop('Must specify data= when using R')
 
   formula <- nact <- NULL
@@ -129,8 +78,7 @@ transcan <-
       stop('transcan does not support a left hand side variable in the formula')
 
 
-    nam <- if(.R.)var.inner(attr(y, "terms"))
-           else attr(terms.inner(terms(y)),'term.labels')
+    nam <- all.vars(attr(y, "terms"))
 
     # Error if user has passed an invalid formula
     if(length(nam) != d[2])
@@ -140,7 +88,7 @@ transcan <-
     if(!length(asis)) {
       Terms <- terms(formula, specials='I')
       asis <- nam[attr(Terms,'specials')$I]
-      ## terms.inner will cause I() wrapper to be ignored
+      ## all.vars will cause I() wrapper to be ignored
     }
 
     x <- matrix(NA,nrow=d[1],ncol=d[2],
@@ -151,7 +99,7 @@ transcan <-
         w <- factor(w)
 
       if(is.factor(w)) { 
-        x[,i] <- oldUnclass(w)
+        x[,i] <- unclass(w)
         categorical <- c(categorical, nam[i])
       } else {
         x[,i] <- w
@@ -190,7 +138,7 @@ transcan <-
     ## R does not allow multiple options to be spec.
     oldopts <- options()
     ##  names(oldopts) <- c('na.action','contrasts') #windows can mess this up
-    if(impcat %nin% c('rpart','tree')) {
+    if(impcat == 'rpart') {
       options(contrasts=c("contr.treatment","contr.poly"))
       on.exit(options(oldopts))
     }
@@ -227,8 +175,7 @@ transcan <-
     na <- is.na(y)
     w <- y[!na]
     if(imputed && n.impute==0)
-      Imputed[[i]] <- if(.R.)double(sum(na))
-                      else single(sum(na))
+      Imputed[[i]] <- double(sum(na))
 
     if(lab %in% asis) {
       fillin[i] <- if(usefill==2) imp.con[i]
@@ -247,7 +194,7 @@ transcan <-
         if(usefill==2) fillin[i] <- imp.con[i]
         else fillin[i] <- z[w==max(w)][1] #most freq. category
 
-        assign("Y", as.factor(y), 1)
+        assign("Y", as.factor(y))
         opold <- options(na.action="na.retain")
         w <- model.matrix(~Y) # uses contr.treatment (reference cell coding)
         options(na.action=opold[[1]]) #for some reason Windows needs opt name
@@ -288,8 +235,7 @@ transcan <-
       } else runif(n)
 
   p1 <- p-1
-  R2 <- R2.adj <- if(.R.)double(p)
-                  else single(p);
+  R2 <- R2.adj <- double(p)
 
   r2 <- r2.adj <- NA
   Details.impcat <- NULL
@@ -465,17 +411,11 @@ transcan <-
               if(usefill>0)
                 pred <- rep(fillin[i], sum(j))
               else {
-                if(impcat %in% c('rpart','tree')) {
+                if(impcat == 'rpart') {
                   y <- as.factor(x[,i])
                   zdf <- list(xx=xx, y=y)
-                  f <-
-                    if(impcat=='tree')
-                      tree(y ~ xx,
-                           control=tree.control(nobs=sum(!is.na(y)),
-                                                mincut=mincut),
-                           data=zdf, subset=!is.na(y))
-                    else rpart(y ~ xx,
-                               control=rpart.control(minsplit=mincut), data=zdf)
+                  f <- rpart(y ~ xx,
+                             control=rpart.control(minsplit=mincut), data=zdf)
 
                   ## won't work because rpart will not allow matrix x
                   pred <-
@@ -805,7 +745,7 @@ print.transcan <- function(x, long=FALSE, ...)
   dput(cal); cat("\n")
   if(length(trans))
     {
-      if(long) print(oldUnclass(x))
+      if(long) print(unclass(x))
       else print.default(trans)
     }
 
@@ -815,8 +755,7 @@ print.transcan <- function(x, long=FALSE, ...)
 impute.transcan <-
   function(x, var, imputation,
            name=as.character(substitute(var)),
-           where.in, data, where.out=1, frame.out,
-           list.out=FALSE,
+           pos.in, data, list.out=FALSE,
            pr=TRUE, check=TRUE, ...)
 {
   if(!missing(imputation) && length(imputation)>1)
@@ -845,10 +784,10 @@ impute.transcan <-
         }
       if(missing(data))
         {
-          if(missing(where.in))
-            where.in <- find(nams[1])[1]
+          if(missing(pos.in))
+            pos.in <- find(nams[1])[1]
 
-          var1   <- get(nams[1],where.in)
+          var1   <- get(nams[1], pos=pos.in)
         }
       else
         {
@@ -875,7 +814,7 @@ impute.transcan <-
           if(!length(i))
             {
               if(list.out) outlist[[nam]] <-
-                if(missing(data)) get(nam, where.in) else data[[nam]]
+                if(missing(data)) get(nam, pos=pos.in) else data[[nam]]
               
               next
             }
@@ -896,7 +835,7 @@ impute.transcan <-
           else if(length(d)) 
             stop('imputation must be specified when transcan used n.impute')
 
-          v <- if(missing(data)) get(nam, where.in)
+          v <- if(missing(data)) get(nam, pos=pos.in)
           else data[[nam]]
 
       ## Below was names(i) instead of match(...)
@@ -930,18 +869,6 @@ impute.transcan <-
           nimp[nam] <- length(i)
           if(list.out)
             outlist[[nam]] <- v
-          else
-            {
-              if(.R.)
-                assign(nam, v, envir=.GlobalEnv)
-              else
-                {
-                  if(missing(frame.out))
-                    assign(nam, v, where=where.out)
-                  else
-                    assign(nam, v, frame=frame.out)
-                }
-            }
         }
 
     if(pr)
@@ -1037,7 +964,7 @@ impute.transcan <-
   var
 }
 
-"[.transcan" <- function(x, rows=1:d[1], cols=1:d[2], drop=TRUE)
+"[.transcan" <- function(x, rows=1:d[1], cols=1:d[2], ..., drop=TRUE)
 {
   ## Check for old style object
   if(is.list(x))
@@ -1184,7 +1111,6 @@ predict.transcan <- function(object, newdata=NULL, iter.max=50, eps=.01,
             }
           else
             {
-              browser()
               if(is.matrix(prm))
                 {
                   lev <- attr(prm, "codes")
@@ -1252,7 +1178,7 @@ predict.transcan <- function(object, newdata=NULL, iter.max=50, eps=.01,
 Function <- function(object, ...) UseMethod("Function")
 
 
-Function.transcan <- function(object, prefix=".", suffix="", where=1, ...)
+Function.transcan <- function(object, prefix=".", suffix="", pos=-1, ...)
 {
   at <- if(is.list(object)) object
         else attributes(object)
@@ -1291,7 +1217,7 @@ Function.transcan <- function(object, prefix=".", suffix="", where=1, ...)
  
       fun.name <- paste(prefix,nam,suffix,sep="")
       cat("Function for transforming",nam,"stored as",fun.name,"\n")
-      assign(fun.name, f, where=where)
+      assign(fun.name, f, pos=pos)
       fnames[i] <- fun.name
     }
   
@@ -1336,92 +1262,110 @@ plot.transcan <- function(x, ...)
 fit.mult.impute <- function(formula, fitter, xtrans, data,
                             n.impute=xtrans$n.impute, fit.reps=FALSE,
                             dtrans, derived,
+                            vcovOpts=NULL,
                             pr=TRUE, subset, ...)
 {
   using.Design <- FALSE
   fits <- if(fit.reps) vector('list', n.impute)
-  used.mice <- any(oldClass(xtrans)=='mids')
+  used.mice <- any(class(xtrans)=='mids')
   if(used.mice && missing(n.impute)) n.impute <- xtrans$m
   stats.ok2average <- c('linear.predictors','fitted.values','stats', 'means',
                         'icoef', 'scale', 'center', 'y.imputed')
   
-  for(i in 1:n.impute)
-    {
-      if(used.mice) completed.data <- complete(xtrans, i)
-    else
-      {
-        completed.data <- data
-        imputed.data <-
-          impute.transcan(xtrans, imputation=i, data=data,
-                          list.out=TRUE, pr=FALSE, check=FALSE)
-        ## impute.transcan works for aregImpute
-        completed.data[names(imputed.data)] <- imputed.data
-      }
-
-      if(!missing(dtrans)) completed.data <- dtrans(completed.data)
-
-      if(!missing(derived))
-        {
-          stop('derived variables in fit.mult.imputed not yet implemented')
-          eval(derived, completed.data)
-        }
-
-      if(using.Design) options(Design.attr=da)
-      f <- if(missing(subset)) fitter(formula, data=completed.data, ...)
-      else fitter(formula, data=completed.data[subset,], ...)
-    
-      ## For some reason passing subset= causes model.frame bomb in R
-      if(fit.reps) fits[[i]] <- f
-
-      cof <- f$coef
-      v <- vcov(f, regcoef.only=FALSE)
-      ## From Rainer Dyckerhoff to work correctly with models that have
-      ## a scale parameter (e.g. psm).  Check whether length of the
-      ## coefficient vector is different from the the number of rows of
-      ## the covariance matrix. If so, the model contains scale
-      ## parameters that are not fixed at some value and we have to 
-      ## append the scale parameters to the coefficient vector.
-      nvar0 <- length(cof)
-      nvar <- nrow(v)
-      if(nvar > nvar0)
-        {
-          cof <- c(cof, log(f$scale))
-          names(cof) <- c(names(f$coef),
-                          if((nvar - nvar0) == 1) "Log(scale)"
-                          else names(f$scale))
-        }
-
-    if(i==1)
-      {
-        vavg <- 0*v
-        p <- length(cof)
-        bar <- rep(0, p)
-        vname <- names(cof)
-        cov <- matrix(0, nrow=p, ncol=p, dimnames=list(vname,vname))
-
-        astats <- NULL
-        fitcomp <- names(f)[names(f) %in% stats.ok2average]
-        if(length(fitcomp)) for(ncomp in fitcomp)
-          astats[[ncomp]] <- f[[ncomp]]
-        
-        if(inherits(f,'Design') | inherits(f, 'rms'))
-          {
-            using.Design <- TRUE
-            da <- f$Design
-          }
-        else warning('Not using a Design fitting function; summary(fit) will use\nstandard errors, t, P from last imputation only.  Use vcov(fit) to get the\ncorrect covariance matrix, sqrt(diag(vcov(fit))) to get s.e.\n\n')
-      }
-
-      vavg <- vavg + v
-      bar <- bar + cof
-      cof <- as.matrix(cof)
-      cov <- cov + cof %*% t(cof)
-
-      if(i > 1 && length(fitcomp))
-        for(ncomp in fitcomp)
-          astats[[ncomp]] <- astats[[ncomp]] + f[[ncomp]]
+  for(i in 1:n.impute) {
+    if(used.mice) completed.data <- complete(xtrans, i)
+    else {
+      completed.data <- data
+      imputed.data <-
+        impute.transcan(xtrans, imputation=i, data=data,
+                        list.out=TRUE, pr=FALSE, check=FALSE)
+      ## impute.transcan works for aregImpute
+      completed.data[names(imputed.data)] <- imputed.data
     }
 
+    if(!missing(dtrans)) completed.data <- dtrans(completed.data)
+
+    if(!missing(derived)) {
+      stop('derived variables in fit.mult.imputed not yet implemented')
+      eval(derived, completed.data)
+    }
+
+    if(using.Design) options(Design.attr=da)
+    f <- if(missing(subset)) fitter(formula, data=completed.data, ...)
+    else fitter(formula, data=completed.data[subset,], ...)
+    
+    ## For some reason passing subset= causes model.frame bomb in R
+    if(fit.reps) fits[[i]] <- f
+
+    cof <- f$coef
+    v <- do.call('vcov', c(list(object=f, intercepts='all'), vcovOpts))
+
+    if(i == 1) {
+      if(inherits(f, 'orm'))
+        warning('When using fit.mult.impute with orm, there should not be any missing\nY values because different imputations will result in differing numbers\nof intercepts')
+      assign <- f$assign
+      ns     <- num.intercepts(f)
+      ik <- coef.intercepts <- NULL
+      if(ns > 0) {
+        ik <- attr(v, 'intercepts')  # intercepts kept in f$var
+        if(length(ik)) {
+          if(ik == 'all') ik <- 1 : ns else if(ik == 'none') ik <- 0
+          lenik <- length(ik); if(length(ik) == 1 && ik == 0) lenik <- 0
+          ## Shift parameter indexes to left b/c of omitted intercepts for orm
+          if(lenik != ns) {
+            for(j in 1:length(assign))
+              assign[[j]] <- assign[[j]] - (ns - lenik)
+            coef.intercepts <- ik
+          }
+        }
+      }
+    }
+    if(length(ik)) cof <- c(cof[ik], cof[-(1:ns)])
+    
+    ## From Rainer Dyckerhoff to work correctly with models that have
+    ## a scale parameter (e.g. psm).  Check whether length of the
+    ## coefficient vector is different from the the number of rows of
+    ## the covariance matrix. If so, the model contains scale
+    ## parameters that are not fixed at some value and we have to 
+    ## append the scale parameters to the coefficient vector.
+    nvar0 <- length(cof)
+    nvar <- nrow(v)
+    if(nvar > nvar0) {
+      cof <- c(cof, log(f$scale))
+      names(cof) <- c(names(f$coef),
+                      if((nvar - nvar0) == 1) "Log(scale)"
+                      else names(f$scale))
+    }
+    
+    if(i==1) {
+      vavg <- 0*v
+      p <- length(cof)
+      bar <- rep(0, p)
+      vname <- names(cof)
+      cov <- matrix(0, nrow=p, ncol=p, dimnames=list(vname,vname))
+      
+      astats <- NULL
+      fitcomp <- names(f)[names(f) %in% stats.ok2average]
+      if(length(fitcomp)) for(ncomp in fitcomp)
+        astats[[ncomp]] <- f[[ncomp]]
+      
+      if(inherits(f,'Design') | inherits(f, 'rms')) {
+        using.Design <- TRUE
+        da <- f$Design
+      }
+      else warning('Not using a Design fitting function; summary(fit) will use\nstandard errors, t, P from last imputation only.  Use vcov(fit) to get the\ncorrect covariance matrix, sqrt(diag(vcov(fit))) to get s.e.\n\n')
+      }
+
+    vavg <- vavg + v
+    bar <- bar + cof
+    cof <- as.matrix(cof)
+    cov <- cov + cof %*% t(cof)
+    
+    if(i > 1 && length(fitcomp))
+      for(ncomp in fitcomp)
+        astats[[ncomp]] <- astats[[ncomp]] + f[[ncomp]]
+  }
+  
   vavg <- vavg / n.impute    ## matrix \bar{U} in Rubin's notation
   bar <- bar/n.impute
   bar <- as.matrix(bar)
@@ -1442,36 +1386,66 @@ fit.mult.impute <- function(formula, fitter, xtrans, data,
     for(ncomp in fitcomp)
       f[[ncomp]] <- astats[[ncomp]] / n.impute
 
-  if(pr)
-    {
-      cat('\nVariance Inflation Factors Due to Imputation:\n\n')
-      print(round(r,2))
-      cat('\nRate of Missing Information:\n\n')
-      print(round(missingInfo,2))
-      cat('\nd.f. for t-distribution for Tests of Single Coefficients:\n\n')
-      print(round(dfmi,2))
-      if(length(fitcomp))
-        {
-          cat('\nThe following fit components were averaged over the',
-              n.impute, 'model fits:\n\n')
-          cat(' ', fitcomp, '\n\n')
-        }
+  if(pr) {
+    cat('\nVariance Inflation Factors Due to Imputation:\n\n')
+    print(round(r,2))
+    cat('\nRate of Missing Information:\n\n')
+    print(round(missingInfo,2))
+    cat('\nd.f. for t-distribution for Tests of Single Coefficients:\n\n')
+    print(round(dfmi,2))
+    if(length(fitcomp)) {
+      cat('\nThe following fit components were averaged over the',
+          n.impute, 'model fits:\n\n')
+      cat(' ', fitcomp, '\n\n')
     }
+  }
   
   f$coefficients <- drop(bar)
+  if(length(coef.intercepts))
+    attr(f$coefficients, 'intercepts') <- coef.intercepts
+  attr(cov, 'intercepts') <- ik
   f$var <- cov
   f$variance.inflation.impute <- r
   f$missingInfo <- missingInfo
-  f$dfmi <- dfmi
-  f$fits <- fits
+  f$dfmi    <- dfmi
+  f$fits    <- fits
   f$formula <- formula
+  f$assign  <- assign
   if(using.Design) options(Design.attr=NULL)
-  
+  class(f) <- c('fit.mult.impute', class(f))
   f
 }
 
 
-vcov.fit.mult.impute <- function(object, ...) object$var
+vcov.fit.mult.impute <-
+  function(object, regcoef.only=TRUE, intercepts='mid', ...) {
+    ns    <- num.intercepts(object)
+    v     <- object$var
+    if(ns == 0) return(v)
+    vari  <- attr(v, 'intercepts')
+    lvari <- length(vari)
+    if(is.character(intercepts)) {
+      switch(intercepts,
+             mid = {
+               if(lvari > 0L && lvari != 1L)
+                 stop('requested middle intercept but more than one intercept stored in object$var')
+               return(v) },
+             all = {
+               if(lvari > 0 && lvari < ns)
+                 stop('requested all intercepts but not all stored in object$var')
+               return(v) },
+             none = if(inherits(object, 'orm') && lvari == 1)
+              return(v[-1, -1, drop=FALSE]) else
+              return(v[-(1:ns),-(1:ns), drop=FALSE]))
+    }
+    ## intercepts is integer scalar or vector
+    if(lvari && isTRUE(all.equal(sort(vari), sort(intercepts)))) return(v)
+    if(length(intercepts) == ns) return(v)
+    if(length(intercepts) >  ns) stop('more intercepts requested than in model')
+    i  <- c(intercepts, (ns + 1) : ncol(v))
+    v[i, i, drop=FALSE]
+}
+
 
 ##The following needed if Design is not in effect, to make anova work
 
@@ -1501,16 +1475,8 @@ vcov.default <- function(object, regcoef.only=FALSE, ...)
 if(FALSE) Varcov.lm <- function(object, ...)
 {
   cof <- object$coefficients
-  if(.R.)
-    {
-      Qr <- object$qr
-      cov <- chol2inv(Qr$qr)
-    }
-  else
-    {
-      rinv <- solve(object$R, diag(length(cof)))
-      cov <- rinv %*% t(rinv)
-    }
+  Qr <- object$qr
+  cov <- chol2inv(Qr$qr)
   
   cov <- sum(object$residuals^2)*cov/object$df.residual
   nm  <- names(cof)
@@ -1549,11 +1515,9 @@ invertTabulated <- function(x, y, freq=rep(1,length(x)),
 
   del <- diff(range(y, na.rm=TRUE))
   m <- length(aty)
-  yinv <- if(.R.)double(m)
-          else single(m)
+  yinv <- double(m)
   
-  cant <- if(.R.)double(0)
-          else single(0)
+  cant <- double(0)
 
   for(i in 1:m)
     {

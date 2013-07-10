@@ -125,33 +125,25 @@ format.df <- function(x,
 
   ## For now nsmall and scientific are ignored in R  25May01
   formt <-
-    if(!.R.)
-      format.default
-    else function(x, decimal.mark='.', nsmall=0, scientific=c(-4,4), digits=NULL)
+    function(x, decimal.mark='.', nsmall=0, scientific=c(-4,4), digits=NULL)
       {
         x <- format(x, nsmall=nsmall, decimal.mark=decimal.mark, digits=digits)
         if(decimal.mark!='.')
           x <- gsub('\\.',decimal.mark,x)
-      
+        
         x
       }
   
   dot <-
     if(cdot==TRUE && numeric.dollar==TRUE) {
-      if(.R.)
-        paste(sl,sl,'cdotp',sl,sl,'!',sep='')
-      else
-        paste(sl,'cdotp',sl,'!',sep='')
+      paste(sl,sl,'cdotp',sl,sl,'!',sep='')
     }
     else {
       '.'
     }
   
   decimal.point <- if(cdot==TRUE && dcolumn==TRUE) {
-    if(.R.)
-      paste(sl,'cdot',sep='')
-    else
-      paste(sl,'cdot',sep='')
+    paste(sl,'cdot',sep='')
   } else {
     dot
   }
@@ -422,7 +414,8 @@ latex.default <-
            caption=NULL, caption.lot=NULL, caption.loc=c('top','bottom'),
            double.slash=FALSE,
            vbar=FALSE, collabel.just=rep("c",nc), na.blank=TRUE,
-           insert.bottom=NULL, first.hline.double=!(booktabs | ctable),
+           insert.bottom=NULL, insert.bottom.width=NULL,
+           first.hline.double=!(booktabs | ctable),
            where='!tbp', size=NULL,
            center=c('center','centering','none'),
            landscape=FALSE,
@@ -875,7 +868,11 @@ latex.default <-
       cat(eog, midrule, sl, "endhead", '\n', midrule,
           sep="", file=file, append=file!='')
       if(length(insert.bottom)) {
-        cat(paste(sl, 'multicolumn{', nc, '}{', "p{",sl,'linewidth}}{', 
+        if(length(insert.bottom.width) == 0) {
+            insert.bottom.width = paste0(sl, "linewidth")
+        }
+        
+        cat(paste(sl, 'multicolumn{', nc, '}{', "p{",insert.bottom.width,'}}{', 
                   insert.bottom, '}', eol, sep='', collapse='\n'),
                   sep="", file=file, append=file!='')
       }
@@ -1152,10 +1149,11 @@ latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
     }
     
     if(greek) {
-      gl <- Cs(alpha,beta,gamma,delta,epsilon,varepsilon,zeta,eta,theta,
-               vartheta,iota,kappa,lambda,mu,nu,xi,pi,varpi,rho,varrho,
-               sigma,varsigma,tau,upsilon,phi,carphi,chi,psi,omega,Gamma,
-               Delta,Theta,Lambda,Xi,Pi,Sigma,Upsilon,Phi,Psi,Omega)
+      gl <- c('alpha','beta','gamma','delta','epsilon','varepsilon','zeta',
+              'eta','theta','vartheta','iota','kappa','lambda','mu','nu',
+              'xi','pi','varpi','rho','varrho','sigma','varsigma','tau',
+              'upsilon','phi','carphi','chi','psi','omega','Gamma','Delta',
+              'Theta','Lambda','Xi','Pi','Sigma','Upsilon','Phi','Psi','Omega')
       for(w in gl)
         text[i] <- gsub(paste('\\b', w, '\\b', sep=''),
                         paste('$\\\\',w,'$',   sep=''),
@@ -1233,9 +1231,6 @@ dvi.latex <- function(object, prlog=FALSE,
 }
 
 
-if(.R. && FALSE) show <- function(object) UseMethod('show')
-
-
 show.dvi <- function(object, width=5.5, height=7)
 {
   viewer <- optionsCmds('xdvi')
@@ -1265,20 +1260,19 @@ show.latex <- function(object)
 {
   if(object$file=='') {
     if(length(object$style)) {
-      latexStyles <-
-        if(exists('latexStyles'))
-          unique(c(latexStyles, object$style))
+      environment(show.latex)$latexStyles <-
+        if(exists("latexStyles", envir=environment(show.latex)))
+          unique(c(environment(show.latex)$latexStyles, object$style))
         else object$style
-      
-      storeTemp(latexStyles,'latexStyles')
+
     }
-    
+
     return(invisible())
   }
   
   show.dvi(dvi.latex(object))
 }
-
+environment(show.latex) <- new.env()
 
 print.dvi <- function(x, ...) show.dvi(x)
 print.latex <- function(x, ...) show.latex(x)

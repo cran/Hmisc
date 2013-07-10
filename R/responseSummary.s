@@ -1,4 +1,4 @@
-## $Id: responseSummary.s 608 2008-12-26 20:20:35Z dupontct $
+## $Id: responseSummary.s 848 2013-01-11 00:43:42Z harrelfe $
 
 responseSummary <- function(formula, data, na.action=na.pass,
                             FUN=function(y) sapply(y, mean), fun,
@@ -297,7 +297,7 @@ print.responseSummary <- function(x,
     if(useLabel && !is.null(xattribs$stratified.Tags$label)) {
       strat.name <- xattribs$stratified.Tags$label
     } else {
-      strat.name <- attribs$stratifed.Tags$label
+      strat.name <- xattribs$stratifed.Tags$label
     }
 
     cat(' by', strat.name)

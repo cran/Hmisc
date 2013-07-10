@@ -49,16 +49,16 @@ sas.get(libraryName, member, variables=character(0), ifs=character(0),
      data.frame.out=existsFunction("data.frame"), clean.up=FALSE, quiet=FALSE,
      temp=tempfile("SaS"), formats=TRUE, 
      recode=formats, special.miss=FALSE, sasprog="sas",
-     as.is=.5, check.unique.id=TRUE, force.single=FALSE, where,
+     as.is=.5, check.unique.id=TRUE, force.single=FALSE, pos,
      uncompress=FALSE)
 
 is.special.miss(x, code)
 
-\method{[}{special.miss}(x, ..., drop=FALSE)
+\method{[}{special.miss}(x, \dots, drop=FALSE)
 
-\method{print}{special.miss}(x, ...)
+\method{print}{special.miss}(x, \dots)
 
-\method{format}{special.miss}(x, ...)
+\method{format}{special.miss}(x, \dots)
 
 sas.codes(object)
 
@@ -240,12 +240,12 @@ code.levels(object)
     uncompressing in place.  If the file is already uncompressed, this
     option is ignored.
   }
-  \item{where}{
+  \item{pos}{
     by default, a list or data frame which contains all the variables
-    is returned.  If you specify \code{where}, each individual variable
+    is returned.  If you specify \code{pos}, each individual variable
     is placed into a separate object (whose name is the name
     of the variable) using the \code{assign} function with the
-    \code{where} argument.  For example, you can put each variable
+    \code{pos} argument.  For example, you can put each variable
     in its own file in a directory, which in some cases may
     save memory over attaching a data frame.
   }
@@ -273,7 +273,7 @@ code.levels(object)
   same as the format names (with periods substituted for underscores and
   character formats prefixed by \samp{\$}).
   Each of these lists has a vector called \code{values} and one called
-  \code{labels} with the \preformatted{PROC FORMAT; VALUE} \ldots   definitions.
+  \code{labels} with the \preformatted{PROC FORMAT; VALUE} \code{\dots} definitions.
 }
 \section{Side Effects}{
   if a \acronym{SAS} error occurs the \acronym{SAS} log file will be

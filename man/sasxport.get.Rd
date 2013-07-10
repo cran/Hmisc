@@ -6,7 +6,7 @@
 Uses the \code{read.xport} and \code{lookup.xport} functions in the
 \code{foreign} library to import SAS datasets.  SAS date, time, and
 date/time variables are converted respectively to \code{Date}, 
-POSIX, or \code{chron} objects in \R, 
+POSIX, or \code{POSIXct} objects in \R, 
 variable names are converted to lower case, SAS labels are associated
 with variables, and (by default) integer-valued variables are converted
 from storage mode \code{double} to \code{integer}.  If the user ran
@@ -107,7 +107,7 @@ variable names are converted to periods as with \R before version 1.9.}
 directory of SAS datasets when more than one was imported.}
 \author{Frank E Harrell Jr}
 \seealso{\code{\link[foreign]{read.xport}},\code{\link{label}},\code{\link{sas.get}},
-  \code{\link{Dates}},\code{\link{DateTimeClasses}},\code{\link[chron]{chron}},
+  \code{\link{Dates}},\code{\link{DateTimeClasses}},
   \code{\link[foreign]{lookup.xport}},\code{\link{contents}},\code{\link{describe}}}
 \examples{
 \dontrun{
@@ -149,7 +149,7 @@ directory of SAS datasets when more than one was imported.}
 # PROC COPY IN=work OUT=y;SELECT test format z;RUN; *Creates test2.xpt;
 w <- sasxport.get('test2.xpt')
 # To use an existing copy of test2.xpt available on the web:
-w <- sasxport.get('http://hesweb1.med.virginia.edu/biostat/s/data/sas/test2.xpt')
+w <- sasxport.get('http://biostat.mc.vanderbilt.edu/wiki/pub/Main/Hmisc/test2.xpt')
 
 describe(w$test)   # see labels, format names for dataset test
 # Note: if only one dataset (other than format) had been exported,

@@ -30,14 +30,14 @@
 }
 \usage{
 contents(object, \dots)
-\method{contents}{data.frame}(object, \dots)
+\method{contents}{data.frame}(object, sortlevels=FALSE, \dots)
 \method{print}{contents.data.frame}(x,
     sort=c('none','names','labels','NAs'), prlevels=TRUE, number=FALSE, \dots) 
 \method{html}{contents.data.frame}(object,
            sort=c('none','names','labels','NAs'), prlevels=TRUE,
            file=paste('contents',object$dfname,'html',sep='.'),
            levelType=c('list','table'),
-           append=FALSE, number=FALSE, \dots)
+           append=FALSE, number=FALSE, nshow=TRUE, \dots)
 \method{contents}{list}(object, dslabels, \dots)
 \method{print}{contents.list}(x,
     sort=c('none','names','labels','NAs','vars'), \dots)
@@ -47,6 +47,11 @@ contents(object, \dots)
     a data frame.  For \code{html} is an object created by
     \code{contents}.  For \code{contents.list} is a list of data frames.
   }
+  \item{sortlevels}{set to \code{TRUE} to sort levels of all factor
+  variables into alphabetic order.  This is especially useful when two
+  variables use the same levels but in different orders.  They will
+  still be recognized by the \code{html} method as having identical
+  levels if sorted.}
   \item{x}{
     an object created by \code{contents}
   }
@@ -65,7 +70,10 @@ contents(object, \dots)
   \item{number}{
 	set to \code{TRUE} to have the \code{print} and \code{latex} methods
 	number the variables by their order in the data frame
-	}
+  }
+  \item{nshow}{set to \code{FALSE} to suppress outputting number of
+   observations and number of \code{NA}s; useful when these counts
+   would unblind information to blinded reviewers}
   \item{file}{
     file to which to write the html code.  Default is
     \code{"conents.dfname.html"} where \code{dfname} is the name of the data

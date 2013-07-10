@@ -43,7 +43,7 @@ int get_next_mchoice(char **s)
      /* convert substring begin into its integer value */
      /* set errno to zero */
      errno = 0;
-     opt = (int) strtol(begin, &err_chk, 10);
+     opt = strtol(begin, &err_chk, 10);
          
      /* Check to see if an error occured in strtol */
      if(errno != 0) {
@@ -63,11 +63,12 @@ SEXP do_mchoice_match(SEXP x, SEXP table, SEXP nomatch)
      SEXP elm_index;            /* Storage for value of first row of 
                                    first match of each element in x *\/ */
      R_len_t len;               /* Number of elements in x */
+     R_len_t t_len;             /* Number of elements in table */
      R_len_t nfound = 0;        /* count of number of elements of
                                    x matched in table */
      char *str_ptr;             /* current location pointer */
      const char *str;
-     int i, j, comp, slen;
+     int i, j, k, comp, slen;
 
      S_EVALUATOR
      /* get number of elements in x */
@@ -95,7 +96,7 @@ SEXP do_mchoice_match(SEXP x, SEXP table, SEXP nomatch)
                continue;
           
           str = translateCharUTF8(STRING_ELT(table, i));
-          slen = (int) strlen(str) + 1;
+          slen = strlen(str) + 1;
           
           str_ptr = Hmisc_AllocStringBuffer((slen) * sizeof(char), &cbuff);
           strncpy(str_ptr, str, slen);
@@ -147,7 +148,7 @@ SEXP do_mchoice_equals(SEXP x, SEXP y)
      int x_len = LENGTH(x);     /* length of x vector */
      int y_len = LENGTH(y);     /* length of y vector */
      SEXP ans;                  /* Logical return vector */
-     int nfound;                /* number of matches found */
+     int nfound = 0;                /* number of matches found */
      int i,j, slen, comp;       /* iterators */
      char *str_ptr;             /* copy of the x string element */
      const char *str;
@@ -163,7 +164,7 @@ SEXP do_mchoice_equals(SEXP x, SEXP y)
         nfound = 0;
         str = translateCharUTF8(STRING_ELT(x, i));
 
-        slen = (int) strlen(str) + 1;
+        slen = strlen(str) + 1;
         
         /* if length of x element is zero or NA no posible match */
         if(STRING_ELT(x, i) == NA_STRING) {

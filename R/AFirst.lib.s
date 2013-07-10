@@ -1,4 +1,4 @@
-## $Id: AFirst.lib.s 774 2011-11-08 15:58:47Z dupontct $
+## $Id: AFirst.lib.s 897 2013-07-03 15:33:28Z dupontct $
 under.unix <- !(version$os=='Microsoft Windows' ||
                 version$os=='Win32' || version$os=='mingw32')
 
@@ -16,8 +16,6 @@ if(!exists('existsFunction')) {
   if(!length(verbose) || verbose)
     packageStartupMessage("Hmisc library by Frank E Harrell Jr\n\n",
         "Type library(help='Hmisc'), ?Overview, or ?Hmisc.Overview')\n",
-        "to see overall documentation.\n\n",
-        "NOTE:Hmisc no longer redefines [.factor to drop unused levels when\n",
-        "subsetting.  To get the old behavior of Hmisc type dropUnusedLevels().\n")
+        "to see overall documentation.\n")
   invisible()
 }

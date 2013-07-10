@@ -60,7 +60,7 @@
   by adding the \dQuote{best guess} predicted mean score to random
   residuals off this score.  Then categories having scores closest to
   these predicted scores are taken as the random multiple imputations
-  (\code{impcat = "tree"} or \samp{"rpart"} are not currently allowed
+  (\code{impcat = "rpart"} is not currently allowed
   with \code{n.impute}).  The literature recommends using \code{n.impute
   = 5} or greater. \code{transcan} provides only an approximation to
   multiple imputation, especially since it \dQuote{freezes} the
@@ -115,7 +115,9 @@
   they have been attached) and that you want the imputed variables to
   have the same names are the original variables. If \code{n.impute} was
   specified to \code{transcan} you must tell \code{\link{impute}} which
-  \code{imputation} to use.
+  \code{imputation} to use.   Results are stored in \code{.GlobalEnv}
+  when \code{list.out} is not specified  (it is recommended to use
+  \code{list.out=TRUE}).   
   
   The \code{\link{predict}} method for \code{transcan} computes
   predicted variables and imputed values from a matrix of new data.
@@ -153,7 +155,7 @@ transcan(x, method=c("canonical","pc"),
          categorical=NULL, asis=NULL, nk, imputed=FALSE, n.impute,
          boot.method=c('approximate bayesian', 'simple'),
          trantab=FALSE, transformed=FALSE, 
-         impcat=c("score", "multinom", "rpart", "tree"),
+         impcat=c("score", "multinom", "rpart"),
          mincut=40, 
          inverse=c('linearInterp','sample'), tolInverse=.05,
          pr=TRUE, pl=TRUE, allpl=FALSE, show.na=TRUE, 
@@ -170,11 +172,11 @@ transcan(x, method=c("canonical","pc"),
 
 \method{plot}{transcan}(x, \dots)
 
-\method{impute}{transcan}(x, var, imputation, name, where.in, data, 
-       where.out=1, frame.out, list.out=FALSE, pr=TRUE, check=TRUE, \dots)
+\method{impute}{transcan}(x, var, imputation, name, pos.in, data, 
+       list.out=FALSE, pr=TRUE, check=TRUE, \dots)
 
 fit.mult.impute(formula, fitter, xtrans, data, n.impute, fit.reps=FALSE,
-                dtrans, derived, pr=TRUE, subset, \dots)
+                dtrans, derived, vcovOpts=NULL, pr=TRUE, subset, \dots)
 
 \method{predict}{transcan}(object, newdata, iter.max=50, eps=0.01, curtail=TRUE,
         type=c("transformed","original"),
@@ -182,7 +184,7 @@ fit.mult.impute(formula, fitter, xtrans, data, n.impute, fit.reps=FALSE,
 
 Function(object, \dots)
 
-\method{Function}{transcan}(object, prefix=".", suffix="", where=1, \dots)
+\method{Function}{transcan}(object, prefix=".", suffix="", pos=-1, \dots)
 
 invertTabulated(x, y, freq=rep(1,length(x)), 
                 aty, name='value',
@@ -191,7 +193,8 @@ invertTabulated(x, y, freq=rep(1,length(x)),
 
 \method{vcov}{default}(object, regcoef.only=FALSE, \dots)
 
-\method{vcov}{fit.mult.impute}(object, \dots)
+\method{vcov}{fit.mult.impute}(object, regcoef.only=TRUE,
+                intercepts='mid', \dots)
 
 }
 \arguments{
@@ -225,7 +228,8 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     any \R, \code{rms}, modeling function (not in quotes) that computes
     a vector of \code{\link{coefficients}} and for which
     \code{\link{vcov}} will return a variance-covariance matrix.  E.g.,
-    \code{fitter = \link{lm}}, \code{\link{glm}}, \code{\link[rms]{ols}}. At present models
+    \code{fitter = \link{lm}}, \code{\link{glm}},
+		\code{\link[rms]{ols}}. At present models 
     involving non-regression parameters (e.g., scale parameters in
     parametric survival models) are not handled fully.
   }
@@ -306,10 +310,10 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     This argument tells how to impute categorical variables on the
     original scale.  The default is \code{impcat="score"} to impute the
     category whose canonical variate score is closest to the predicted
-    score. Use \code{impcat="tree"} to impute categorical variables
-    using the \code{\link[tree]{tree}} function, using the values of all other
-    transformed predictors.  \code{impcat="rpart"} will use
-    \code{\link{rpart}}.  A better but somewhat slower approach is to
+    score. Use \code{impcat="rpart"} to impute categorical variables
+    using the values of all other transformed predictors in conjunction
+	with the \code{\link[rpart]{rpart}} function.  A better but somewhat
+	slower approach is to 
     use \code{impcat="multinom"} to fit a multinomial logistic model to
     the categorical variable, at the last iteraction of the
     \code{transcan} algorithm.  This uses the \code{\link{multinom}}
@@ -323,9 +327,8 @@ invertTabulated(x, y, freq=rep(1,length(x)),
   }
   \item{mincut}{
     If \code{imputed=TRUE}, there are categorical variables, and
-    \code{impcat = "tree"}, \code{mincut} specifies the lowest node size
-    that will be allowed to be split by \code{\link[tree]{tree}}.  The default
-    is 40.
+    \code{impcat = "rpart"}, \code{mincut} specifies the lowest node size
+    that will be allowed to be split.  The default is 40.
   }
   \item{inverse}{
     By default, imputed values are back-solved on the original scale
@@ -447,7 +450,7 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     which keeps all observations with any \code{NA} values. For
     \code{impute.transcan}, \code{data} is a data frame to use as the
     source of variables to be imputed, rather than using
-    \code{where.in}.  For \code{fit.mult.impute}, \code{data} is
+    \code{pos.in}.  For \code{fit.mult.impute}, \code{data} is
     mandatory and is a data frame containing the data to be used in
     fitting the model but before imputations are applied.  Variables
     omitted from \code{data} are assumed to be available from frame1
@@ -455,7 +458,7 @@ invertTabulated(x, y, freq=rep(1,length(x)),
   }
   \item{treeinfo}{
     Set to \code{TRUE} to get additional information printed when
-    \code{impcat="tree"}, such as the predicted probabilities of
+    \code{impcat="rpart"}, such as the predicted probabilities of
     category membership.
   }
   \item{rhsImp}{
@@ -491,7 +494,7 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     in \code{x}, for which imputated values are to be filled
     in. \code{imputed=TRUE} must have been used in \code{transcan}.
     Omit \code{var} to impute all variables, creating new variables in
-    \code{search} position \code{where}. 
+    position \code{pos} (see \code{\link{assign}}).
   }
   \item{imputation}{
     specifies which of the multiple imputations to use for filling in
@@ -504,29 +507,13 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     \code{invertTabulated}, is the name of variable being transformed
     (used only for warning messages).
   }
-  \item{where.in}{
-    location in \code{search} list to find variables that need to be
+  \item{pos.in}{
+    location as defined by \code{\link{assign}} to find variables that
+	need to be 
     imputed, when all variables are to be imputed automatically by
     \code{impute.transcan} (i.e., when no input variable name is
-    specified). Default is first \code{search} position that contains
+    specified).  Default is position that contains
     the first variable to be imputed.
-  }
-  \item{where.out}{
-    location in the \code{search} list for storing variables with
-    missing values set to imputed values, for \code{impute.transcan}
-    when all variables with missing values are being imputed
-    automatically.
-  }
-  \item{frame.out}{
-    Instead of specifying \code{where.out} you can specify an \R frame
-    number into which individual new imputed variables will be
-    written. For example, \code{frame.out=1} is useful for putting new
-    variables into a temporary local frame when \code{impute} is called
-    within another function (see \code{fit.mult.impute}).  See
-    \code{\link{assign}} for details about frames.  For \R,
-    \code{where.out} and \code{frame.out} are ignored and results are
-    stored in \code{.GlobalEnv} when \code{list.out} is not specified
-    (it is recommended to use \code{list.out=TRUE}).  
   }
   \item{list.out}{
     If \code{var} is not specified, you can set \code{list.out=TRUE} to
@@ -587,6 +574,10 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     See the example below.  Note that \code{derived} is not yet
     implemented.  
   }
+	\item{vcovOpts}{a list of named additional arguments to pass to the
+		\code{vcov} method for \code{fitter}.  Useful for \code{orm} models
+		for retaining all intercepts
+		(\code{vcovOpts=list(intercepts='all')}) instead of just the middle one.}
   \item{type}{
     By default, the matrix of transformed variables is returned, with
     imputed values on the transformed scale.  If you had specified
@@ -597,8 +588,7 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     categorical variables, the method used here is to select the
     category code having a corresponding scaled value closest to the
     predicted transformed value.  This corresponds to the default
-    \code{impcat}; a problem in getting predicted values for \code{tree}
-    objects prevented using \code{tree} for this.  Note: imputed values
+    \code{impcat}.  Note: imputed values
     thus returned when \code{type="original"} are single expected value
    imputations even in \code{n.impute} is given.
  }
@@ -613,11 +603,9 @@ invertTabulated(x, y, freq=rep(1,length(x)),
    default is to use names of the form \samp{.varname}, where
    \var{varname} is the variable name.
  }
- \item{where}{
-   position in \code{\link{search}} list at which to store new functions
-   (for \code{\link{Function}}). Default is position 1 in the search
-   list.  See the \code{\link{assign}} function for more documention on
-   the \code{where}argument.
+ \item{pos}{
+   position as in \code{\link{assign}} at which to store new functions
+   (for \code{\link{Function}}). Default is \code{pos=-1}.
  }
  \item{y}{
    a vector corresponding to \code{x} for \code{invertTabulated}, if its
@@ -639,6 +627,13 @@ invertTabulated(x, y, freq=rep(1,length(x)),
    the covariance matrix for any non-regression coefficients (e.g., log
    scale parameter from \code{\link[rms]{psm}} or \code{\link{survreg}})
  }
+ \item{intercepts}{this is primarily for \code{\link[rms]{orm}}
+	 objects.  Set to \code{"none"} to discard all intercepts from the
+	 covariance matrix, or to \code{"all"} or \code{"mid"} to keep all
+	 elements generated by \code{orm} (\code{orm} only outputs the
+	 covariance matrix for the intercept corresponding to the median).
+	 You can also set \code{intercepts} to a vector of subscripts for
+	 selecting particular intercepts in a multi-intercept model.}
 }
 \value{
   For \code{transcan}, a list of class \samp{transcan} with elements
@@ -715,7 +710,12 @@ invertTabulated(x, y, freq=rep(1,length(x)),
   \cite{Rubin's rate of missing information} and \code{dfmi} is
   \cite{Rubin's degrees of freedom for a t-statistic}
   for testing a single parameter.  The last two objects are vectors
-  corresponding to the diagonal of the variance matrix.
+  corresponding to the diagonal of the variance matrix.  The class
+  \code{"fit.mult.impute"} is prepended to the other classes produced by
+  the fitting function.
+
+	\code{fit.mult.impute} stores \code{intercepts} attributes in the
+	coefficient matrix and in \code{var} for \code{orm} fits.
 }
 \section{Side Effects}{
   prints, plots, and \code{impute.transcan} creates new variables.
@@ -1004,13 +1004,13 @@ g <- fit.mult.impute(y ~ product + ratio, ols, w,
 # that had at least one NA, and also containing all the variables
 # in an original data frame.  The following is based on the fact
 # that the default output location for impute.transcan is
-# given by where.out=1 (search position 1)
+# given by the global environment
 
 
 \dontrun{
 xt <- transcan(~. , data=mine,
                imputed=TRUE, shrink=TRUE, n.impute=10, trantab=TRUE)
-attach(mine, pos=1, use.names=FALSE)
+attach(mine, use.names=FALSE)
 impute(xt, imputation=1) # use first imputation
 # omit imputation= if using single imputation
 detach(1, 'mine2')
