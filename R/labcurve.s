@@ -1,4 +1,4 @@
-## $Id: labcurve.s 828 2012-10-25 12:22:44Z dupontct $
+## $Id: labcurve.s 892 2013-07-01 21:59:32Z harrelfe $
 
 labcurve <- function(curves, labels=names(curves), 
                      method=NULL, keys=NULL, keyloc=c('auto','none'),
@@ -1166,6 +1166,7 @@ largest.empty <- function(x, y,
                  area=diff(x)*diff(y)))
 }
 
+utils::globalVariables("pch.to.use")
 
 drawPlot <- function(..., xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
                      ticks=c('none','x','y','xy'),
@@ -1195,8 +1196,8 @@ drawPlot <- function(..., xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
       if(length(ymean))
         pts$y <- pts$y - mean(pts$y) + ymean
     
-      if(type=='p') 
-        storeTemp(pch.to.use[pch.to.use != pch],'pch.to.use')
+      if(type=='p')
+          assign("pch.to.use", pch.to.use[pch.to.use != pch], envir=environment(Points))
       else
         {
           scat1d(pts$x, side=1)
@@ -1212,6 +1213,7 @@ drawPlot <- function(..., xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
       structure(list(points=pts, label=label, type=type,
                      pch=pch, cex=cex, rug=rug), class='Points')
     }
+  environment(Points) <- new.env()
 
   Curve <- function(label=' ',
                     type=c('bezier','polygon','linear','pol','step','gauss'),
@@ -1316,11 +1318,11 @@ drawPlot <- function(..., xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
       structure(list(...), class='Abline')
     }
   
-  storeTemp(Points)
-  storeTemp(Curve)
-  storeTemp(Abline)
+  .setPoints(Points)
+  .setCurve(Curve)
+  .setAbline(Abline)
   
-  storeTemp(c(1,2,3,4,16,17,5,6,15,18,19),'pch.to.use')
+  environment(Points)$pch.to.use <- c(1,2,3,4,16,17,5,6,15,18,19)
 
   ticks <- match.arg(ticks)
   if(missing(ticks))
@@ -1469,7 +1471,7 @@ bezier <- function(x, y, xlim, evaluation=100)
 }
 
 
-plot.drawPlot <- function(x, file, xlab, ylab, ticks,
+plot.drawPlot <- function(x, xlab, ylab, ticks,
                           key=x$key, keyloc=x$keyloc, ...)
 {
   if(missing(xlab))
@@ -1483,9 +1485,6 @@ plot.drawPlot <- function(x, file, xlab, ylab, ticks,
   if(missing(ticks))
     ticks <- x$ticks
   
-  if(!missing(file))
-    setps(file, type='char', ...)
-
   plot(xlim, ylim, xlim=xlim, ylim=ylim, xlab=xlab, ylab=ylab,
        type='n', axes=ticks=='xy')
   switch(ticks,
@@ -1588,11 +1587,6 @@ plot.drawPlot <- function(x, file, xlab, ylab, ticks,
                    lty=lty[j], lwd=lwd[j], labels=label[j], opts=x$opts)
       }
     }
-  
-  if(!missing(file)) {
-    dev.off()
-    cat('\nCreated file ',file,'.ps\n',sep='')
-  }
   
   invisible()
 }

@@ -117,7 +117,8 @@ latex(object, \dots)
     caption=NULL, caption.lot=NULL, caption.loc=c('top','bottom'),
     double.slash=FALSE,
     vbar=FALSE, collabel.just=rep("c",nc), na.blank=TRUE,
-    insert.bottom=NULL, first.hline.double=!(booktabs | ctable),
+    insert.bottom=NULL, insert.bottom.width=NULL,
+    first.hline.double=!(booktabs | ctable),
     where='!tbp', size=NULL,
     center=c('center','centering','none'),
     landscape=FALSE,
@@ -169,7 +170,7 @@ dvips(object, \dots)
 \method{show}{latex}(object)  # or show.dvi(object) or just object
 dvigv(object, \dots)
 \method{dvigv}{latex}(object, \dots)       # or gvdvi(dvi(object))
-\method{dvigv}{dvi}(object, \ldots)
+\method{dvigv}{dvi}(object, \dots)
 }
 \arguments{
   \item{object}{
@@ -299,6 +300,11 @@ dvigv(object, \dots)
   \item{insert.bottom}{
     an optional character string to typeset at the bottom of the table.
     For \code{"ctable"} style tables, this is placed in an unmarked footnote.
+  }
+  \item{insert.bottom.width}{
+    character string; a tex width controlling the width of the
+    insert.bottom text.  Currently only does something with using
+    \code{longtable=TRUE}.
   }
   \item{first.hline.double}{
     set to \code{FALSE} to use single horizontal rules for styles other than
