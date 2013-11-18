@@ -1,4 +1,4 @@
-## $Id: AFirst.lib.s 897 2013-07-03 15:33:28Z dupontct $
+## $Id$
 under.unix <- !(version$os=='Microsoft Windows' ||
                 version$os=='Win32' || version$os=='mingw32')
 

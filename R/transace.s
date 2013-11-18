@@ -1,8 +1,8 @@
-# $Id: transace.s 839 2013-01-10 22:07:19Z harrelfe $
+# $Id$
 transace <- function(x, monotonic=NULL, categorical=NULL, binary=NULL,
                      pl=TRUE)
 {
-  require('acepack')  # provides ace, avas
+  require(acepack)  # provides ace, avas
 
   nam <- dimnames(x)[[2]]
   omit <- is.na(x %*% rep(1,ncol(x)))
@@ -58,7 +58,7 @@ areg.boot <- function(x, data, weights, subset, na.action=na.delete,
 {
   acall   <- match.call()
   method  <- match.arg(method)
-  if(method=='avas') require('acepack')
+  if(method=='avas') require(acepack)
 
   if(!inherits(x,'formula')) stop('first argument must be a formula')
 

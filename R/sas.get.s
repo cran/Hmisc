@@ -1,4 +1,4 @@
-## $Id: sas.get.s 884 2013-05-28 16:16:52Z harrelfe $
+## $Id$
 sas.get <- 
   function(libraryName,
            member,

@@ -10,7 +10,6 @@ summaryM <- function(formula, data, subset, na.action,
   m <- match(c('formula', 'data', 'subset', 'na.action'), names(mf), 0)
   mf <- mf[c(1, m)]
   if(missing(na.action)) mf$na.action <- na.retain
-  require(Formula)
   formula <- Formula(formula)
   mf[[1]] <- as.name('model.frame')
   mf$formula <- formula
@@ -289,7 +288,7 @@ plot.summaryM <-
     }
 
     dimnames(z) <- list(lab, dimnames(z)[[2]])
-    dotchart3(z, groups=factor(vnd), xlab=xlab, xlim=xlim,
+    dotchart3(z, groups=factor(vnd, levels=unique(vnd)), xlab=xlab, xlim=xlim,
               auxdata=if(!any(prtest == 'none')) ftstats,
               pch=pch, ...)
     
@@ -648,7 +647,7 @@ latex.summaryM <-
     col.just <- c("r",col.just)
   }
 
-  if(!insert.bottom)
+  if(is.logical(insert.bottom) && !insert.bottom)
     legend <- NULL
   else {
     legend <- character()

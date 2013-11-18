@@ -1,4 +1,4 @@
-## $Id: valueTags.s 774 2011-11-08 15:58:47Z dupontct $
+## $Id$
 .valueTagAttrs <- c(label="label", units="units", name="shortlabel")
 
 

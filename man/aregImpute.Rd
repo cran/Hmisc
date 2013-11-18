@@ -401,7 +401,7 @@ Vanderbilt University
   }
 \seealso{
 \code{\link{fit.mult.impute}}, \code{\link{transcan}}, \code{\link{areg}}, \code{\link{naclus}}, \code{\link{naplot}}, \code{\link[mice]{mice}},
-\code{\link{dotchart2}}, \code{\link{Ecdf}}
+\code{\link{dotchart3}}, \code{\link{Ecdf}}
 }
 \examples{
 # Check that aregImpute can almost exactly estimate missing values when
@@ -445,6 +445,7 @@ f
 f <- aregImpute(~y + x1 + x2 + x3, nk=c(0,3:5), data=d, B=10)
 f
 
+\dontrun{
 # Use 100 imputations to better check against individual true values
 f <- aregImpute(~y + x1 + x2 + x3, n.impute=100, data=d)
 f
@@ -462,8 +463,8 @@ fmi <- fit.mult.impute(y ~ x1 + x2 + x3, lm, f,
 sqrt(diag(vcov(fmi)))
 fcc <- lm(y ~ x1 + x2 + x3)
 summary(fcc)   # SEs are larger than from mult. imputation
-
-
+}
+\dontrun{
 # Example 2: Very discriminating imputation models,
 # x1 and x2 have some NAs on the same rows, smaller n
 set.seed(5)
@@ -491,7 +492,6 @@ plot(f, diagnostics=TRUE, maxn=2)
 #   abline(h=orig.x2[i],lty=2)
 # }
 
-
 table(orig.x1,apply(f$imputed$x1, 1, modecat))
 par(mfrow=c(1,1))
 plot(orig.x2, apply(f$imputed$x2, 1, mean))
@@ -502,7 +502,9 @@ fmi <- fit.mult.impute(y ~ x1 + x2, lm, f,
 sqrt(diag(vcov(fmi)))
 fcc <- lm(y ~ x1 + x2)
 summary(fcc)   # SEs are larger than from mult. imputation
+}
 
+\dontrun{
 # Study relationship between smoothing parameter for weighting function
 # (multiplier of mean absolute distance of transformed predicted
 # values, used in tricube weighting function) and standard deviation
@@ -543,6 +545,7 @@ plot(ss, sds, xlab='Smoothing Parameter', ylab='SD of Imputed Values',
      type='b')
 abline(v=.2,  lty=2)  # default value of fweighted
 abline(h=rmse, lty=2)  # root MSE of residuals from linear regression
+}
 
 \dontrun{
 # Do a similar experiment for the Titanic dataset

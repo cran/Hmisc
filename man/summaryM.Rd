@@ -354,7 +354,8 @@ summaryM(formula, data, subset, na.action,
   }
   \item{insert.bottom}{
     set to \code{FALSE} to suppress inclusion of definitions placed at the
-    bottom of LaTeX tables
+    bottom of LaTeX tables.  You can also specify a character string
+      containing other text that overrides the automatic text.
   }
   \item{dcolumn}{see \code{latex}}
   }
@@ -380,11 +381,12 @@ summaryM(formula, data, subset, na.action,
   Document available from \url{http://biostat.mc.vanderbilt.edu/twiki/pub/Main/StatReport/summary.pdf}.
 }
 \seealso{
-  \code{\link{mChoice}}, \code{\link{label}}, \code{\link{dotchart2}},
+  \code{\link{mChoice}}, \code{\link{label}}, \code{\link{dotchart3}},
   \code{\link{print.char.matrix}}, \code{\link{update}},
   \code{\link{formula}}, 
   \code{\link{format.default}}, \code{\link{latex}},
-  \code{\link{latexTranslate}} \code{\link{bpplt}}
+  \code{\link{latexTranslate}}, \code{\link{bpplt}},
+	\code{\link{tabulr}}, \code{\link{bpplotM}}
 }
 \examples{
 options(digits=3)
@@ -423,22 +425,19 @@ bpplt()    # annotated example showing layout of bp plot
 getHdata(pbc)
 s5 <- summaryM(bili + albumin + stage + protime + sex + 
                age + spiders ~ drug, data=pbc)
-# To summarize all variables, use summary(. ~ drug, data=pbc)
-# To summarize all variables with no stratification, use
+# To summarize all variables, use summaryM(drug ~ ., data=pbc)
 
-options(digits=1)
 print(s5, npct='both')
 # npct='both' : print both numerators and denominators
 plot(s5, which='categorical')
 Key(locator(1))  # draw legend at mouse click
 par(oma=c(3,0,0,0))  # leave outer margin at bottom
-plot(s5, which='continuous')
+plot(s5, which='continuous')  # see also bpplotM
 Key2()           # draw legend at lower left corner of plot
                  # oma= above makes this default key fit the page better
 
 options(digits=3)
-w <- latex(s5, npct='both', here=TRUE)     
-# creates s5.tex
+w <- latex(s5, npct='both', here=TRUE, file='')     
 }
 }
 \keyword{category}
