@@ -1,4 +1,4 @@
-## $Id: scat1d.s 845 2013-01-10 23:26:35Z harrelfe $
+## $Id$
 ## -*-S-*- Improvements due to Martin Maechler <maechler@stat.math.ethz.ch>
 
 scat1d <- function(x, side=3, frac=.02, jitfrac=.008, tfrac, 

@@ -1,4 +1,4 @@
-## $Id: responseSummary.s 848 2013-01-11 00:43:42Z harrelfe $
+## $Id$
 
 responseSummary <- function(formula, data, na.action=na.pass,
                             FUN=function(y) sapply(y, mean), fun,

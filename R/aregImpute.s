@@ -1,4 +1,4 @@
-# $Id: aregImpute.s 836 2013-01-10 18:59:16Z harrelfe $
+# $Id$
 aregImpute <- function(formula, data, subset, n.impute=5,
                        group=NULL, nk=3, tlinear=TRUE,
                        type=c('pmm','regression','normpmm'), pmmtype=1,
@@ -356,10 +356,8 @@ plot.aregImpute <- function(x, nclass=NULL, type=c('ecdf','hist'),
     lab <- paste('Imputed',n)
     if(n %in% catg) {
       tab <- table(ix)
-      mar <- par('mar')
-      dotchart2(tab, lev[[n]], auxdata=tab, xlab='Frequency',
+      dotchart3(tab, lev[[n]], auxdata=tab, xlab='Frequency',
                 ylab=lab)
-      par(mar=mar)
     }
     else {
       if(type=='ecdf')
