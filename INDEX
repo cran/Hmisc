@@ -1,5 +1,6 @@
 abs.error.pred          Indexes of Absolute Prediction Error for Linear
                         Models
+addMarginal             Add Marginal Observations
 all.is.numeric          Check if All Elements in Character Vector are
                         Numeric
 approxExtrap            Linear Extrapolation
@@ -74,9 +75,9 @@ latex                   Convert an S object to LaTeX, and Related
                         Utilities
 latexDotchart           Enhanced Dot Chart for LaTeX Picture
                         Environment with epic
+latexTabular            Convert a Data Frame or Matrix to a LaTeX
+                        Tabular
 latexTherm              Create LaTeX Thermometers
-ldBands                 Group Sequential Boundaries using the
-                        Lan-DeMets Approach
 legendfunctions         Legend Creation Functions
 list.tree               Pretty-print the Structure of a Data Object
 makeNstr                creates a string that is a repeat of a
@@ -89,10 +90,13 @@ mgp.axis                Draw Axes With Side-Specific mgp Parameters
 mhgr                    Miscellaneous Functions for Epidemiology
 minor.tick              Minor Tick Marks
 mtitle                  Margin Titles
+multLines               Plot Multiple Lines
 na.delete               Row-wise Deletion na.action
 na.detail.response      Detailed Response Variable Information
 na.keep                 Do-nothing na.action
 %nin%                   Find Matching (or Non-Matching) Elements
+nobsY                   Compute Number of Observations for Left Hand
+                        Side of Formula
 nstr                    Creates a string of arbitry length
 num.intercepts          Extract number of intercepts
 panel.bpplot            Box-Percentile Panel Function for Trellis
@@ -154,8 +158,11 @@ summarize               Summarize Scalars or Matrices by
                         Cross-Classification
 summary.formula         Summarize Data for Making Tables and Plots
 summaryM                Summarize Mixed Data Types vs. Groups
+summaryP                Multi-way Summary of Proportions
 summaryRc               Graphical Summarization of Continuous Variables
                         Against a Response
+summaryS                Summarize Multiple Response Variables and Make
+                        Multipanel Scatter or Dot Plot
 symbol.freq             Graphic Representation of a Frequency Table
 sys                     Run Unix or Dos Depending on System
 tabulr                  Interface to Tabular Function
@@ -181,3 +188,4 @@ xy.group                Mean x vs. function of y in groups of x
 xYplot                  xyplot and dotplot with Matrix Variables to
                         Plot Error Bars and Bands
 yearDays                Get Number of Days in Year or Month
+ynbind                  Combine Variables in a Matrix

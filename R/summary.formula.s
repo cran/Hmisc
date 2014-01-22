@@ -199,7 +199,7 @@ summary.formula <-
 
       if(!(ismc <- is.matrix(x))) {
         s <- is.na(x)
-        if(!is.category(x)) {
+        if(!is.factor(x)) {
           xu <- unique(x[!s]);
           lu <- length(xu)
           x <- if(lu < continuous) {
@@ -585,7 +585,7 @@ print.summary.formula.response <-
            formatArgs=NULL, ...)
 {
   stats <- x
-  stats <- oldUnclass(stats)
+  stats <- unclass(stats)
   vnames <- match.arg(vnames)
   ul <- vnames=='labels'
 
@@ -655,7 +655,7 @@ latex.summary.formula.response <-
     
 
   title <- title   # otherwise problem with lazy evaluation 25May01
-  stats <- oldUnclass(stats)
+  stats <- unclass(stats)
   at <- attributes(stats)
 
   vnames <- match.arg(vnames)
@@ -705,7 +705,7 @@ latex.summary.formula.response <-
   cdec <- rep(c(if(prn)0 else NULL,cdec), ns)
 
   if(missing(trios)) {
-    cstats <- oldUnclass(stats)
+    cstats <- unclass(stats)
   } else {
     fmt <- function(z, cdec) ifelse(is.na(z), '', format(round(z,cdec)))
     cstats <- list()
@@ -766,7 +766,7 @@ plot.summary.formula.response <-
            main, subtitles=TRUE, ...)
 {
   stats <- x
-  stats  <- oldUnclass(stats)
+  stats  <- unclass(stats)
   vnames <- match.arg(vnames)
   ul <- vnames=='labels'
   at <- attributes(stats)
@@ -1325,7 +1325,8 @@ dotchart2 <-
 
 
 print.summary.formula.reverse <- 
-  function(x, digits, prn=any(n != N), pctdig=0, 
+  function(x, digits, prn=any(n != N), pctdig=0,
+           what=c('%', 'proportion'),
            npct=c('numerator','both','denominator','none'),
            exclude1=TRUE, vnames=c("labels","names"), prUnits=TRUE,
            sep="/", abbreviate.dimnames=FALSE, 
@@ -1336,6 +1337,7 @@ print.summary.formula.reverse <-
 {
   npct   <- match.arg(npct)
   vnames <- match.arg(vnames)
+  what <- match.arg(what)
   if(is.logical(prtest) && !prtest)
     prtest <- 'none'
 
@@ -1375,7 +1377,7 @@ print.summary.formula.reverse <-
     if(type[i]==1 || type[i]==3) {
       cs <- formatCats(stats[[i]], nam, tr, type[i],
                        if(length(x$group.freq)) x$group.freq else x$n[i],
-                       npct, pctdig, exclude1, long, prtest,
+                       what, npct, pctdig, exclude1, long, prtest,
                        pdig=pdig, eps=eps)
       nn <- c(nn, rep(NA, nrow(cs)-1))
     } else cs <- formatCons(stats[[i]], nam, tr, x$group.freq, prmsd,
@@ -1429,30 +1431,32 @@ print.summary.formula.reverse <-
 
 ## Function to format subtable for categorical var, for method='reverse'
 formatCats <- function(tab, nam, tr, type, group.freq,
+                       what=c('%', 'proportion'),
                        npct, pctdig, exclude1, long, prtest,
                        latex=FALSE, testUsed=character(0),
                        npct.size='scriptsize', pdig=3, eps=.001,
                        footnoteTest=TRUE, dotchart=FALSE)
 {
+  what   <- match.arg(what)
   gnames <- names(group.freq)
-  nr <- nrow(tab)
+  nr     <- nrow(tab)
 
   ## If there was a missing column of tab because e.g. the variable was
   ## always NA for one (or more) of the groups, add columns of NAs
   if(ncol(tab) < length(group.freq)) {
-    tabfull <- matrix(NA,nrow=nr,ncol=length(group.freq),
-                      dimnames=list(dimnames(tab)[[1]],gnames))
+    tabfull <- matrix(NA, nrow=nr, ncol=length(group.freq),
+                      dimnames=list(dimnames(tab)[[1]], gnames))
     tabfull[,dimnames(tab)[[2]]] <- tab
     tab <- tabfull
   }
 
   denom <- if(type==1) apply(tab, 2, sum)
            else group.freq
-
-  pct <- 100*(if(ncol(tab) > 1)sweep(tab, 2, denom, FUN='/') else tab/denom)
+  pct <- if(ncol(tab) > 1) sweep(tab, 2, denom, FUN='/') else tab / denom
+  pct <- pct * (if(what =='%') 100 else 1)
   cpct <- paste(format(round(pct, pctdig)),
-                if(latex)"\\%"
-                else "%",
+                if(latex && what == '%')"\\%"
+                else if(what == '%') "%",
                 sep="")
 
   denom.rep <- matrix(rep(format(denom),nr),nrow=nr,byrow=TRUE)
@@ -1583,6 +1587,14 @@ formatCons <- function(stats, nam, tr, group.freq, prmsd, sep='/',
   qu <- stats[,c(q1,med,q3),drop=FALSE]
   if(prmsd)
     qu <- cbind(qu,stats[,c('Mean','SD'),drop=FALSE])
+  if(length(round) && round == 'auto') {
+    ## r <- max(stats[, 'SD'],
+    ##          diff(range(stats[, colnames(stats) %nin% c('N', 'SD')])),
+    ##          na.rm=TRUE)
+    r <- max(abs(stats[, colnames(stats) %nin% c('N', 'SD')]), na.rm=TRUE)
+    round <- if(r == 0) 2
+     else max(0, min(5, 3 - round(log10(r))))
+  }
   if(length(round)) qu <- round(qu, round)
   ww <- c(list(qu), formatArgs)
   cqu <- do.call('format', ww)
@@ -1737,7 +1749,8 @@ formatTestStats <- function(tr, multchoice=FALSE,
 
 latex.summary.formula.reverse <- 
   function(object, title=first.word(deparse(substitute(object))),
-           digits, prn = any(n!=N), pctdig=0, 
+           digits, prn = any(n!=N), pctdig=0,
+           what=c('%', 'proportion'),
            npct=c('numerator','both','denominator','none'),
            npct.size='scriptsize', Nsize='scriptsize',
            exclude1=TRUE,  vnames=c("labels","names"), prUnits=TRUE,
@@ -1750,6 +1763,7 @@ latex.summary.formula.reverse <-
   x      <- object
   npct   <- match.arg(npct)
   vnames <- match.arg(vnames)
+  what <- match.arg(what)
   if(is.logical(prtest) && !prtest)
     prtest <- 'none'
 
@@ -1814,7 +1828,7 @@ latex.summary.formula.reverse <-
     if(type[i]==1 || type[i]==3) {
       cs <- formatCats(stats[[i]], nam, tr, type[i],
                        if(length(x$group.freq)) x$group.freq else x$n[i],
-                       npct, pctdig, exclude1, long, prtest,
+                       what, npct, pctdig, exclude1, long, prtest,
                        latex=TRUE, testUsed=testUsed,
                        npct.size=npct.size,
                        pdig=pdig, eps=eps,
@@ -2020,7 +2034,7 @@ latex.summary.formula.cross <-
   vnames <- match.arg(vnames)
   ul <- vnames=='labels'
 
-  stats <- oldUnclass(stats)
+  stats <- unclass(stats)
   a <- attributes(stats)
   ylab <- attr(stats$S,"label")
   nvar <- length(a$Levels)
@@ -2122,7 +2136,7 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
 
   allf <- list(...)
   
-  if(length(allf) == 1 && is.list(ttt <- oldUnclass(allf[[1]]))) {
+  if(length(allf) == 1 && is.list(ttt <- unclass(allf[[1]]))) {
     allf <- ttt
     words <- names(ttt)
   }
@@ -2140,7 +2154,7 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
   if(is.null(levels(what)))
     what <- factor(what)
 
-  levs <- oldUnclass(what) - 1
+  levs <- unclass(what) - 1
   wlab <- levels(what)
   if(na.group && any(is.na(what))) {
     levs[is.na(levs)] <- length(wlab)
@@ -2157,7 +2171,7 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
       what <- factor(what)
 
     wlab <- levels(what)
-    wlev <- oldUnclass(what) - 1
+    wlev <- unclass(what) - 1
     if(na.group && any(is.na(wlev))) {
       wlev[is.na(wlev)] <- length(wlab)
       wlab <- c(wlab, "NA")
@@ -2176,7 +2190,7 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
   levs <- match(levs, ulevs)
   labs <- labs[ulevs]
   levels(levs) <- labs
-  oldClass(levs) <- "factor"
+  class(levs) <- "factor"
 
   if(length(xlab))
     valueLabel(levs) <- xlab   #FEH 2Jun95
@@ -2194,7 +2208,7 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
   at$dim <- at$dimnames <- NULL
 
   if(!missing(j)) {
-    x <- oldUnclass(x)[,j,drop=FALSE]
+    x <- unclass(x)[,j,drop=FALSE]
     at$ycolname <- at$ycolname[j]
     attributes(x) <- c(attributes(x), at)
   }
@@ -2228,7 +2242,7 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
   at$nlevels <- at$nlevels[i]
   at$labels  <- at$labels[i]
 
-  x <- oldUnclass(x)[j,,drop=FALSE]
+  x <- unclass(x)[j,,drop=FALSE]
   attributes(x) <- c(attributes(x), at)
   x
 }
@@ -2236,11 +2250,11 @@ stratify <- function(..., na.group = FALSE, shortlabel = TRUE)
 
 cumcategory <- function(y)
 {
-  if(!is.category(y))
+  if(!is.factor(y))
     y <- factor(y)
 
   lev <- levels(y)
-  y <- oldUnclass(y)
+  y <- unclass(y)
   Y <- matrix(NA, nrow=length(y), ncol=length(lev)-1,
               dimnames=list(NULL,paste('>=',lev[-1],sep='')))
   storage.mode(Y) <- 'integer'
@@ -2253,7 +2267,8 @@ cumcategory <- function(y)
 
 summarize <- function(X, by, FUN, ..., 
                       stat.name=deparse(substitute(X)), 
-                      type=c('variables','matrix'), subset=TRUE)
+                      type=c('variables','matrix'), subset=TRUE,
+                      keepcolnames=FALSE)
 {
   type <- match.arg(type)
   if(missing(stat.name) && length(stat.name) > 1) stat.name <- 'X'
@@ -2321,18 +2336,20 @@ summarize <- function(X, by, FUN, ...,
   if(nc>1 && (nc != ncol(r))) stop('program logic error')
   
   snames <- names(typical.computation)
-  if(!length(snames)) snames <- paste(stat.name,1:nc,sep='')
+  if(! length(snames)) snames <- paste(stat.name, 1 : nc, sep='')
+
+  if(! keepcolnames) {
+    if(length(stat.name) == 1) snames[1] <- stat.name
+    else if(length(stat.name))    snames <- stat.name
+  }
   
-  if(length(stat.name) == 1) snames[1] <- stat.name
-  else if(length(stat.name))    snames <- stat.name
-  
-  oldopt <- options(warn=-1)
+  oldopt <- options(warn = -1)
   on.exit(options(oldopt))
   notna <- rep(TRUE, length(ans[[1]]))
   for(i in 1:length(by)) {
     byi  <- by[[i]]
     ansi <- ans[[i]]
-    if(is.category(byi)) {
+    if(is.factor(byi)) {
       if(!is.character(ansi))
         stop('program logic error:ansi not character')
       
@@ -2369,7 +2386,7 @@ summarize <- function(X, by, FUN, ...,
   ans <- structure(ans, class='data.frame', 
                    row.names=1 : length(ans[[1]]))
   ## removed [notna,] from end of above line; not sure why this was needed
-  iorder <- do.call('order', structure(oldUnclass(ans)[1 : nby], names=NULL))
+  iorder <- do.call('order', structure(unclass(ans)[1 : nby], names=NULL))
   ## order can bomb if data frame given (preserves names)
   ans[iorder,]
 }
@@ -2383,7 +2400,7 @@ if(FALSE) {
   .Options$warn <- -1
   for(i in 1:length(by)) {
     byi <- by[[i]]
-    if(is.numeric(byi) && !is.category(byi)) dn[[i]] <- as.numeric(dn[[i]])
+    if(is.numeric(byi) && !is.factor(byi)) dn[[i]] <- as.numeric(dn[[i]])
   }
   .Options$warn <- wrn
   names(dn) <- names(by)

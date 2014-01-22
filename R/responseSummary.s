@@ -153,7 +153,7 @@ responseSummary <- function(formula, data, na.action=na.pass,
       s <- is.na(x)
 
       ## If x is not a category make it into one
-      if(! is.category(x)) {
+      if(! is.factor(x)) {
         ## Find the all the unique non-null values of x
         xUnique <- unique(x[!is.na(x)])
 
@@ -249,7 +249,7 @@ responseSummary <- function(formula, data, na.action=na.pass,
                   ylabel=ylabel, ycolnames=colnames(Y), funlab=funlab,
                   stratified.Tags=stratified.Tags, stratified.levels=levels(stratified))
   attributes(Xstats) <- c(attributes(Xstats), newAttr)
-  oldClass(Xstats)<- 'responseSummary'
+  class(Xstats)<- 'responseSummary'
   return(Xstats)
 }
 

@@ -139,7 +139,7 @@ Ecdf.data.frame <- function(x, group=rep(1,nrows),
     mf <- c(1,1)
   
   g <- function(v, n.unique) {
-    if(is.character(v) || is.category(v))
+    if(is.character(v) || is.factor(v))
       return(FALSE)
     
     length(unique(v[!is.na(v)])) >= n.unique
@@ -221,7 +221,7 @@ panel.Ecdf <- function(x, y, subscripts, groups=NULL,
 
   type <- 's'   # lattice histogram sets to 'percent'
 
-  g <- oldUnclass(groups)[subscripts]
+  g <- unclass(groups)[subscripts]
   ng <- if(length(groups)) max(g, na.rm=TRUE) else 1
 
   plot.symbol <- trellis.par.get(if(ng>1)

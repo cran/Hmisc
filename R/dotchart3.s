@@ -29,16 +29,15 @@ dotchart3 <-
     ginch <- 0
     goffset <- 0
   }
-  else
-    {
-      ginch <- max(strwidth(glabels, "inch", cex=cex.group.labels,
-                            font=groupfont),
-                   na.rm = TRUE)
-      goffset <- 0.4
-    }
+  else {
+    ginch <- max(strwidth(glabels, "inch", cex=cex.group.labels,
+                          font=groupfont),
+                 na.rm = TRUE)
+    goffset <- 0.4
+  }
   if(length(labels) + length(glabels) > 0) {
     nmai     <- par("mai")
-    nmai[2L] <- nmai[4L] + max(linch + goffset, ginch) + 0.1
+    nmai[2L] <- max(nmai[2L], nmai[4L] + max(linch + goffset, ginch) + 0.1)
     ## Run strwidth separately because on of the 3 variables might
     ## be an expression, in which case an overall c(...) would combine the
     ## widths of character vectors
@@ -130,8 +129,8 @@ dotchart3 <-
 summaryD <- function(formula, data=NULL, fun=mean, funm=fun,
                      groupsummary=TRUE, auxvar=NULL, auxtitle='',
                      vals=length(auxvar) > 0, fmtvals=format,
-                     cex.auxdata=.7, xlab=v[1], gridevery=NULL,
-                     gridcol=gray(.95), sort=TRUE, ...) {
+                     cex.auxdata=.7, xlab=v[1], ylab=NULL,
+                     gridevery=NULL, gridcol=gray(.95), sort=TRUE, ...) {
   if(!missing(fmtvals)) vals <- TRUE
   if(!length(data)) data <- environment(formula)
   else data <- list2env(data, parent=environment(formula))
@@ -175,12 +174,12 @@ summaryD <- function(formula, data=NULL, fun=mean, funm=fun,
               cex.auxdata=cex.auxdata,
               gdata   =if(groupsummary) z2$sy,
               auxgdata=if(groupsummary) z2$fval,
-              xlab=xlab, ...)
+              xlab=xlab, ylab=ylab, ...)
   }
   else
     dotchart3(z$sy, s$x1, auxdata=z$fval,
               auxtitle=if(vals) auxtitle,
-              cex.auxdata=cex.auxdata, xlab=xlab, ...)
+              cex.auxdata=cex.auxdata, xlab=xlab, ylab=ylab, ...)
   
   if(length(gridevery)) {
     xmin <- par('usr')[1]

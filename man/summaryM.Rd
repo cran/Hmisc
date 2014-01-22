@@ -45,7 +45,7 @@
   variables.
 }
 \usage{
-summaryM(formula, data, subset, na.action,
+summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
          overall=FALSE, continuous=10, na.include=FALSE,
          quant=c(0.025, 0.05, 0.125, 0.25, 0.375, 0.5, 0.625,
                  0.75, 0.875, 0.95, 0.975),
@@ -53,7 +53,8 @@ summaryM(formula, data, subset, na.action,
          conTest=conTestkw, catTest=catTestchisq,
          ordTest=ordTestpo)
 
-\method{print}{summaryM}(x, digits, prn = any(n != N), pctdig = 0,
+\method{print}{summaryM}(x, digits, prn = any(n != N),
+      what=c('proportion', '\%'), pctdig = if(what == '\%') 0 else 2,
       npct = c('numerator', 'both', 'denominator', 'none'),
       exclude1 = TRUE, vnames = c('labels', 'names'), prUnits = TRUE,
       sep = '/', abbreviate.dimnames = FALSE,
@@ -74,8 +75,10 @@ summaryM(formula, data, subset, na.action,
      conType = c('bp', 'dot', 'raw'), cex.means = 0.5, cex=par('cex'), \dots)
 
 \method{latex}{summaryM}(object, title =
-      first.word(deparse(substitute(object))), digits, 
-      prn = any(n != N), pctdig = 0,
+      first.word(deparse(substitute(object))),
+      file=paste(title, 'tex', sep='.'), append=FALSE, digits, 
+      prn = any(n != N), what=c('proportion', '\%'),
+      pctdig = if(what == '\%') 0 else 2,
       npct = c('numerator', 'both', 'denominator', 'none'),
       npct.size = 'scriptsize', Nsize = 'scriptsize', exclude1 = TRUE,
       vnames=c("labels", "names"), prUnits = TRUE, middle.bold = FALSE,
@@ -83,19 +86,25 @@ summaryM(formula, data, subset, na.action,
       insert.bottom = TRUE, dcolumn = FALSE, formatArgs=NULL, round=NULL,
       prtest = c('P', 'stat', 'df', 'name'), prmsd = FALSE,
       msdsize = NULL, long = FALSE, pdig = 3, eps = 0.001,
-      auxCol = NULL, \dots)
+      auxCol = NULL, table.env=TRUE, \dots)
 }
 \arguments{
   \item{formula}{
-    An S formula with additive effects.  There may be only one variable
-      on the right hand side, or the numeral \code{1}, indicating that
-      there is not grouping variable so that only margin summaries are
-      produced.  The right hand side variable, if present, must be a
-      discrete variable producing a limited number of groups.  On the
-      left hand side there may be any number of variables, separated by
-      "+", and these may be of mixed types.  These varibles are analyzed
-      separately by the grouping variable.
+    An S formula with additive effects.  There may be several variables
+    on the right hand side separated by "+",
+		or the numeral \code{1}, indicating that
+    there is no grouping variable so that only margin summaries are
+    produced.  The right hand side variable, if present, must be a
+    discrete variable producing a limited number of groups.  On the
+    left hand side there may be any number of variables, separated by
+    "+", and these may be of mixed types.  These variables are analyzed
+    separately by the grouping variable.
   }
+	\item{groups}{if there is more than one right-hand variable, specify
+    \code{groups} as a character string containing the name of the
+		variable used to produce columns of the table.  The remaining right
+      hand variables are combined to produce levels that cause separate
+      tables or plots to be produced.}
   \item{x}{an object created by \code{summaryM}.  For
     \code{conTestkw} a numeric vector, and for \code{ordTestpo}, a numeric
     or factor variable that can be considered ordered}
@@ -169,10 +178,7 @@ summaryM(formula, data, subset, na.action,
     For \code{Key} and \code{Key2} these arguments are passed to \code{key},
     \code{text}, or \code{mtitle}.  For \code{print} methods these are
     optional arguments to \code{print.char.matrix}. For \code{latex} methods
-    these are passed to \code{latex.default}.  One of the most important of
-    these is \code{file}.  Specifying \code{file=""} will cause LaTeX code
-    to just be printed to standard output rather than be stored in a
-    permanent file.
+    these are passed to \code{latex.default}. 
   }
   \item{object}{an object created by \code{summaryM}}
   \item{quant}{
@@ -214,16 +220,19 @@ summaryM(formula, data, subset, na.action,
     number of significant digits to print.  Default is to use the current
     value of the \code{digits} system option.
   }
+	\item{what}{specifies whether proportions or percentages are to be
+      printed, plotted, or LaTeX'd} 
+  \item{pctdig}{
+    number of digits to the right of the decimal place for printing
+    percentages or proportions. The default is zero if \code{what='\%'},
+		so percents will be rounded to the nearest percent.  The default is
+    2 for proportions.
+  }
   \item{prn}{
     set to \code{TRUE} to print the number of non-missing observations on the
     current (row) variable.  The default is to print these only if any of
     the counts of non-missing values differs from the total number of
     non-missing values of the left-hand-side variable.
-  }
-  \item{pctdig}{
-    number of digits to the right of the decimal place for printing
-    percentages. The default is zero, so percents will be rounded to the
-    nearest percent.
   }
   \item{npct}{
     specifies which counts are to be printed to the right of percentages.
@@ -264,7 +273,8 @@ summaryM(formula, data, subset, na.action,
   \item{round}{
 	Specify \code{round} to round
 	the quantiles and optional mean and standard deviation to
-	\code{round} digits after the decimal point
+	\code{round} digits after the decimal point.  Set \code{round='auto'}
+      to try an automatic choice.
 	}
   \item{prmsd}{
     set to \code{TRUE} to print mean and SD after the three quantiles, for
@@ -299,9 +309,8 @@ summaryM(formula, data, subset, na.action,
     is filled with blanks when a variable being summarized takes up more
     than one row in the output.  This happens with categorical variables.
   }
-  \item{what}{
-    specifies whether proportions or percentages are to be plotted
-  }
+	\item{table.env}{set to \code{FALSE} to use \code{tabular} environment
+      with no caption}
   \item{which}{
 	Specifies whether to plot results
     for categorical variables, continuous variables, or both (the default).
@@ -343,6 +352,11 @@ summaryM(formula, data, subset, na.action,
     is the name of the \code{summary} object.  If \code{caption} is specied,
     \code{title} is also used for the table's symbolic reference label. 
   }
+	\item{file}{name of file to write LaTeX code to. Specifying
+      \code{file=""} will cause LaTeX code to just be printed to
+      standard output rather than be stored in a  permanent file.
+		}
+  \item{append}{specify \code{TRUE} to add code to an existing file}
   \item{rowlabel}{
     see \code{latex.default} (under the help file \code{latex})
   }
@@ -386,12 +400,13 @@ summaryM(formula, data, subset, na.action,
   \code{\link{formula}}, 
   \code{\link{format.default}}, \code{\link{latex}},
   \code{\link{latexTranslate}}, \code{\link{bpplt}},
-	\code{\link{tabulr}}, \code{\link{bpplotM}}
+	\code{\link{tabulr}}, \code{\link{bpplotM}}, \code{\link{summaryP}}
 }
 \examples{
 options(digits=3)
 set.seed(173)
 sex <- factor(sample(c("m","f"), 500, rep=TRUE))
+country <- factor(sample(c('US', 'Canada'), 500, rep=TRUE))
 age <- rnorm(500, 50, 5)
 sbp <- rnorm(500, 120, 12)
 label(sbp) <- 'Systolic BP'
@@ -420,6 +435,11 @@ print(f, long=TRUE)
 plot(f)
 plot(f, conType='dot', prtest='P')
 bpplt()    # annotated example showing layout of bp plot
+
+# Produce separate tables by country
+f <- summaryM(age + sex + sbp + Symptoms ~ treatment + country,
+              groups='treatment', test=TRUE)
+f
 
 \dontrun{
 getHdata(pbc)
