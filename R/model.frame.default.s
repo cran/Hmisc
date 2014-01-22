@@ -72,39 +72,6 @@ GetModelFrame <- function(formula, specials, default.na.action=NULL) {
 ## }
 
 
-##For compatibility with SV4
-if(!exists('oldUnclass'))
-  oldUnclass  <- unclass
-
-if(!exists('oldClass'))
-  oldClass    <- class
-
-if(!exists('oldClass<-'))
-  'oldClass<-' <- function(x, value)
-{
-  class(x) <- value
-  x
-}
-
-if(!exists('logb'))
-  logb <- log
-
-if(!exists('getFunction')) getFunction <- function(...)
-  get(..., mode='function')
-
-if(!exists('is.category'))
-  is.category <- function(x) length(attr(x,'levels')) > 0 && mode(x)=='numeric'
-## R doesn't have this
-
-if(!exists('as.category'))
-  as.category <- function(x)
-{
-  x <- as.factor(x)
-  class(x) <- NULL
-  x
-}
-
-
 termsDrop <- function(object, drop, data)
 {
   trm <- terms(object, data=data)
@@ -117,24 +84,8 @@ termsDrop <- function(object, drop, data)
   }
   form <- update(trm,
                  as.formula(paste('~ . ',
-                                  paste('-',drop,collapse=''))))
+                                  paste('-', drop, collapse=''))))
   terms(form, data=data)
-}
-
-
-untangle.specials <- function (tt, special, order = 1)
-{
-  ## From survival5
-  spc <- attr(tt, "specials")[[special]]
-  if (length(spc) == 0)
-    return(list(vars = character(0), terms = numeric(0)))
-  
-  facs <- attr(tt, "factor")
-  fname <- dimnames(facs)
-  ff <- apply(facs[spc, , drop = FALSE], 2, sum)
-  list(vars = (fname[[1]])[spc],
-       terms = seq(ff)[ff & match(attr(tt,"order"),
-                                  order, nomatch = 0)])
 }
 
 

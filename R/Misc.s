@@ -10,10 +10,11 @@ if(!exists("NCOL", mode='function')) {
     if (is.array(x) && length(dim(x)) > 1 || is.data.frame(x)) ncol(x) else as.integer(1)
 }
 
-prn <- function(x, txt)
+prn <- function(x, txt, file='')
 {
   calltext <- as.character(sys.call())[2]
-
+  if(file != '') sink(file, append=TRUE)
+  
   if(!missing(txt)) {
     if(nchar(txt) + nchar(calltext) +3 > .Options$width)
       calltext <- paste('\n\n  ',calltext,sep='')
@@ -22,7 +23,9 @@ prn <- function(x, txt)
     cat('\n', txt, calltext, '\n\n', sep='') 
   }
   else cat('\n',calltext,'\n\n',sep='')
-  invisible(print(x))
+  print(x)
+  if(file != '') sink()
+  invisible()
 }
 
 format.sep <- function(x, digits, ...)
@@ -137,7 +140,7 @@ setParNro <- function(pars)
 {
   ## Sets non-read-only par parameters from the input list
   i <- names(pars) %nin%
-    c('cin','cra','csi','cxy','din','xlog','ylog','gamma')
+    c('cin','cra','csi','cxy','din','xlog','ylog','gamma','page')
   invisible(par(pars[i]))
 }
 
@@ -1080,7 +1083,6 @@ xless <-
 {
   ## Usage: xless(x) - uses print method for x, puts in persistent window with
   ## xless using name of x as title (unless title= is specified)
-  if(under.unix) {
 	file <- tempfile()
   	sink(file)
   	print(x, ...)
@@ -1088,37 +1090,9 @@ xless <-
   	cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
                file,'" &',sep='')
     system(cmd)
-  } else page(x, method='print', title=title, ...)
 invisible()
 }
 
-gView <- function(x, ...,
-                  title=substring(deparse(substitute(x)),1,40),
-                  nup=1, fancy=TRUE, fontsize=if(nup==1)9 else 8)
-{
-  ## Usage: gView(x) - uses print for x, converts to ps with enscript,
-  ##        views with gv using name of x as title (unless time=specified)
-  ##        nup = number of columns to print per page
-  ##        fancy controls fancy headers when nup>1
-  ##        fontsize default is 9 (8 if nup>1)
-  file2 <- paste(tempdir(),title,sep='/')
-  file <- tempfile()
-  sink(file)
-  print(x, ...)
-  sink()
-  cmd <- if(fancy) 'enscript -G'
-         else 'enscript'
-  
-  cmd <- if(nup==1)
-           paste(cmd, '-B -p')
-         else
-           paste(cmd, ' -',nup,' -r -j -p',sep='')
-  
-  font <- paste('Courier', fontsize, sep='')
-  sys(paste(cmd, file2, '-f', font, '-t', title, '-b', title, file))
-  sys(paste('gv', file2, '&'))
-  invisible()
-}
 
 pasteFit <- function(x, sep=',', width=.Options$width)
 {
@@ -1149,7 +1123,7 @@ pasteFit <- function(x, sep=',', width=.Options$width)
 testDateTime <- function(x, what=c('either','both','timeVaries'))
 {
   what <- match.arg(what)
-  cl <- class(x)  # was oldClass 22jun03
+  cl <- class(x)
   if(!length(cl))
     return(FALSE)
 

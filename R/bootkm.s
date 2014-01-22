@@ -19,17 +19,14 @@ bootkm <- function(S, q=.5, B=500, times, pr=TRUE)
       stop(paste('overall Kaplan-Meier estimate not defined to time',times))
   }
 
-  ests <- if(.R.)
-            double(B)
-          else
-            single(B)
+  ests <- double(B)
 
   for(i in 1:B) {
     if(pr && (i %% 10)==0)
       cat(i,'\r')
     
     f <- survfitKM(stratvar, S[sample(n,n,replace=TRUE),],
-                    se.fit=FALSE, conf.type='none')
+                   se.fit=FALSE, conf.type='none')
     tt <- c(0, f$time)
     ss <- c(1, f$surv)
     ests[i] <- if(tthere)

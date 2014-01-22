@@ -450,7 +450,7 @@ print.timePOSIXt <- function(x, ...) print(format(x, ...))
 ## Output format routine needed by chron for usual SAS date format
 ddmmmyy <- function(x)
 {
-  y <- month.day.year(trunc(oldUnclass(x)), attr(x,"origin"))
+  y <- month.day.year(trunc(unclass(x)), attr(x,"origin"))
   yr <- y$year
   m <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct",
          "Nov","Dec")[y$month]
@@ -840,7 +840,7 @@ cleanup.import <-
       }
       
       if(storage.mode(x) == 'double') {
-        xu <- oldUnclass(x)
+        xu <- unclass(x)
         j <- is.infinite(xu) | is.nan(xu) | abs(xu) > big
         if(any(j,na.rm=TRUE)) {
           x[j] <- NA
@@ -977,7 +977,7 @@ upData <- function(object, ...,
   }
 
   z <- substitute(list(...))
-
+  
   if(length(z) > 1) {
     z <- z[-1]
     vn <- names(z)
@@ -1023,16 +1023,15 @@ upData <- function(object, ...,
       object[[v]] <- x
     }
   }
-  
+
   if(force.single) {
     sm <- sapply(object, storage.mode)
     if(any(sm=='double'))
       for(i in 1:length(sm)) {
         if(sm[i]=='double') {
           x <- object[[i]]
-          if(testDateTime(x))
+          if(testDateTime(x) || is.matrix(x))
             next
-
           if(all(is.na(x)))
             storage.mode(object[[i]]) <- 'integer'
           else {
@@ -1146,16 +1145,16 @@ dataframeReduce <- function(data, fracmiss=1, maxlevels=NULL,
         r <- if(f > fracmiss)
           paste('fraction missing>',fracmiss,sep='') else ''
         if(is.character(x)) x <- factor(x)
-        if(length(maxlevels) && is.category(x) &&
+        if(length(maxlevels) && is.factor(x) &&
            length(levels(x)) > maxlevels)
           return(h(r, paste('categories>',maxlevels,sep='')))
         s <- ''
-        if(is.category(x) || length(unique(x))==2)
+        if(is.factor(x) || length(unique(x))==2)
           {
             tab <- table(x)
             if((min(tab) / n) < minprev)
               {
-                if(is.category(x))
+                if(is.factor(x))
                   {
                     x <- combine.levels(x, minlev=minprev)
                     s <- 'grouped categories'

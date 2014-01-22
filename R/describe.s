@@ -77,7 +77,7 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
   n.unique <- length(x.unique)
   attributes(x) <- attributes(x.unique) <- atx
 
-  isnum <- (is.numeric(x) || isdat) && !is.category(x)
+  isnum <- (is.numeric(x) || isdat) && !is.factor(x)
   timeUsed <- isdat && testDateTime(x.unique, 'timeVaries')
 
   z <- list(descript=descript, units=un, format=fmt)
@@ -175,7 +175,7 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
 
   if(inherits(x,'mChoice'))
     z$mChoice <- summary(x, minlength=minlength) else {
-      if(n.unique <= listunique && !isnum && !is.category(x) &&
+      if(n.unique <= listunique && !isnum && !is.factor(x) &&
          max(nchar(x)) > listnchar)
         counts <- tableIgnoreCaseWhiteSpace(x) else {
           if(n.unique >= 20) {
@@ -190,7 +190,7 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
             loandhi <- x.unique[c(1:5,(n.unique-4):n.unique)]
             fval <-
               if(isdot && (class(loandhi) %nin% 'timeDate')) {
-                formatDateTime(oldUnclass(loandhi), at=atx, roundDay=!timeUsed)
+                formatDateTime(unclass(loandhi), at=atx, roundDay=!timeUsed)
               } else format(format(loandhi), ...)
             counts <- fval
             names(counts) <- c("L1","L2","L3","L4","L5","H5","H4","H3","H2","H1")
@@ -403,7 +403,7 @@ print.describe.single <- function(x, condense=TRUE, ...)
 '[.describe' <- function(object, i, ...)
 {
   at <- attributes(object)
-  object <- '['(oldUnclass(object),i)
+  object <- '['(unclass(object),i)
   structure(object, descript=at$descript,
             dimensions=c(at$dimensions[1], length(object)),
             class='describe')

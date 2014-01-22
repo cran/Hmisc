@@ -3,11 +3,6 @@
 ##  x
 ##}
 
-## Define 'labelled' as an Splus oldClass name
-if(.SV4.) {
-  setOldClass('labelled')
-}
-
 label <- function(x, default=NULL, ...) UseMethod("label")
 
 label.default <- function(x, default=NULL, units=FALSE, plot=FALSE,
@@ -26,6 +21,30 @@ label.default <- function(x, default=NULL, units=FALSE, plot=FALSE,
                 if(units) un else NULL,
                 plotmath=plot, grid=grid)
 }
+
+label.Surv <- function(x, default=NULL, units=FALSE, plot=FALSE,
+                          grid=FALSE, ...)
+{
+  if(length(default) > 1)
+    stop("the default string cannot be of length greater then one")
+  
+  at <- attributes(x)
+  lab <- at$label
+  ia <- at$inputAttributes
+  if(! length(lab) && length(ia)) {
+    lab <- ia$event$label
+    if(! length(lab)) lab <- ia$time2$label
+    if(! length(lab)) lab <- ia$time$label
+  }
+  if(length(default) && (!length(lab) || lab==''))
+    lab <- default
+  
+  un  <- at$units
+  labelPlotmath(lab,
+                if(units) un else NULL,
+                plotmath=plot, grid=grid)
+}
+
 
 
 label.data.frame <- function(x, default=NULL, self=FALSE, ...) {
@@ -134,8 +153,8 @@ labelLatex <- function(x=NULL, label='', units='', size='smaller[2]',
 
   attr(x, 'label') <- value
 
-  if('labelled' %nin% oldClass(x)) {
-    oldClass(x) <- c('labelled', oldClass(x))
+  if('labelled' %nin% class(x)) {
+    class(x) <- c('labelled', class(x))
   }
   return(x)
 }
@@ -176,16 +195,14 @@ labelLatex <- function(x=NULL, label='', units='', size='smaller[2]',
   return(x)
 }
 
-if(!.SV4.) "[.labelled"<- function(x, ...)
-{
+"[.labelled"<- function(x, ...) {
   tags <- valueTags(x)
   x <- NextMethod("[")
   valueTags(x) <- tags
   x
 }
 
-if(!.SV4.) "print.labelled"<- function(x, ...)
-{
+"print.labelled"<- function(x, ...) {
   x.orig <- x
   u <- attr(x,'units')
   if(length(u))
@@ -241,9 +258,9 @@ reLabelled <- function(object)
     {
       x <- object[[i]]
       lab <- attr(x, 'label')
-      cl  <- oldClass(x)
+      cl  <- class(x)
       if(length(lab) && !any(cl=='labelled')) {
-        oldClass(x) <- c('labelled',cl)
+        class(x) <- c('labelled',cl)
         object[[i]] <- x
       }
     }

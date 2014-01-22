@@ -1,23 +1,8 @@
-##Thanks to David R. Lovell <David.Lovell@cmis.csiro.au> CSIRO
-##for scientific=    8Feb2000
-
 first.word <- function(x, i=1, expr=substitute(x))
 {
-  words <-
-    if(!missing(x))
-      as.character(x)[1]
+  words <- if(!missing(x)) as.character(x)[1]
     else
       as.character(unlist(expr))[1]
-  
-  ## Added !missing(x) as.char(x) 25May01
-  ##	first.letters <- substring(words, 1, 1)
-  ##	word.selector <- (match(first.letters, c(letters,LETTERS,"."), 0) > 0)
-  ##	words <- words[word.selector][i]
-  ##	if(!under.unix) {
-  ##	  words <- sedit(words,'.','')
-  ##	  words <- substring(words,1,8)
-  ##	}
-  ## 8Nov00 FEH:
   
   if(i > 1) stop('i > 1 not implemented')
   
@@ -25,11 +10,9 @@ first.word <- function(x, i=1, expr=substitute(x))
   legal.chars <- c(letters,LETTERS,'.',
                    '0','1','2','3','4','5','6','7','8','9')
   non.legal.chars <- (1:length(chars))[chars %nin% legal.chars]
-  if(!any(non.legal.chars))
-    return(words)
+  if(!any(non.legal.chars)) return(words)
   
-  if(non.legal.chars[1]==1)
-    return(character(0))
+  if(non.legal.chars[1]==1) return(character(0))
   
   substring(words, 1, non.legal.chars[1]-1)
 }
@@ -71,6 +54,7 @@ first.word <- function(x, i=1, expr=substitute(x))
 ##    27May02 - added booktabs FEH
 ## 13Dec02 - added ctable   FEH
 ## arguments included check.names=TRUE 23jan03
+
 format.df <- function(x,
                       digits, dec=NULL, rdec=NULL, cdec=NULL,
                       numeric.dollar=!dcolumn, na.blank=FALSE,
@@ -408,6 +392,7 @@ latex.default <-
            double.slash=FALSE,
            vbar=FALSE, collabel.just=rep("c",nc), na.blank=TRUE,
            insert.bottom=NULL, insert.bottom.width=NULL,
+           insert.top=NULL,
            first.hline.double=!(booktabs | ctable),
            where='!tbp', size=NULL,
            center=c('center','centering','none'),
@@ -434,8 +419,8 @@ latex.default <-
 
   if (length(cgroup)) {
     k <- length(cgroup)
-    if(!length(n.cgroup))
-      n.cgroup <- rep(nc/k, k)
+    if(! length(n.cgroup))
+      n.cgroup <- rep(nc / k, k)
     
     if(sum(n.cgroup)!=nc)
       stop("sum of n.cgroup must equal number of columns")
@@ -651,6 +636,12 @@ latex.default <-
     tabular.cols <- paste(tabular.cols, collapse="")
   }
 
+  intop <- function() {
+    if(! length(insert.top)) return(NULL)
+    paste(if(center == 'none') '\n\\vspace{1ex}\n\n\\textbf{',
+          insert.top, '}\n\\vspace{1ex}\n\n', sep='')
+  }
+  
   if(length(caption) && !ctable) {
     caption <- paste(sl,"caption",
                      if(length(caption.lot))
@@ -664,32 +655,33 @@ latex.default <-
   }
 
   if(ctable) {
-    latex.begin <- paste(if(length(size))
-                       paste('{', sl, size, sep=''),
-                     paste(sl, "ctable[", sep=''),
-                     if(length(caption) && caption.loc=='bottom')
-                       'botcap,',
-                     if(length(caption))
-                       paste('caption={', caption, '},', sep=''),
-                     if(length(caption.lot))
-                       paste('cap={', caption.lot, '},', sep=''),
-                     paste('label=', label, ',', sep=''),
-                     if(!landscape)
-                       paste('pos=', where, ',', sep=''),
-                     if(landscape)
-                       'rotate',
-                     paste(']{', tabular.cols, '}', sep=''),
-                     if(length(insert.bottom))
-                       paste('{',
-                             paste(sl,'tnote[]{',
-                                   sedit(insert.bottom,'\\\\',' '),'}',
-                                   sep='', collapse=''),
-                             '}',
-                             sep='')
-                     else '{}',
-                     ## tnote does not allow \\ in its argument
-                     paste('{', toprule, sep=''),
-                         sep='')
+    latex.begin <-
+      paste(if(length(size))
+            paste('{', sl, size, sep=''),
+            intop(),
+            paste(sl, "ctable[", sep=''),
+            if(length(caption) && caption.loc=='bottom')
+            'botcap,',
+            if(length(caption))
+            paste('caption={', caption, '},', sep=''),
+            if(length(caption.lot))
+            paste('cap={', caption.lot, '},', sep=''),
+            paste('label=', label, ',', sep=''),
+            if(!landscape)
+            paste('pos=', where, ',', sep=''),
+            if(landscape) 'sideways',
+            paste(']{', tabular.cols, '}', sep=''),
+            if(length(insert.bottom))
+            paste('{',
+                  paste(sl,'tnote[]{',
+                        sedit(insert.bottom,'\\\\',' '),'}',
+                        sep='', collapse=''),
+                  '}',
+                  sep='')
+            else '{}',
+            ## tnote does not allow \\ in its argument
+            paste('{', toprule, sep=''),
+            sep='')
     
     latex.end <- paste('}', if(length(size)) '}', sep='')
     
@@ -706,11 +698,12 @@ latex.default <-
             if(caption.loc=='top' && !missing(caption))
             paste(caption, "\n"),
             if(center == 'center')
-            paste(sl, "begin{center}\n", sep="")
+             paste(sl, "begin{center}\n", sep="")
             else {
               if (center == 'centering')
                 paste(sl,"centering\n", sep="")
             },
+            intop(),
             paste(sl,"begin{tabular}{", tabular.cols, "}\n",
                   toprule, sep=""),
             sep='')
@@ -736,6 +729,7 @@ latex.default <-
                   paste(sl, "begin{landscape}",sep=""),
                   if(length(size))
                   paste('{', sl, size, '\n', sep=''),
+                  intop(),
                   paste(sl,"begin{longtable}{", tabular.cols, "}",
                         sep=""),
                   sep="\n"),
@@ -1140,8 +1134,8 @@ latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
 latex <- function(object, ...)
 {
   ## added title= 25May01
-  if (!length(oldClass(object)))
-    oldClass(object) <- data.class(object)
+  if (!length(class(object)))
+    class(object) <- data.class(object)
   
   UseMethod("latex")
 }
@@ -1149,14 +1143,11 @@ latex <- function(object, ...)
 
 optionsCmds <- function(pgm)
 {
-  optionName <- paste(pgm,'cmd',sep='')
+  optionName <- paste(pgm, 'cmd', sep='')
   v <- .Options[[optionName]]
-  if(pgm=='xdvi' && !under.unix && !length(v))
-    v <- 'yap'  # MikTeX  7Feb03
-  
-  if(length(v) && v!='')
-    pgm <- v
-  
+  if(pgm=='xdvi' && .Platform$OS.type != 'unix' && !length(v))
+    v <- 'yap'  # MikTeX
+  if(length(v) && v!='') pgm <- v
   pgm
 }
 
@@ -1185,7 +1176,7 @@ dvi.latex <- function(object, prlog=FALSE,
       '\\end{document}\n', file=tmptex, sep='\n')
   
   sc <-
-    if(under.unix) {
+    if(.Platform$OS.type == 'unix') {
       '&&'
     } else {
       '&'   # DOS command separator
@@ -1291,13 +1282,8 @@ html.latex <- function(object, file, ...)
   infi <- readLines(fi)
   cat('\\documentclass{report}', sty, '\\begin{document}', infi,
       '\\end{document}\n', file=tmptex, sep='\n')
-  ##  if(under.unix)
-  ##    sys(paste('cat',pre,fi,post,'>',paste(tmp,'tex',sep='.')))
-  ##  else sys(paste('copy',pre,'+',fi,'+',post,paste(tmp,'tex',sep='.')))
-  ## 17dec02
-  ##  unlink(c(pre,post))
   sc <-
-    if(under.unix)
+    if(.Platform$OS.type == 'unix')
       ';'
     else
       '&'  # 7feb03
@@ -1389,7 +1375,7 @@ show.html <- function(object)
   if(!length(browser))
     browser <- 'netscape'
   
-  sys(paste(browser, object, if(under.unix) '&'))
+  sys(paste(browser, object, if(.Platform$OS.type == 'unix') '&'))
   invisible()
 }
 
@@ -1405,28 +1391,4 @@ latexSN <- function(x) {
                '\\!\\times\\!10^{-*}','\\!\\times\\!10^{-*}',
                '\\!\\times\\!10^{*}','\\!\\times\\!10^{*}'))
   x
-}
-
-latexTabular <- function(x, headings=colnames(x), 
-                         align =paste(rep('c',ncol(x)),collapse=''),
-                         halign=paste(rep('c',ncol(x)),collapse=''),
-                         helvetica=TRUE, ...)
-{
-  x <- latexTranslate(x)
-  if(length(list(...))) x <- format.df(x, ...)
-  xhalign <- substring(halign, 1:nchar(halign), 1:nchar(halign))
-  w <- paste('\\begin{tabular}{', align, '}', sep='')
-  if(helvetica) w <- paste('{\\fontfamily{phv}\\selectfont', w, sep='')
-  if(length(headings)) {
-    headings <- latexTranslate(headings)
-    h <- if(halign != align)
-      latexTranslate(paste(paste(paste('\\multicolumn{1}{', xhalign, '}{', 
-                                       headings, '}',sep=''),
-                                 collapse='&'), '\\\\', sep=''))
-    else paste(paste(headings, collapse='&'), '\\\\', sep='')
-  }
-  v <- apply(x, 1, paste, collapse='&')
-  v <- paste(paste(v, '\\\\'), collapse='\n')
-  if(length(headings)) v <- paste(h, v, sep='\n')
-  paste(w, v, '\\end{tabular}', if(helvetica)'}', sep='\n')
 }

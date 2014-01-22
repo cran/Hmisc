@@ -56,6 +56,7 @@ panel.bpplot(x, y, box.ratio=1, means=TRUE, qref=c(.5,.25,.75),
              probs=c(.05,.125,.25,.375), nout=0,
              nloc=c('right lower', 'right', 'left', 'none'), cex.n=.7,
              datadensity=FALSE, scat1d.opts=NULL,
+             violin=FALSE, violin.opts=NULL,
              font=box.dot$font, pch=box.dot$pch, 
              cex.means =box.dot$cex,  col=box.dot$col,
              nogrid=NULL, height=NULL, \dots)
@@ -67,9 +68,11 @@ bpplt(stats, xlim, xlab='', box.ratio = 1, means=TRUE,
       pch=16, cex.labels=par('cex'), cex.points=if(prototype)1 else 0.5,
       grid=FALSE)
 
-bpplotM(vars, group=NULL, data, qlim=0.01, xlim=NULL,
+bpplotM(formula=NULL, groups=NULL, data=NULL, subset=NULL, na.action=NULL,
+        qlim=0.01, xlim=NULL,
         nloc=c('right lower','right','left','none'),
-        vnames=c('labels', 'names'), cex.n=.7, \dots)
+        vnames=c('labels', 'names'), cex.n=.7, cex.strip=1,
+        outerlabels=TRUE, \dots)
 }
 \arguments{
 \item{x}{
@@ -118,12 +121,16 @@ set to \code{TRUE} to invoke \code{scat1d} to draw a data density
 a list containing named arguments (without abbreviations) to pass to
 \code{scat1d} when \code{datadensity=TRUE} or \code{nout > 0}
 }
+\item{violin}{set to \code{TRUE} to invoke \code{panel.violin} in
+  addition to drawing box-percentile plots}
+\item{violin.opts}{a list of options to pass to \code{panel.violin}}
 \item{cex.means}{character size for dots representing means}
 \item{font,pch,col}{see \code{\link[lattice]{panel.bwplot}}}
 \item{nogrid}{set to \code{TRUE} to use in base graphics}
 \item{height}{if \code{nogrid=TRUE}, specifies the height of the box in
         user \code{y} units}
-\item{\dots}{arguments passed to \code{points} or \code{panel.bpplot}}
+\item{\dots}{arguments passed to \code{points} or \code{panel.bpplot} or
+        \code{bwplot}}
 \item{stats,xlim,xlab,qomit,cex.labels,cex.points,grid}{
   undocumented arguments to \code{bpplt}.  For \code{bpplotM},
         \code{xlim} is a list with elements named as the \code{x}-axis
@@ -132,19 +139,32 @@ a list containing named arguments (without abbreviations) to pass to
         \code{x}-axis limits for selected variables.  Example:
         \code{xlim=list(age=c(20,60))}.
 				}
-\item{vars}{a character vector of names of variables to plot with
-  \code{bpplotM}.  \code{vars} may also be a formula.  If it has a left
-        hand side, that variable name is taken as the \code{group}
-        variable and the \code{group} argument is ignored.}
-\item{group}{a single character string specifying the name in
-  \code{data} of a \code{y}-axis grouping variable, if any}
-\item{data}{a data frame containing at least the \code{vars} variables}
+\item{formula}{a formula with continuous numeric analysis variables on
+        the left hand side and stratification variables on the right.
+        The first variable on the right is the one that will vary the
+        fastest, forming the \code{y}-axis.  \code{formula} may be
+        omitted, in which case all numeric variables with more than 5
+        unique values in \code{data} will be analyzed.  Or
+        \code{formula} may be a vector of variable names in \code{data}
+        to analyze.  In the latter two cases (and only those cases),
+        \code{groups} must be given, representing a character vector
+        with names of stratification variables.}
+\item{groups}{see above}
+\item{data}{an optional data frame}
+\item{subset}{an optional subsetting expression or logical vector}
+\item{na.action}{specifies a function to possibly subset the data
+        according to \code{NA}s (default is no such subsetting).}
 \item{qlim}{the outer quantiles to use for scaling each panel in
   \code{bpplotM}}
 \item{vnames}{default is to use variable \code{label} attributes when
         they exist, or use variable names otherwise.  Specify
         \code{vnames='names'} to always use variable names for panel
         labels in \code{bpplotM}}
+\item{cex.strip}{character size for panel strip labels}
+\item{outerlabels}{if \code{TRUE}, pass the \code{lattice} graphics
+        through the \code{latticeExtra} package's \code{useOuterStrips}
+        function if there are two conditioning (paneling) variables, to
+        put panel labels in outer margins.}			
 }
 \author{
 Frank Harrell
@@ -160,7 +180,10 @@ Vanderbilt University School of Medicine
 Software 8 No. 17, 2003.
 }
 \seealso{
-\code{\link{bpplot}}, \code{\link[lattice]{panel.bwplot}}, \code{\link{scat1d}}, \code{\link{quantile}}, \code{\link{Ecdf}}
+\code{\link{bpplot}}, \code{\link[lattice]{panel.bwplot}},
+        \code{\link{scat1d}}, \code{\link{quantile}},
+        \code{\link{Ecdf}}, \code{\link{summaryP}},
+        \code{\link[latticeExtra]{useOuterStrips}}
 }
 \examples{
 set.seed(13)
@@ -229,22 +252,31 @@ bpplt()
 set.seed(1)
 n <- 800
 d <- data.frame(treatment=sample(c('a','b'), n, TRUE),
+                sex=sample(c('female','male'), n, TRUE),
                 age=rnorm(n, 40, 10),
                 bp =rnorm(n, 120, 12),
                 wt =rnorm(n, 190, 30))
 label(d$bp) <- 'Systolic Blood Pressure'
 units(d$bp) <- 'mmHg'
-bpplotM(c('age', 'bp', 'wt'), group='treatment', data=d)
+bpplotM(age + bp + wt ~ treatment, data=d)
+bpplotM(age + bp + wt ~ treatment * sex, data=d, cex.strip=.8)
+bpplotM(age + bp + wt ~ treatment*sex, data=d,
+        violin=TRUE,
+        violin.opts=list(col=adjustcolor('blue', alpha.f=.15),
+                         border=FALSE))
+
+
+bpplotM(c('age', 'bp', 'wt'), groups='treatment', data=d)
 # Can use Hmisc Cs function, e.g. Cs(age, bp, wt)
-bpplotM(treatment ~ age + bp + wt, data=d, nloc='left')
-# Without treatment: bpplotM(~ age + bp + wt, data=d)
+bpplotM(age + bp + wt ~ treatment, data=d, nloc='left')
+
+# Without treatment: bpplotM(age + bp + wt ~ 1, data=d)
 
 \dontrun{
-# Example of finding all variables that appear to be continuous
+# Automatically find all variables that appear to be continuous
 getHdata(support)
-s <- sapply(support, function(x) is.numeric(x) && length(unique(x)) > 5)
-bpplotM(names(support)[s], group='dzgroup', data=support,
-        par.strip.text=list(cex=.4), cex.means=.3, cex.n=.45)
+bpplotM(data=support, group='dzgroup',
+        cex.strip=.4, cex.means=.3, cex.n=.45)
 
 # Separate displays for categorical vs. continuous baseline variables
 getHdata(pbc)
@@ -253,7 +285,11 @@ pbc <- upData(pbc, moveUnits=TRUE)
 s <- summaryM(stage + sex + spiders ~ drug, data=pbc)
 plot(s)
 Key(0, .5)
-bpplotM(drug ~ bili + albumin + protime + age ~ drug, data=pbc)
+s <- summaryP(stage + sex + spiders ~ drug, data=pbc)
+plot(s, val ~ freq | var, groups='drug', pch=1:3, col=1:3,
+     key=list(x=.6, y=.8))
+
+bpplotM(bili + albumin + protime + age ~ drug, data=pbc)
 }
 }
 \keyword{nonparametric}
