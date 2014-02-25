@@ -7,6 +7,10 @@ nobsY <- function(formula, group=NULL,
   environment(formula) <- new.env(parent = environment(formula))
   en <- environment(formula)
   assign(envir = en, 'id', function(x) x)
+  assign(envir = en, 'pending', function(x) x)
+  assign(envir = en, 'randomized', function(x) x)
+  assign(envir = en, 'cond',
+         function(x, label, condition) rep(1, length(condition)))
   marg <- length(data) && '.marginal.' %in% names(data)
   if(marg) formula <- update(formula, .~. + .marginal.)
   mf <- if(length(subset))
@@ -51,7 +55,7 @@ nobsY <- function(formula, group=NULL,
     matrix(NA, ncol=nY, nrow=length(glev), dimnames=list(glev, ylab))
   }
 
-  for(i in 1 : nY) {
+  if(nY > 0) for(i in 1 : nY) {
     y <- Y[[i]]
     ## is.na.Surv reduces to vector but need to keep as matrix
     notna <- if(is.matrix(y)) {

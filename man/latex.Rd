@@ -117,10 +117,11 @@ latex(object, \dots)
     insert.top=NULL,
     first.hline.double=!(booktabs | ctable),
     where='!tbp', size=NULL,
-    center=c('center','centering','none'),
+    center=c('center','centering','centerline','none'),
     landscape=FALSE,
     multicol=TRUE,
     math.row.names=FALSE, math.col.names=FALSE,
+    hyperref=NULL,
     \dots) # x is a matrix or data.frame
 
 \method{latex}{function}(
@@ -339,6 +340,8 @@ dvigv(object, \dots)
   \item{math.col.names}{
     logical, set true to place dollar signs around the column names.
   }
+	\item{hyperref}{if \code{table.env=TRUE} is a character string used to
+  	generate a LaTeX \code{hyperref} enclosure}
   \item{cdot}{see \code{\link{format.df}}}
   \item{longtable}{
     Set to \code{TRUE} to use David Carlisle's LaTeX \code{longtable} style, allowing
@@ -428,9 +431,13 @@ dvigv(object, \dots)
   }
   \item{center}{
     default is \code{"center"} to enclose the table in a \samp{center}
-    environment.  Use \code{center="centering"} to instead use a LaTeX
-    \samp{centering} directive, or \code{center="none"} to use no
-    centering.  This option was implemented by Markus Jäntti
+    environment.  Use \code{center="centering"} or \code{"centerline"}
+		to instead use LaTeX 
+    \samp{centering} or \code{centerline} directives, or
+		\code{center="none"} to use no 
+    centering.  \code{centerline} can be useful when objects besides a
+		\code{tabular} are enclosed in a single \code{table} environment.
+		This option was implemented by Markus Jäntti
     \email{markus.jantti@iki.fi} of Abo Akademi University.
   }
   \item{landscape}{
