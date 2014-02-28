@@ -1,12 +1,12 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-3a4c73d771867aeaa2eb720c5fe441bc *DESCRIPTION
+b2085e78ec4e6b62498b7dc60e641efb *DESCRIPTION
 17da8e77284bb353c8e685a3c47a669d *INDEX
 ab838c3dfcec755856e738a6f75b5e6e *NAMESPACE
-3e9a8a7d05e0e3426a2b6633273afdbc *NEWS
+62da362c2f0d096edc2c73f98f7fed81 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 62ef16fc333551d6c65f15dedfb5a697 *R/Cs.s
 387ca68eeb2830ad1d19cdbd979cef6e *R/Key.s
-88d07b6c97b9a8129984bd13d55c3f7a *R/Misc.s
+caebb78548a8a06439d300ab629d4f74 *R/Misc.s
 9043da0ab6b8288636bb399cdb0f89bf *R/abs.error.pred.s
 bdf1cbb1952b1cdf53a296a6d29ecb08 *R/areg.s
 a958ac987c2e30b6881a474ae67f6ae9 *R/aregImpute.s
@@ -52,7 +52,7 @@ e1bbabaa533c22a5378d1a4b645a80d2 *R/is.present.s
 8cf9e0a10997c59a5be3f19a39c73684 *R/james.stein.s
 88c72d01c0b5a4f5d40f919918bfbd00 *R/labcurve.s
 0e84d8ed98b92a66662952ff274ff981 *R/label.s
-b069d1ba774165a217b0804d9fb69872 *R/latex.s
+96a6ad82dd84c9625d593f98c14ccefa *R/latex.s
 15f9f1d9ce01c4624523182f7a514244 *R/latexDotchart.s
 9fafa76ce37fa2f42c27236c9bbcfb9d *R/latexTabular.s
 330de4a4106a11330d54434e2d7a8c32 *R/latexTherm.s
@@ -110,8 +110,8 @@ b47544f6b133f394f2fda329de60f733 *R/strgraphwrap.s
 b42e6d7953adef86625842fa4bdbe291 *R/strwrap.s
 055ef617ac4b0362b6466e6436ba69fb *R/subplot.s
 14e533b635192fae8b28ca81b9c86f5d *R/substi.s
-e2cbc734c7a8bd798cf7f9984e32a79e *R/summary.formula.s
-a91b2ec3ab2e96fa7c216722c735105c *R/summaryM.s
+b2cdc0b2942c72fff24c31b4cd2196a6 *R/summary.formula.s
+1782211e71f6edd890d3910a9231c8a7 *R/summaryM.s
 2a880af00dd300d7ac5ab1bb02a5f90a *R/summaryP.s
 dc27150ba262b8c3844ce46d36f1e492 *R/summaryRc.s
 598051fb147f0879ecb04ad4a0dfe54f *R/summaryS.s
@@ -142,7 +142,7 @@ e6cd214b7ad4e1dce5bd7566842fcb81 *man/Cs.Rd
 354da8b2664787be62d2cd2fe80b3750 *man/Ecdf.Rd
 d04e0431bff384660d258b2e2e405b32 *man/Hmisc-internal.Rd
 a8d3213ffdeb74c3f50bb2d54a8b9ab5 *man/Lag.Rd
-ca859e9a6fec49cf12751450bb1c11d2 *man/Misc.Rd
+f19aae0d21aa4828db54a47b12bc84cc *man/Misc.Rd
 81e0509297dea67156903a55e89339b4 *man/Overview.Rd
 0b14624c4cf49f60e6447e2792b227c6 *man/Save.Rd
 6512b9f5df15df6558a987169ebbc216 *man/abs.error.pred.Rd
@@ -196,7 +196,7 @@ c7c3c2b2e87271ab3efc21dea205f510 *man/impute.Rd
 216bb0989ebf4378cb87841082451438 *man/inc-dec.Rd
 40974ee6be081e636f57e6649b6fde38 *man/labcurve.Rd
 f72ce5de82d835b2a293f08de1856248 *man/label.Rd
-8cef75f33f23392ed8e4ce0625d95b81 *man/latex.Rd
+cb8029607b3b2d782f6037347a47d525 *man/latex.Rd
 211c0afb26e58d9aee079d5ee9bebc95 *man/latexDotchart.Rd
 b914c66667b32c8a55eb9d1529756235 *man/latexTabular.Rd
 0bc6e69386de30a3e231170b3d19a218 *man/latexTherm.Rd
@@ -322,7 +322,7 @@ fe59102477004bfd8dad6e2ca452082e *tests/dataload.r
 fb5a32fba03003505f33815e5152dce6 *tests/howto.html
 bc723e6e82c91373f2c3f142bbe0be59 *tests/inverseFunction.r
 573465e16901912adb87c138b62056c6 *tests/largest.empty.r
-9de86484dbe19799e6f416aa0ad3eb8c *tests/latex.s
+dedf5cbecc4651373203daac29942ab6 *tests/latex.s
 86bb29e3df2c4cc1dab74549971ca150 *tests/latexTherm.Rnw
 2a119079fd599b3fd6f64b6f579de087 *tests/latexTherm.r
 dc25c71a732941ce1d970f8585068a6b *tests/panelbp.r
@@ -330,6 +330,7 @@ badcf6388bfae0071da3c10a2b77bac6 *tests/procmeans.txt
 cc8253dbe7c1739dbec34b7ad9779d33 *tests/readsasxml.r
 9cc3fb4ab2821804ac365c5573a09af9 *tests/redun.r
 86d32f47bb0c3c6fbd94b7a35136b8a4 *tests/summary.formula.r
+93d6cc6040ff9451c6559b41b539a76e *tests/summary.formula.response.stratify.r
 9509c473975c8c6aa68e7efe9312111a *tests/summaryD.r
 40b10330bfb0045056717ca222c0a82f *tests/summaryP.r
 1c451c58093a60464ddab77a55f034dd *tests/summaryRc.r
