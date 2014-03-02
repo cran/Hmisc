@@ -1,8 +1,8 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-b2085e78ec4e6b62498b7dc60e641efb *DESCRIPTION
+9203c5d00a17e5dd592ab853f4212595 *DESCRIPTION
 17da8e77284bb353c8e685a3c47a669d *INDEX
-ab838c3dfcec755856e738a6f75b5e6e *NAMESPACE
-62da362c2f0d096edc2c73f98f7fed81 *NEWS
+20546cd394e9213755d15486c65bc7fb *NAMESPACE
+3115ff116c90503e1dfa4bf64abd08e2 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 62ef16fc333551d6c65f15dedfb5a697 *R/Cs.s
 387ca68eeb2830ad1d19cdbd979cef6e *R/Key.s
@@ -51,7 +51,7 @@ f681f31c073f4cce7f950b6b6610669b *R/inc-dec.s
 e1bbabaa533c22a5378d1a4b645a80d2 *R/is.present.s
 8cf9e0a10997c59a5be3f19a39c73684 *R/james.stein.s
 88c72d01c0b5a4f5d40f919918bfbd00 *R/labcurve.s
-0e84d8ed98b92a66662952ff274ff981 *R/label.s
+df6cc0711c0f32bd8524560fc403dbff *R/label.s
 96a6ad82dd84c9625d593f98c14ccefa *R/latex.s
 15f9f1d9ce01c4624523182f7a514244 *R/latexDotchart.s
 9fafa76ce37fa2f42c27236c9bbcfb9d *R/latexTabular.s
@@ -182,7 +182,7 @@ b8c947ebb9ea63a9ecf543e9248a512b *man/event.chart.Rd
 1beee8ab5e6bde656f0daaf7dfe1cbc5 *man/event.history.Rd
 173ef12e40e335f2ae78d72b83073d40 *man/find.matches.Rd
 7db9b51fea16743f5e75c7376804b343 *man/first.word.Rd
-ef9bb3e1fef268791751fda958b79e7c *man/format.df.Rd
+07d925f40f9deadf4642988f65e6e427 *man/format.df.Rd
 041f76e1a74ad1e2361aab071b496dac *man/format.pval.Rd
 16ded01191cc3beb99b91fe72580f9f7 *man/gbayes.Rd
 8400b84d7bfb7923cad649f191789a0a *man/getHdata.Rd
@@ -195,8 +195,8 @@ fef62a4d7006c5de03e3d624ce693e08 *man/hoeffd.Rd
 c7c3c2b2e87271ab3efc21dea205f510 *man/impute.Rd
 216bb0989ebf4378cb87841082451438 *man/inc-dec.Rd
 40974ee6be081e636f57e6649b6fde38 *man/labcurve.Rd
-f72ce5de82d835b2a293f08de1856248 *man/label.Rd
-cb8029607b3b2d782f6037347a47d525 *man/latex.Rd
+c9a14ef836c70a6c1ba034f40505006b *man/label.Rd
+c7bdf4b6b293f2382bd9cb95884e5f4c *man/latex.Rd
 211c0afb26e58d9aee079d5ee9bebc95 *man/latexDotchart.Rd
 b914c66667b32c8a55eb9d1529756235 *man/latexTabular.Rd
 0bc6e69386de30a3e231170b3d19a218 *man/latexTherm.Rd
@@ -292,7 +292,7 @@ ac182f4144cfd7853f252be1e4b3d75b *src/cidxcp.f
 4e562a4570979794f333a4b0e2f70a11 *src/hoeffd.f
 f1af3dfa93855e177f438e9c0989d028 *src/jacklins.f
 bffae56a2552fd897a70ed573edf0620 *src/largrec.f
-0b8331f310f27e519fc8db851a8488d5 *src/mChoice.c
+e478f6a11477acd0bd5335542487f933 *src/mChoice.c
 703f73252fe6efaf8244b0713aaabe6b *src/maxempr.f
 69d3a08b2cd911161ba22af68f97f611 *src/nstr.c
 f698976ca9ef8a852edd2c37939b66a2 *src/ranksort.c
@@ -322,7 +322,7 @@ fe59102477004bfd8dad6e2ca452082e *tests/dataload.r
 fb5a32fba03003505f33815e5152dce6 *tests/howto.html
 bc723e6e82c91373f2c3f142bbe0be59 *tests/inverseFunction.r
 573465e16901912adb87c138b62056c6 *tests/largest.empty.r
-dedf5cbecc4651373203daac29942ab6 *tests/latex.s
+f5daa086915fb2ec687bb76226dc929d *tests/latex.s
 86bb29e3df2c4cc1dab74549971ca150 *tests/latexTherm.Rnw
 2a119079fd599b3fd6f64b6f579de087 *tests/latexTherm.r
 dc25c71a732941ce1d970f8585068a6b *tests/panelbp.r

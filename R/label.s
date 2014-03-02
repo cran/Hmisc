@@ -22,26 +22,39 @@ label.default <- function(x, default=NULL, units=FALSE, plot=FALSE,
                 plotmath=plot, grid=grid)
 }
 
-label.Surv <- function(x, default=NULL, units=FALSE, plot=FALSE,
-                          grid=FALSE, ...)
+label.Surv <- function(x, default=NULL, units=FALSE,
+                       plot=FALSE, grid=FALSE,
+                       type=c('any', 'time', 'event'), ...)
 {
+  type <- match.arg(type)
+  
   if(length(default) > 1)
     stop("the default string cannot be of length greater then one")
   
-  at <- attributes(x)
+  at  <- attributes(x)
   lab <- at$label
-  ia <- at$inputAttributes
-  if(! length(lab) && length(ia)) {
-    lab <- ia$event$label
-    if(! length(lab)) lab <- ia$time2$label
-    if(! length(lab)) lab <- ia$time$label
+  ia  <- at$inputAttributes
+  if((! length(lab) || lab == '') && length(ia)) {
+    poss <- switch(type,
+                   any   = c(ia$event$label, ia$time2$label, ia$time$label),
+                   time  = c(                ia$time2$label, ia$time$label),
+                   event =   ia$event$label )
+    for(lb in poss)
+      if(! length(lab) && lb != '') lab <- lb
   }
-  if(length(default) && (!length(lab) || lab==''))
-    lab <- default
   
-  un  <- at$units
-  labelPlotmath(lab,
-                if(units) un else NULL,
+  if(length(default) && (!length(lab) || lab=='')) lab <- default
+  
+  un  <- NULL
+  if(units) {
+    un <- at$units
+    if(! length(un) && length(ia)) {
+      un <- ia$time2$units
+      if(! length(un)) un <- ia$time$units
+    }
+  }
+
+  labelPlotmath(lab, un,
                 plotmath=plot, grid=grid)
 }
 
