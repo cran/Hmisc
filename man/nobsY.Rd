@@ -30,7 +30,8 @@ a variable in the right-hand-side of the model, an additional object
 \code{nobsg} is returned that is a matrix with as many columns as there
 are left-hand variables, and as many rows as there are levels to the
 \code{group} variable.  This matrix has the further breakdown of unique
-non-missing observations by \code{group}.
+non-missing observations by \code{group}.  The concatenation of all ID
+variables, is returned in a \code{list} element \code{id}.
 }
 \examples{
 d <- expand.grid(sex=c('female', 'male', NA),
