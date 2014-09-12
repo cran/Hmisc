@@ -21,7 +21,7 @@ summary.formula <-
   method <- match.arg(method)
 
   ## Multiple left hand side variables -> automatically call summaryM
-  if(grepl('.*\\+.*~', deparse(formula)))
+  if(grepl('.*\\+.*~', paste(deparse(formula), collapse='')))
     return(summaryM(formula, data=data, subset=subset,
                      na.action=na.action, overall=overall,
                      continuous=continuous, na.include=na.include,
@@ -2647,7 +2647,7 @@ catTestchisq=function(tab) {
 }
 ordTestpo=function(group, x) {
   require(rms)
-  f <- lrm(x ~ group)$stats
+  f <- rms::lrm(x ~ group)$stats
   list(P=f['P'], stat=f['Model L.R.'], df=f['d.f.'],
        testname='Proportional odds likelihood ratio',
        statname='Chi-square',latexstat='\\chi^{2}_{df}',

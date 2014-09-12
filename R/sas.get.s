@@ -432,7 +432,7 @@ print.timePOSIXt <- function(x, ...) print(format(x, ...))
 ## Output format routine needed by chron for usual SAS date format
 ddmmmyy <- function(x)
 {
-  y <- month.day.year(trunc(unclass(x)), attr(x,"origin"))
+  y <- chron::month.day.year(trunc(unclass(x)), attr(x,"origin"))
   yr <- y$year
   m <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct",
          "Nov","Dec")[y$month]
@@ -805,7 +805,7 @@ cleanup.import <-
         require('chron')
         cform <- if(dateformat=='%F') 'y-m-d'
         else gsub('%','',tolower(dateformat))
-        chron(x, xt, format=c(dates=cform,times='h:m:s'))
+        chron::chron(x, xt, format=c(dates=cform,times='h:m:s'))
       }
       else as.Date(x, format=dateformat)
       modif <- TRUE
@@ -1131,60 +1131,53 @@ upData <- function(object, ...,
   }
 
 dataframeReduce <- function(data, fracmiss=1, maxlevels=NULL,
-                            minprev=0, print=TRUE)
-  {
-    g <- function(x, fracmiss, maxlevels, minprev)
-      {
-        if(is.matrix(x))
-          {
-            f <- mean(is.na(x %*% rep(1,ncol(x))))
-            return(if(f > fracmiss)
-                   paste('fraction missing>',fracmiss,sep='') else '')
-          }
+                            minprev=0, print=TRUE) {
+  g <- function(x, fracmiss, maxlevels, minprev) {
+    if(is.matrix(x)) {
+      f <- mean(is.na(x %*% rep(1, ncol(x))))
+      return(if(f > fracmiss)
+             paste('fraction missing>',fracmiss,sep='') else '')
+    }
         h <- function(a, b)
-          if(a=='') b else if(b=='') a else paste(a, b, sep=';')
-        f <- mean(is.na(x))
-        x <- x[!is.na(x)]
-        n <- length(x)
-        r <- if(f > fracmiss)
-          paste('fraction missing>',fracmiss,sep='') else ''
-        if(is.character(x)) x <- factor(x)
-        if(length(maxlevels) && is.factor(x) &&
-           length(levels(x)) > maxlevels)
-          return(h(r, paste('categories>',maxlevels,sep='')))
-        s <- ''
-        if(is.factor(x) || length(unique(x))==2)
-          {
-            tab <- table(x)
-            if((min(tab) / n) < minprev)
-              {
-                if(is.factor(x))
-                  {
-                    x <- combine.levels(x, minlev=minprev)
-                    s <- 'grouped categories'
-                    if(length(levels(x)) < 2)
-                      s <- paste('prevalence<', minprev, sep='')
-                  }
-                else s <- paste('prevalence<', minprev, sep='')
-              }
-          }
-        h(r, s)
-      }
-    h <- sapply(data, g, fracmiss, maxlevels, minprev)
-    if(all(h=='')) return(data)
-    if(print)
-      {
-        cat('\nVariables Removed or Modified\n\n')
-        print(data.frame(Variable=names(data)[h!=''],
-                         Reason=h[h!=''], row.names=NULL, check.names=FALSE))
-        cat('\n')
-      }
-    s <- h=='grouped categories'
-    if(any(s)) for(i in which(s))
-      data[[i]] <- combine.levels(data[[i]], minlev=minprev)
-    if(any(h != '' & !s)) data <- data[h=='' | s]
-    data
+          if(a == '') b else if(b == '') a else paste(a, b, sep=';')
+    f <- mean(is.na(x))
+    x <- x[!is.na(x)]
+    n <- length(x)
+    r <- if(f > fracmiss)
+      paste('fraction missing>', fracmiss,sep='') else ''
+    if(is.character(x)) x <- factor(x)
+    if(length(maxlevels) && is.factor(x) &&
+       length(levels(x)) > maxlevels)
+      return(h(r, paste('categories>',maxlevels,sep='')))
+    s <- ''
+    if(is.factor(x) || length(unique(x))==2) {
+      tab <- table(x)
+      if((min(tab) / max(n, 1L)) < minprev) {
+        if(is.factor(x)) {
+          x <- combine.levels(x, minlev=minprev)
+          s <- 'grouped categories'
+          if(length(levels(x)) < 2)
+            s <- paste('prevalence<', minprev, sep='')
+        }
+        else s <- paste('prevalence<', minprev, sep='')
+      } 
+    }
+    h(r, s)
   }
+  h <- sapply(data, g, fracmiss, maxlevels, minprev)
+  if(all(h == '')) return(data)
+  if(print) {
+    cat('\nVariables Removed or Modified\n\n')
+    print(data.frame(Variable=names(data)[h != ''],
+                     Reason=h[h != ''], row.names=NULL, check.names=FALSE))
+    cat('\n')
+  }
+  s <- h == 'grouped categories'
+  if(any(s)) for(i in which(s))
+    data[[i]] <- combine.levels(data[[i]], minlev=minprev)
+    if(any(h != '' & ! s)) data <- data[h == '' | s]
+  data
+}
 
 spss.get <- function(file, lowernames=FALSE,
                      datevars=NULL,
@@ -1192,7 +1185,6 @@ spss.get <- function(file, lowernames=FALSE,
                      to.data.frame=TRUE,
                      max.value.labels=Inf,
                      force.single=TRUE, allow=NULL, charfactor=FALSE) {
-  require('foreign')
   if(length(grep('http://', file))) {
     tf <- tempfile()
     download.file(file, tf, mode='wb', quiet=TRUE)
@@ -1260,8 +1252,8 @@ sasxport.get <- function(file, force.single=TRUE,
   if(length(out) && method!='csv')
     stop('out only applies to method="csv"')
   
-  if(method != 'csv')
-    require('foreign') || stop('foreign package is not installed')
+##  if(method != 'csv')
+##    require('foreign') || stop('foreign package is not installed')
 
   rootsoftware <- if(method=='dataload')'dataload'
   else 'sas'
