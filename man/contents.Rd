@@ -30,11 +30,13 @@
 }
 \usage{
 contents(object, \dots)
-\method{contents}{data.frame}(object, sortlevels=FALSE, \dots)
+\method{contents}{data.frame}(object, sortlevels=FALSE, id=NULL,
+  range=NULL, values=NULL, \dots)
 \method{print}{contents.data.frame}(x,
-    sort=c('none','names','labels','NAs'), prlevels=TRUE, number=FALSE, \dots) 
+    sort=c('none','names','labels','NAs'), prlevels=TRUE, maxlevels=Inf,
+    number=FALSE, \dots) 
 \method{html}{contents.data.frame}(object,
-           sort=c('none','names','labels','NAs'), prlevels=TRUE,
+           sort=c('none','names','labels','NAs'), prlevels=TRUE, maxlevels=Inf,
            file=paste('contents',object$dfname,'html',sep='.'),
            levelType=c('list','table'),
            append=FALSE, number=FALSE, nshow=TRUE, \dots)
@@ -52,6 +54,14 @@ contents(object, \dots)
   variables use the same levels but in different orders.  They will
   still be recognized by the \code{html} method as having identical
   levels if sorted.}
+  \item{id}{an optional subject ID variable name that if present in
+		\code{object} will cause the number of unique IDs to be printed in
+    the contents header}
+	\item{range}{an optional variable name that if present in \code{object}
+    will cause its range to be printed in the contents header}
+	\item{values}{an optional variable name that if present in
+    \code{object} will cause its unique values to be printed in the
+    contents header}
   \item{x}{
     an object created by \code{contents}
   }
@@ -67,6 +77,7 @@ contents(object, \dots)
   \item{prlevels}{
     set to \code{FALSE} to not print all levels of \code{factor} variables
   }
+	\item{maxlevels}{maximum number of levels to print for a \code{factor} variable}
   \item{number}{
 	set to \code{TRUE} to have the \code{print} and \code{latex} methods
 	number the variables by their order in the data frame

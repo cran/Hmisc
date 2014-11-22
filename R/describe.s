@@ -686,7 +686,8 @@ dataDensityString <- function(x, nint=30)
 
 contents <- function(object, ...) UseMethod('contents')
 
-contents.data.frame <- function(object, sortlevels=FALSE, ...)
+contents.data.frame <- function(object, sortlevels=FALSE,
+                                id=NULL, range=NULL, values=NULL, ...)
 {
   dfname <- deparse(substitute(object))
   nam <- names(object)
@@ -698,25 +699,21 @@ contents.data.frame <- function(object, sortlevels=FALSE, ...)
   for(i in 1:n) {
     x <- object[[i]]
     at <- attributes(x)
-    if(length(at$label))
-      lab[i] <- at$label
-    if(length(at$longlabel))
-      longlab[i] <- at$longlabel
+    if(length(at$label))     lab[i]     <- at$label
+    if(length(at$longlabel)) longlab[i] <- at$longlabel
     
-    if(length(at$units))
-      un[i] <- at$units
+    if(length(at$units))     un[i] <- at$units
     
     atl <- at$levels
     fl[i] <- length(atl)
-    cli <- at$class[at$class %nin% c('labelled','factor')]
-    if(length(cli))
-      cl[i] <- cli[1]
+    cli <- at$class[at$class %nin% c('labelled', 'factor')]
+    if(length(cli)) cl[i] <- cli[1]
     
     sm[i] <- storage.mode(x)
     nas[i] <- sum(is.na(x))
     if(length(atl)) {
       if(sortlevels) atl <- sort(atl)
-      if(length(Lev)) for(j in 1:length(Lev)) {
+      if(length(Lev)) for(j in 1 : length(Lev)) {
         w <- Lev[[j]]
         if(!is.name(w) && is.logical(all.equal(w, atl))) {
           atl <- as.name(names(Lev)[j])
@@ -727,33 +724,48 @@ contents.data.frame <- function(object, sortlevels=FALSE, ...)
     }
   }
   
-  w <- list(Labels=if(any(lab!=''))         lab,
-            Units=if(any(un!=''))           un,
-            Levels=if(any(fl>0))            fl,
-            Class=if(any(cl!=''))           cl,
-            Storage=                        sm,
-            NAs=if(any(nas>0))              nas )
+  w <- list(Labels = if(any(lab != '')) lab,
+            Units  = if(any(un != ''))  un,
+            Levels = if(any(fl > 0))    fl,
+            Class  = if(any(cl != ''))  cl,
+            Storage=                    sm,
+            NAs    = if(any(nas > 0))   nas )
   
-  w <- w[sapply(w, function(x)length(x)>0)]
+  w <- w[sapply(w, function(x)length(x) > 0)]
   
   ## R does not remove NULL elements from a list
   structure(list(contents=data.frame(w, row.names=nam),
-                 dim=d, maxnas=max(nas), dfname=dfname,
+                 dim=d, maxnas=max(nas),
+                 id=id, rangevar=range, valuesvar=values,
+                 unique.ids = if(length(id) && id %in% nam)
+                                length(unique(object[[id]])),
+                 range = if(length(range) && range %in% nam)
+                               paste(as.character(range(object[[range]], na.rm=TRUE)),
+                                     collapse='-'),
+                 values = if(length(values) && values %in% nam)
+                            paste(if(is.factor(object[[values]])) levels(object[[values]])
+                                     else sort(unique(object[[values]])), collapse=' '),
+                 dfname=dfname,
                  Levels=Lev,
-                 longLabels=if(any(longlab!='')) structure(longlab, names=nam)),
+                 longLabels=if(any(longlab!=''))
+                              structure(longlab, names=nam)),
             class='contents.data.frame')
 }
 
 
 print.contents.data.frame <-
   function(x, sort=c('none','names','labels','NAs'),
-           prlevels=TRUE, number=FALSE, ...)
+           prlevels=TRUE, maxlevels=Inf, number=FALSE, ...)
 {
   sort <- match.arg(sort)
   d <- x$dim
   maxnas <- x$maxnas
-  cat('\nData frame:',x$dfname,'\t',d[1],' observations and ',d[2],
-      ' variables    Maximum # NAs:',maxnas,'\n\n',sep='')
+  cat('\nData frame:', x$dfname, '\t', d[1],' observations and ', d[2],
+      ' variables    Maximum # NAs:', maxnas, '\n', sep='')
+  if(length(x$id)) cat('Unique ', x$id, ':', x$unique.ids, '\t', sep='')
+  if(length(x$rangevar)) cat(x$rangevar, ' range:', x$range, '\t', sep='')
+  if(length(x$valuesvar))cat(x$valuesvar, ':', x$values, sep='')
+  cat('\n\n')
   cont <- x$contents
   nam <- row.names(cont)
   if(number) row.names(cont) <- paste(format(1:d[2]), row.names(cont))
@@ -764,40 +776,40 @@ print.contents.data.frame <-
          },
          labels={
            if(length(cont$Labels)) 
-             cont <-  cont[order(cont$Labels, nam),,drop=FALSE]
+             cont <-  cont[order(cont$Labels, nam),, drop=FALSE]
          },
          NAs={
-           if(maxnas>0)
-             cont <- cont[order(cont$NAs,nam),,drop=FALSE]
+           if(maxnas > 0)
+             cont <- cont[order(cont$NAs, nam),, drop=FALSE]
          })
 
   if(length(cont$Levels))
-    cont$Levels <- ifelse(cont$Levels==0,'',format(cont$Levels))
+    cont$Levels <- ifelse(cont$Levels == 0, '', format(cont$Levels))
 
   print(cont)
 
   if(prlevels && length(L <- x$Levels)) {
     cat('\n')
     nam <- names(L)
-    w <- .Options$width-max(nchar(nam))-5
+    w <- .Options$width - max(nchar(nam)) - 5
     reusingLevels <- sapply(L, is.name)
-    fullLevels <- which(!reusingLevels)
+    fullLevels    <- which(!reusingLevels)
     namf <- lin <- names(L[fullLevels])
     ## separate multiple lines per var with \n for print.char.matrix
     j <- 0
-    for(i in fullLevels)
-      {
-        j <- j + 1
-        varsUsingSame <- NULL
-        if(sum(reusingLevels))
-          {
-            for(k in which(reusingLevels)) if(L[[k]] == namf[j]) 
-              varsUsingSame <- c(varsUsingSame, nam[k])
-            if(length(varsUsingSame))
-              namf[j] <- paste(c(namf[j], varsUsingSame), collapse='\n')
-          }
-        lin[j] <- paste(pasteFit(L[[i]], width=w), collapse='\n')
+    for(i in fullLevels) {
+      j <- j + 1
+      varsUsingSame <- NULL
+      if(sum(reusingLevels)) {
+        for(k in which(reusingLevels))
+          if(L[[k]] == namf[j]) varsUsingSame <- c(varsUsingSame, nam[k])
+        if(length(varsUsingSame))
+          namf[j] <- paste(c(namf[j], varsUsingSame), collapse='\n')
       }
+      Li <- L[[i]]
+      if(length(Li) > maxlevels) Li <- c(Li[1 : maxlevels], '...')
+      lin[j] <- paste(pasteFit(Li, width=w), collapse='\n')
+    }
     z <- cbind(Variable=namf, Levels=lin)
     print.char.matrix(z, col.txt.align='left', col.name.align='left',
                       row.names=TRUE, col.names=TRUE)
@@ -823,22 +835,30 @@ print.contents.data.frame <-
 
 
 html.contents.data.frame <-
-  function(object, sort=c('none','names','labels','NAs'), prlevels=TRUE,
-           file=paste('contents',object$dfname,'html',sep='.'),
-           levelType=c('list','table'),
+  function(object, sort=c('none', 'names', 'labels', 'NAs'), prlevels=TRUE,
+           maxlevels=Inf, file=paste('contents',object$dfname, 'html', sep='.'),
+           levelType=c('list', 'table'),
            append=FALSE, number=FALSE, nshow=TRUE, ...)
 {
   sort <- match.arg(sort)
   levelType <- match.arg(levelType)
   d <- object$dim
   maxnas <- object$maxnas
-  if(nshow)
+  if(nshow) {
     cat('<hr><h2>Data frame:',object$dfname,
         '</h2>',d[1],
         ' observations and ',d[2],
-        ' variables, maximum # NAs:',maxnas,'<hr>\n',sep='',
-        file=file, append=append)
-  else
+        ' variables, maximum # NAs:',maxnas, '&nbsp&nbsp&nbsp&nbsp',
+        sep='', file=file, append=append)
+    if(length(object$id)) cat('Unique ', object$id, ':', object$unique.ids,
+                              '&nbsp&nbsp&nbsp&nbsp',
+                              sep='', file=file, append=TRUE)
+    if(length(object$rangevar)) cat(object$rangevar, ' range:', object$range,
+                                    '&nbsp&nbsp&nbsp&nbsp', sep='', file=file, append=TRUE)
+    if(length(object$valuesvar))cat(object$valuesvar, ':', object$values,
+                                    '&nbsp&nbsp&nbsp&nbsp', sep='', file=file, append=TRUE)
+    cat('<hr>\n', file=file, append=TRUE)
+  } else
     cat('<hr><h2>Data frame:',object$dfname,
         '</h2>', ' Variables:', d[2], '<hr>\n', sep='',
         file=file, append=append)
@@ -894,7 +914,7 @@ html.contents.data.frame <-
   
   cat('<hr>\n', file=file, append=TRUE)
   
-  if(prlevels && length(L)) {
+  if(prlevels && length(L) > 0) {
     if(levelType=='list') {
       cat('<h2 align="center">Category Levels</h2>\n', file=file, append=TRUE)
       for(i in fullLevels) {
@@ -908,6 +928,7 @@ html.contents.data.frame <-
             paste(w, collapse=', '), '</h3>\n', sep='', 
             file=file, append=TRUE)
         cat('<ul>\n', file=file, append=TRUE)
+        if(length(l) > maxlevels) l <- c(l[1 : maxlevels], '...')
         for(k in l) cat('<li>', k, '</li>\n', sep='',
                         file=file, append=TRUE)
         cat('</ul>\n', file=file, append=TRUE)
@@ -918,8 +939,8 @@ html.contents.data.frame <-
       ## possible into n elements, pasting multiple elements
       ## together when needed
       evenSplit <- function(x, n) {
-        indent <- function(z) if(length(z)==1)z else
-        c(z[1], paste('&nbsp&nbsp&nbsp',z[-1],sep=''))
+        indent <- function(z) if(length(z) == 1) z else
+        c(z[1], paste('&nbsp&nbsp&nbsp', z[-1], sep=''))
         m <- length(x)
         if(m <= n) return(c(indent(x), rep('',n-m)))
         totalLength <- sum(nchar(x)) + (m-1)*3.5
@@ -934,9 +955,9 @@ html.contents.data.frame <-
           if(m <= n) break
         }
         ## Take evasive action if needed
-        if(m==n) indent(y) else if(m < n)
-          c(indent(y), rep('', n-m)) else 
-        c(paste(x, collapse=', '), rep('',n-1))
+        if(m == n) indent(y) else if(m < n)
+          c(indent(y), rep('', n - m)) else 
+        c(paste(x, collapse=', '), rep('', n - 1))
       }
       nam <- names(L)
       v <- lab <- lev <- character(0)
@@ -944,6 +965,7 @@ html.contents.data.frame <-
       for(i in fullLevels) {
         j <- j + 1
         l <- L[[i]]
+        if(length(l) > maxlevels) l <- c(l[1 : maxlevels], '...')
         nami <- nam[i]
         v <- c(v, nami)
         w <- nami
