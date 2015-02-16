@@ -189,6 +189,86 @@ plot.summaryP <-
   d
 }
 
+ggplot.summaryP <-
+  function(data, groups=NULL, xlim=c(0, 1),
+           col=NULL, shape=NULL, autoarrange=TRUE, addlayer=NULL, ...)
+{
+  X <- data
+  class(X) <- setdiff(class(X), 'summaryP')
+  at   <- attributes(X)
+  Form <- at$formula
+  nX   <- at$nX
+  nY   <- at$nY
+
+  groupslevels <- if(length(groups)) levels(X[[groups]])
+  condvar <- setdiff(names(X), c('val', 'freq', 'denom', groups))
+  ## Reorder condvar in descending order of number of levels
+  numu <- function(x) if(is.factor(x)) length(levels(x))
+                       else length(unique(x[! is.na(x)]))
+
+  if(autoarrange && length(condvar) > 1) {
+    nlev <- sapply(X[condvar], numu)
+    condvar <- condvar[order(nlev)]
+  }
+
+  ## Find list of variables that contain only one level but have a
+  ## variable name that is longer than 5 characters.  The space devoted
+  ## to one-level variables is not tall enough to print the variable name.
+  ## Replace the name with (1) (2) ... and put the variable names possibly
+  ## in a footnote
+
+  fnvar <- ''
+  lvar <- levels(X$var)
+  i <- 0
+  for(v in lvar) {
+    if(nchar(v) > 5) {
+      nlev <- length(unique(X$val[X$var == v]))
+      if(nlev == 1) {
+        i <- i + 1
+        w <- paste('(', i, ')', sep='')
+        if(i > 1) fnvar <- paste(fnvar, '; ', sep='')
+        fnvar <- paste(fnvar, w, ' ', v, sep='')
+        levels(X$var)[levels(X$var) == v] <- w
+      }
+    }
+  }
+  
+  spl <- function(x) {
+    u <- levels(x)
+    n <- length(u)
+    utrans <- character(n); names(utrans) <- u
+    for(w in u)
+      utrans[w] <- paste(strwrap(w, 10), collapse='\n')
+    factor(x, u, utrans)
+  }
+  X$var <- spl(X$var)
+  if(length(condvar) == 2) {
+    othvar <- setdiff(condvar, 'var')
+    X[[othvar]] <- spl(X[[othvar]])
+  }
+
+  k <- 'ggplot(X, aes(x=freq / denom, y=val'
+  if(length(groups)) k <- paste(k, sprintf(', color=%s, shape=%s',
+                                           groups, groups))
+  k <- paste(k, '))')
+  p <- eval(parse(text=k)) + geom_point()
+  if(length(addlayer)) p <- p + addlayer
+  if('var' %nin% condvar) stop('program logic error')
+  if(length(condvar) == 1)
+    p <- p + facet_grid(var ~ . , scales='free_y', space='free_y')
+  else {
+    p <- p + facet_grid(as.formula(sprintf('var ~ %s', othvar)),
+                        scales='free_y', space='free_y')
+  }
+  p <- p + xlim(xlim) + xlab('Proportion') + ylab('')
+  if(length(col))   p <- p + scale_color_manual(values=col)
+  if(length(shape)) p <- p + scale_shape_manual(values=shape)
+  
+  if(fnvar != '') attr(p, 'fnvar') <- fnvar
+  p
+}
+
+
 latex.summaryP <- function(object, groups=NULL, file='', round=3,
                            size=NULL, append=TRUE, ...) {
   class(object) <- 'data.frame'
@@ -246,5 +326,6 @@ latex.summaryP <- function(object, groups=NULL, file='', round=3,
     }
   }
   attr(w, 'ngrouplevels') <- nl
+  attr(w, 'nstrata') <- nslev
   w
 }

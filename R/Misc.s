@@ -1,5 +1,3 @@
-## $Id$
-		
 if(!exists("NROW", mode='function')) {
   NROW <- function(x)
     if (is.array(x) || is.data.frame(x)) nrow(x) else length(x)
@@ -28,14 +26,14 @@ prn <- function(x, txt, file='')
   invisible()
 }
 
-format.sep <- function(x, digits, ...)
+formatSep <- function(x, digits, ...)
 {
   y <- character(length(x))
   for(i in 1:length(x))
     y[i] <- if(missing(digits)) format(x[i], ...)
-            else format(x[i],digits=digits, ...)  ## 17Apr02
+            else format(x[i],digits=digits, ...)
 
-  names(y) <- names(x)  ## 17Apr02
+  names(y) <- names(x)
   y
 }
 
@@ -803,7 +801,6 @@ parGrid <- function(grid=FALSE)
 }
 
 ## Replaces R's xinch, yinch, extending them to grid
-## Defines these for S-Plus
 ## These convert inches to data units
 xInch <- function(x=1, warn.log=!grid, grid=FALSE)
 {
@@ -1117,8 +1114,8 @@ pasteFit <- function(x, sep=',', width=.Options$width)
   out
 }
 
-## Determine if variable is a date, time, or date/time variable in R
-## or S-Plus.  The following 2 functions are used by describe.vector
+## Determine if variable is a date, time, or date/time variable in R.
+## The following 2 functions are used by describe.vector
 ## timeUsed assumes is date/time combination variable and has no NAs
 testDateTime <- function(x, what=c('either','both','timeVaries'))
 {
@@ -1172,7 +1169,7 @@ formatDateTime <- function(x, at, roundDay=FALSE)
 
 getHdata <-
   function(file, what=c('data','contents','description','all'),
-           where='http://biostat.mc.vanderbilt.edu/twiki/pub/Main/DataSets')
+           where='http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets')
   {
     what <- match.arg(what)
     fn <- as.character(substitute(file))
@@ -1531,4 +1528,3 @@ latexBuild <- function(..., insert=NULL, sep='') {
   }
   structure(txt, close=close)
 }
-

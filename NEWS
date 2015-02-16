@@ -1,3 +1,20 @@
+Changes in version 3.15-0 (2015-02-15)
+   * dvi.latex: For Windows switched from system() to shell() so that cd command works.  Thanks: Rich Heiberger
+   * histSpike: added test
+   * histSpikeg: new function for ggplot2
+   * added ggplot2 in DESCRIPTION, NAMESPACE
+   * largest.empty: clarified help file for use with ggplot2, changed how sensed xlim and ylim accordingly
+   * stat_plsmo: new geom for ggplot2
+   * transcan: added ggplot method
+   * transace: removed y-axis labels
+   * residuals.lrm: remove y-axis labels
+   * histSpikeg: added lowess and span arguments
+   * format.df: Andreas Kiermeier: The "..." argument of format.df is no longer ignored, but included in the definition of formt() and passed to format(). The help file has also been updated and the example modified to show an example of big.mark.
+   * getHdata: removed S-Plus specific stuff, updated url to DataSets
+   * summaryP: added ggplot method
+   * NAMESPACE: many additions to register all S3 methods
+   * format.sep: renamed to formatSep
+
 Changes in version 3.14-6 (2014-11-16)
    * wtd.rank: fixed bug in no weights case (thanks: DPlat)
    * latex.summaryM, latex.summary.formula.reverse: added npct='slash' to present numerators and denominators horizontally instead of vertically
@@ -11,6 +28,7 @@ Changes in version 3.14-6 (2014-11-16)
    * wtd.var: corrected denominator.  Thanks: Shan Huang
    * latex.default: changed to use colheads=FALSE to suppress column headings.  Thanks: Michael Rose
    * mdb.get: added system option -b strip to mdb-export to skip binary output
+   * describe help file: added note that correct terminology for "unique" should have been "distinct"
 
 Changes in version 3.14-5 (2014-09-11)
    * latex.summaryM: fixed bug in caption with test=TRUE.  Thanks: Yonghao Pua

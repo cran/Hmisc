@@ -1,6 +1,7 @@
 \name{summaryP}
 \alias{summaryP}
 \alias{plot.summaryP}
+\alias{ggplot.summaryP}
 \alias{latex.summaryP}
 \title{Multi-way Summary of Proportions}
 \description{
@@ -24,6 +25,14 @@
 	result) plus the overall cross-classification variables excluding
 	\code{groups}.
 
+	The \code{ggplot} method for \code{summaryP} does not draw numerators
+	and denominators but the chart is more compact because \code{ggplot2}
+	does not repeat category names the same way as \code{lattice} does.
+	Variable names that are too long to fit in panel strips are renamed
+	(1), (2), etc. and an attribute \code{"fnvar"} is added to the result;
+	this attribute is a character string defining the abbreviations,
+	useful in a figure caption.
+
 	The \code{latex} method produces one or more LaTeX \code{tabular}s
 	containing a table representation of the result, with optional
 	side-by-side display if \code{groups} is specified.  Multiple
@@ -41,6 +50,8 @@ summaryP(formula, data = NULL, subset = NULL,
                     col = trellis.par.get('superpose.symbol')$col,
                     corner=c(0,1)),
          outerlabels=TRUE, autoarrange=TRUE, \dots)
+\method{ggplot}{summaryP}(data, groups=NULL, xlim=c(0, 1),
+           col=NULL, shape=NULL, autoarrange=TRUE, addlayer=NULL, \dots)
 \method{latex}{summaryP}(object, groups=NULL, file='', round=3,
                            size=NULL, append=TRUE, \dots)
 }
@@ -52,7 +63,8 @@ summaryP(formula, data = NULL, subset = NULL,
 		does not distinguish between superpositioning and paneling.  For the
 	plot method, \code{formula} can provide an overall to the default
 	formula for \code{dotplot()}.}
-  \item{data}{an optional data frame}
+  \item{data}{an optional data frame.  For \code{ggplot.summaryP}
+	  \code{data} is the result of \code{summaryP}.}
   \item{subset}{an optional subsetting expression or vector}
   \item{na.action}{function specifying how to handle \code{NA}s.  The
 		default is to keep all \code{NA}s in the analysis frame.}
@@ -86,6 +98,9 @@ summaryP(formula, data = NULL, subset = NULL,
 	\item{autoarrange}{If \code{TRUE}, the formula is re-arranged so that
  	 if there are two conditioning (paneling) variables, the variable with
 	 the most levels is taken as the vertical condition.}
+ \item{col}{a vector of colors to use to override defaults in
+	 \code{ggplot}}
+ \item{shape}{a vector of plotting symbols to override \code{ggplot} defaults}
  \item{\dots}{ignored}
  \item{object}{an object produced by \code{summaryP}}
  \item{file}{file name, defaults to writing to console}
@@ -93,13 +108,15 @@ summaryP(formula, data = NULL, subset = NULL,
 	 proportions}
  \item{size}{optional font size such as \code{"small"}}
  \item{append}{set to \code{FALSE} to start output over}
+ \item{addlayer}{a \code{ggplot} layer to add to the plot object}
 }
 \value{\code{summaryP} produces a data frame of class
 	\code{"summaryP"}.  The \code{plot} method produces a \code{lattice}
 	object of class \code{"trellis"}.  The \code{latex} method produces an
 	object of class \code{"latex"} with an additional attribute
 	\code{ngrouplevels} specifying the number of levels of any
-	\code{groups} variable.
+	\code{groups} variable and an attribute \code{nstrata} specifying the
+	number of strata.
 	}
 \author{Frank Harrell
   \cr
@@ -109,7 +126,7 @@ summaryP(formula, data = NULL, subset = NULL,
   \cr
   \email{f.harrell@vanderbilt.edu}}
 \seealso{\code{\link{bpplotM}}, \code{\link{summaryM}},
-	\code{\link{ynbind}}, \code{\link{pBlock}}}
+	\code{\link{ynbind}}, \code{\link{pBlock}}, \code{\link[ggplot2]{ggplot}}}
 \examples{
 n <- 100
 f <- function(na=FALSE) {
@@ -133,6 +150,7 @@ s <- summaryP(race + sex + ynbind(x1, x2, x3, x4, x5, x6, x7, label='Exclusions'
               region + treat, data=d)
 # add exclude1=FALSE to include female category
 plot(s, groups='treat')
+ggplot(s, groups='treat')
 
 plot(s, val ~ freq | region * var, groups='treat', outerlabels=FALSE)
 # Much better looking if omit outerlabels=FALSE; see output at
@@ -148,6 +166,7 @@ sb <- summaryP(race + sex +
 plot(sb, text.at=1.3)
 plot(sb, groups='region', layout=c(1,3), key=list(space='top'),
      text.at=1.15)
+ggplot(sb, groups='region')
 \dontrun{
 plot(s, groups='treat')
 # plot(s, groups='treat', outerlabels=FALSE) for standard lattice output

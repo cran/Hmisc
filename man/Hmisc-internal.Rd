@@ -4,7 +4,7 @@
 \alias{aregTran}
 \alias{as.double.Cbind}
 \alias{as.numeric.Cbind}
-\alias{format.sep}
+\alias{formatSep}
 \alias{as.data.frame.impute}
 \alias{as.data.frame.roundN}
 \alias{as.data.frame.special.miss}
@@ -51,6 +51,7 @@
 \alias{rowsumFast}
 \alias{sas.get.macro}
 \alias{setParNro}
+\alias{StatPlsmo}
 \alias{stepfun.eval}
 \alias{stripChart}
 \alias{[.terms}
