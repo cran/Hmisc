@@ -21,7 +21,8 @@ runs \code{html.data.frame}.
 }
 \usage{
 html(object, \dots)
-\method{html}{latex}(object, file, ...)
+\method{html}{latex}(object, file, where=c('cwd', 'tmp'),
+  method=c('htlatex', 'hevea'), cleanup=TRUE, ...)
 \method{html}{data.frame}(object,
   file=paste(first.word(deparse(substitute(object))),'html',sep='.'),
      append=FALSE, link=NULL, linkCol=1, linkType=c('href','name'), \dots)
@@ -38,8 +39,20 @@ html(object, \dots)
 \item{file}{
 name of the file to create.  The default file
 name is \code{object.html} where \code{object} is the first word in
-the name of the argument for \code{object}.
+the name of the argument for \code{object}.  For \code{html.latex}
+specify \code{file=''} to print html code to the console, as when using \code{knitr}.
 }
+\item{where}{for \code{html}.  Default is to put output files in current
+	working directory.  Specify \code{where='tmp'} to put in a system
+	temporary directory area.}
+\item{method}{default is to use system command \code{htlatex} to convert
+	from LaTeX to html (this is from the \code{tex4ht} package).  Specify
+	\code{method='hevea'} to use system command \code{hevea}, assuming the
+	system package \code{hevea} is installed.}
+\item{cleanup}{if using \code{method='htlatex'} set to \code{FALSE} if
+	\code{where='cwd'} to	prevent deletion of auxiliary files created by
+	\code{htlatex} that are not needed when using the final \code{html}
+	document (only the \code{.css} file is needed in addition to \code{.html})}
 \item{append}{set to \code{TRUE} to append to an existing file}
 \item{link}{character vector specifying hyperlink names to attach to
   selected elements of the matrix or data frame.  No hyperlinks are used
@@ -78,9 +91,22 @@ x <- matrix(1:6, nrow=2, dimnames=list(c('a','b'),c('c','d','e')))
 w <- latex(x)
 h <- html(w) # run HeVeA to convert .tex to .html
 h <- html(x) # convert x directly to html
-options(browser='konqueror')  # use help.browser for S-Plus
 h            # launch html browser by running print.html
 w <- html(x, link=c('','B'))   # hyperlink first row first col to B
+
+# Assuming system package tex4ht is installed, easily convert advanced
+# LaTeX tables to html
+getHdata(pbc)
+s <- summaryM(bili + albumin + stage + protime + sex + age + spiders ~ drug,
+              data=pbc, test=TRUE)
+w <- latex(s, npct='slash', file='s.tex')
+z <- html(w)
+browseURL(z$file)
+
+d <- describe(pbc)
+w <- latex(d, file='d.tex')
+z <- html(w)
+browseURL(z$file)
 }
 }
 \keyword{utilities}

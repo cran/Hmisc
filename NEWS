@@ -1,3 +1,25 @@
+Changes in version 3.16-0 (2015-04-25)
+   * html.contents.data.frame: corrected html space character to add semicolon
+   * ggplot.summaryP: added size of points according to denominators
+   * colorFacet: new function
+   * labelPlotmath: added chexpr argument (used by rms::ggplot.Predict)
+   * rcsplineFunction: added type='integral'
+   * summaryP: fixed bug with sort=FALSE using mfreq when shouldn't
+   * summaryP: stored levels(val) in original levels order
+   * summaryM: removed observations added by addMarginal when computing N in left column of tables
+   * html.latex: added method for htlatex, added where argument, cleaned up code, implemented file='' for knitr when using html/Rmarkdown
+   * summaryM, summary.formula: changed calls to translate to gsub()
+   * summaryP: corrected but in exclude1 logic, moved exclude1 to methods that operate on summaryP objects and out of summaryP itself
+   * addMarginal: respect original levels, add argument margloc
+   * added latticeExtra:: in front of function calls
+   * numeric.string, all.is.numeric: replaced options(warn=-1) with suppressWarnings() (thanks: Yihui)
+   * arrGrob, print.arrGrob: new functions
+   * wtd.var: added maximum likelihood method, fixed unbiased method, improved documentation (all provided by Benjamin Tyner)
+   * Changed all any(duplicated()) to anyDuplicated(); thanks Benjamin Tyler
+   * getRs: new function to interact with https://github.com/harrelfe/rscripts
+   * knitrSet: new function to setup knitr with nice defaults for books etc.
+	 * rcorr: fixed sensing of NAs and diagonal elements of n matrix; thanks: Keith Jewell, Campden BRI Group; similar for hoeffd
+
 Changes in version 3.15-0 (2015-02-15)
    * dvi.latex: For Windows switched from system() to shell() so that cd command works.  Thanks: Rich Heiberger
    * histSpike: added test

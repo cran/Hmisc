@@ -1,6 +1,6 @@
 summaryP <- function(formula, data=NULL,
                      subset=NULL, na.action=na.retain,
-                     exclude1=TRUE, sort=TRUE,
+                     sort=TRUE,
                      asna=c('unknown', 'unspecified'), ...) {
   
   formula <- Formula(formula)
@@ -26,6 +26,7 @@ summaryP <- function(formula, data=NULL,
   ux <- unique(X)
   Z <- NULL
   n <- nrow(X)
+  Lev <- character(0)
   
   if(sort) {
     ## Compute marginal frequencies of all regular variables so can sort
@@ -42,6 +43,19 @@ summaryP <- function(formula, data=NULL,
       }
     }
   }
+  ## Save combinations of var and val to exclude if exclude1 is used in
+  ## a function that operates on summaryP result
+  ylevels.to.exclude1 <- NULL
+  for(ny in namY) {
+    y <- Y[[ny]]
+    tab <- table(y)
+    tab <- structure(as.numeric(tab), names=names(tab))
+    if(length(tab) == 2)
+      ylevels.to.exclude1 <-
+        rbind(ylevels.to.exclude1,
+              data.frame(var=ny, val=names(tab)[which.max(tab)]))
+  }
+              
   for(i in 1 : nrow(ux)) {
     j <- rep(TRUE, n)
     if(nX > 0) for(k in 1 : nX) j <- j & (X[[k]] == ux[i, k])
@@ -57,16 +71,20 @@ summaryP <- function(formula, data=NULL,
         for(iy in 1 : ncol(y)) {
           tab <- table(y[, iy])
           no <- as.numeric(sum(tab))
-          d <- if(inherits(y, 'ynbind'))
-            data.frame(var=overlab,
-                       val=labs[iy],
-                       freq=as.numeric(tab['TRUE']),
-                       denom=no)
-          else
-            data.frame(var=overlab,
-                       val=names(tab),  # paste(labs[iy], names(tab)),
-                       freq=as.numeric(tab),
-                       denom=no)
+          
+          if(inherits(y, 'ynbind')) {
+            d <- data.frame(var=overlab,
+                            val=labs[iy],
+                            freq=as.numeric(tab['TRUE']),
+                            denom=no)
+            Lev <- c(Lev, as.character(labs[iy]))
+          } else {
+            d <- data.frame(var=overlab,
+                            val=names(tab),  # paste(labs[iy], names(tab)),
+                            freq=as.numeric(tab),
+                            denom=no)
+            Lev <- c(Lev, names(tab))
+          }
           z <- rbind(z, d)
         }
       }
@@ -78,32 +96,41 @@ summaryP <- function(formula, data=NULL,
         la  <- label(y)
         if(la == '') la <- ny
         lev <- names(tab)
-        mf <- mfreq[[ny]]
+        ## mf <- mfreq[[ny]]
         no <- as.numeric(sum(tab))
-        if(exclude1 && length(mf) == 2) {
-          lowest <- names(which.min(mf))
-          z <- data.frame(var=la, val=lowest,
-                          freq=as.numeric(tab[lowest]),
-                          denom=no)
-        }
-        else {
-          if(sort) lev <- reorder(lev, (mfreq[[ny]])[lev])
-          z <- data.frame(var=la, val=lev,
-                          freq=as.numeric(tab),
-                          denom=no)
-        }
+        if(sort) lev <- reorder(lev, (mfreq[[ny]])[lev])
+        Lev <- c(Lev, as.character(lev))
+        z <- data.frame(var=la, val=lev,
+                        freq=as.numeric(tab),
+                        denom=no)
       }
       ## Add current X subset settings
       if(nX > 0) for(k in 1: nX) z[[names(ux)[k]]] <- ux[i, k]
       Z <- rbind(Z, z)
     }
   }
+  Z$val <- factor(Z$val, levels=unique(Lev))
+
+  yl <- ylevels.to.exclude1
+  iex <- integer(0)
+  if(length(yl)) {
+    for(i in 1 : nrow(Z)) {
+      exi <- FALSE
+      for(j in 1 : nrow(yl))
+        if(as.character(Z$var[i]) == as.character(yl$var[j]) &&
+           as.character(Z$val[i]) == as.character(yl$val[j])) exi <- TRUE
+      if(exi) iex <- c(iex, i)
+    }
+  }
+
+  
   structure(Z, class=c('summaryP', 'data.frame'), formula=formula,
-            nX=nX, nY=nY)
+            nX=nX, nY=nY, rows.to.exclude1=iex)
 }
 
 plot.summaryP <-
-  function(x, formula=NULL, groups=NULL, xlim=c(-.05, 1.05), text.at=NULL,
+  function(x, formula=NULL, groups=NULL, exclude1=TRUE,
+           xlim=c(-.05, 1.05), text.at=NULL,
            cex.values=0.5,
            key=list(columns=length(groupslevels),
              x=.75, y=-.04, cex=.9,
@@ -121,6 +148,9 @@ plot.summaryP <-
   ## Reorder condvar in descending order of number of levels
   numu <- function(x) if(is.factor(x)) length(levels(x))
                        else length(unique(x[! is.na(x)]))
+
+  if(exclude1 && length(at$rows.to.exclude1))
+    X <- X[- at$rows.to.exclude1, , drop=FALSE]
 
   if(autoarrange && length(condvar) > 1) {
     nlev <- sapply(X[condvar], numu)
@@ -177,21 +207,23 @@ plot.summaryP <-
 
 #  if(outerlabels && ((nX - length(groups) + 1 == 2) ||
 #                     length(dim(d)) == 2))  d <- useOuterStrips(d)
-  if(length(dim(d)) == 2) d <- useOuterStrips(d)
+  if(length(dim(d)) == 2) d <- latticeExtra::useOuterStrips(d)
   ## Avoid wasting space for vertical variables with few levels
   if(condvar[length(condvar)] == 'var') {
     vars <- levels(X$var)
     nv <- length(vars)
     h <- integer(nv)
     for(i in 1 : nv) h[i] <- length(unique((X$val[X$var == vars[i]])))
-    d <- resizePanels(d, h = h + 1)
+    d <- latticeExtra::resizePanels(d, h = h + 1)
   }
   d
 }
 
 ggplot.summaryP <-
-  function(data, groups=NULL, xlim=c(0, 1),
-           col=NULL, shape=NULL, autoarrange=TRUE, addlayer=NULL, ...)
+  function(data, groups=NULL, exclude1=TRUE, xlim=c(0, 1),
+           col=NULL, shape=NULL, size=function(n) n ^ (1/4),
+           sizerange=NULL, abblen=5,
+           autoarrange=TRUE, addlayer=NULL, ...)
 {
   X <- data
   class(X) <- setdiff(class(X), 'summaryP')
@@ -206,13 +238,17 @@ ggplot.summaryP <-
   numu <- function(x) if(is.factor(x)) length(levels(x))
                        else length(unique(x[! is.na(x)]))
 
+  if(exclude1 && length(at$rows.to.exclude1))
+    X <- X[- at$rows.to.exclude1, , drop=FALSE]
+
   if(autoarrange && length(condvar) > 1) {
     nlev <- sapply(X[condvar], numu)
     condvar <- condvar[order(nlev)]
   }
 
   ## Find list of variables that contain only one level but have a
-  ## variable name that is longer than 5 characters.  The space devoted
+  ## variable name longer than abblen characters.
+  ## The space devoted
   ## to one-level variables is not tall enough to print the variable name.
   ## Replace the name with (1) (2) ... and put the variable names possibly
   ## in a footnote
@@ -221,7 +257,8 @@ ggplot.summaryP <-
   lvar <- levels(X$var)
   i <- 0
   for(v in lvar) {
-    if(nchar(v) > 5) {
+    maxlen <- nchar(v)   # max(nchar(strsplit(v, split=' ')[[1]]))
+    if(maxlen > abblen) {
       nlev <- length(unique(X$val[X$var == v]))
       if(nlev == 1) {
         i <- i + 1
@@ -246,12 +283,45 @@ ggplot.summaryP <-
     othvar <- setdiff(condvar, 'var')
     X[[othvar]] <- spl(X[[othvar]])
   }
+  N <- X$denom
+  rN <- range(N)
+  ratioN <- rN[2] / rN[1]
+  if(diff(rN) < 10 | (ratioN < 1.2)) size <- NULL
 
   k <- 'ggplot(X, aes(x=freq / denom, y=val'
   if(length(groups)) k <- paste(k, sprintf(', color=%s, shape=%s',
                                            groups, groups))
   k <- paste(k, '))')
-  p <- eval(parse(text=k)) + geom_point()
+  
+  if(length(size)) {
+    k <- paste(k,
+               if(length(size)) 'geom_point(aes(size = N))' else
+                'geom_point()',
+               sep=' + ')
+    Ns <- X$denom
+    if(! length(sizerange)) {
+      fn <- if(is.function(size)) size else sqrt
+      sizerange <- c(max(0.7, 2.7 / fn(ratioN)), 3.25)
+    }
+
+    if(is.function(size)) {
+      X$N <- size(Ns)
+      Ns0 <- Ns[Ns > 0]
+      uN <- unique(sort(Ns0))
+      Nbreaks <- if(length(uN) < 8) uN else
+       unique(round(quantile(Ns0, (0 : 6) / 6, type=1)))
+      Nbreakst <- size(Nbreaks)
+      k <- paste(k,
+       'scale_size_continuous(breaks=Nbreakst, labels=format(Nbreaks), range=sizerange)', sep=' + ')
+    }
+    else {
+      k <- paste(k, 'scale_size_discrete(range = sizerange)', sep=' + ')
+      X$N <- cut2(Ns, g=size)
+    }
+  }
+  else k <- paste(k, 'geom_point()', sep=' + ')
+  p <- eval(parse(text=k))
+  
   if(length(addlayer)) p <- p + addlayer
   if('var' %nin% condvar) stop('program logic error')
   if(length(condvar) == 1)
@@ -269,9 +339,13 @@ ggplot.summaryP <-
 }
 
 
-latex.summaryP <- function(object, groups=NULL, file='', round=3,
+latex.summaryP <- function(object, groups=NULL, exclude1=TRUE, file='', round=3,
                            size=NULL, append=TRUE, ...) {
   class(object) <- 'data.frame'
+  rte <- attr(object, 'rows.to.exclude1')
+  if(exclude1 && length(rte))
+    object <- object[- rte, , drop=FALSE]
+
   if(! append) cat('', file=file)
 
   p <- ifelse(object$denom == 0, '',
@@ -309,6 +383,7 @@ latex.summaryP <- function(object, groups=NULL, file='', round=3,
       
       nl  <- length(lev)
       var <- unique(as.character(r$var))
+
       w <- latex(r[colnames(r) != 'var'],
                  table.env=FALSE, file=file, append=TRUE,
                  rowlabel='', rowname=rep('', nrow(r)),
