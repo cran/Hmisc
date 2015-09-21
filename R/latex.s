@@ -87,8 +87,8 @@ format.df <- function(x,
              '>=',
              paste('$', sl, sl, 'leq$', sep=''),
              paste('$', sl, sl, 'geq$', sep=''),
-             paste(sl, sl, 'textless', sep=''),
-             paste(sl, sl, 'textgreater', sep=''),
+             paste(sl, sl, 'textless ', sep=''),
+             paste(sl, sl, 'textgreater ', sep=''),
              '%', paste(sl, sl, '%', sep=''),
              '&', paste(sl, sl, '&', sep=''))
     for(i in 1 : length(inn))
@@ -640,7 +640,7 @@ latex.default <-
         if(length(size)) paste('{', sl, size, sep=''), '{',
         intop(), '',
         paste(sl, 'ctable[', sep=''), '',
-        if(length(caption) && caption.loc == 'bottom') 'botcap', '',
+        if(length(caption) && caption.loc == 'bottom') 'botcap,', '',
         if(length(caption)) paste('caption={', caption, '},', sep=''),
          '',
         if(length(caption.lot)) paste('cap={', caption.lot, '},',
@@ -708,6 +708,8 @@ latex.default <-
            list('longtable', 'after', caption) ) )
     
     latex.end <- attr(latex.begin, 'close')
+    if(! length(caption))
+      latex.end <- paste(latex.end, '\\addtocounter{table}{-1}', sep='\n')
   }
   cat(latex.begin, file=file, append=file != '')
   
@@ -1255,13 +1257,28 @@ html <- function(object, ...) UseMethod('html')
 
 
 html.latex <- function(object, file, where=c('cwd', 'tmp'),
-                       method=c('htlatex', 'hevea'), cleanup=TRUE, ...)
+                       method=c('htlatex', 'hevea'), rmarkdown=FALSE,
+                       cleanup=TRUE, ...)
 {
   where  <- match.arg(where)
   method <- match.arg(method)
   if(where == 'tmp') cleanup <- FALSE
-  if(method == 'htlatex' && ! missing(file) && file != '')
-    stop('file may not be given when method="htlatex" unless file=""')
+  if(rmarkdown && ! missing(file))
+    warning('do not specify file when rmarkdown=TRUE')
+  if(rmarkdown) file <- character(0)
+
+  ehtml = function(content) {   # Thanks to Yihui
+    if(! requireNamespace('htmltools', quietly=TRUE))
+      stop('htmltools package not installed')
+    
+    content = htmltools::HTML(gsub('^.*?<body\\s*>|</body>.*$', '', content))
+    ss  <- paste(fibase, '-enclosed.css', sep='')
+    src <- switch(where, cwd=getwd(), tmp=tempdir())
+    d = htmltools::htmlDependency(
+      'TeX4ht', '1.0.0', src = src, stylesheet = ss)
+    htmltools::attachDependencies(content, d)
+  }
+
   
   fi  <- object$file
   fibase <- gsub('\\.tex', '', fi)
@@ -1269,7 +1286,7 @@ html.latex <- function(object, file, where=c('cwd', 'tmp'),
   
   if(length(sty))
     sty <- paste('\\usepackage{', unique(sty), '}', sep='')
-  
+
   tmp    <- switch(where,
                    cwd = paste(fibase, 'enclosed', sep='-'),
                    tmp = tempfile())
@@ -1279,9 +1296,9 @@ html.latex <- function(object, file, where=c('cwd', 'tmp'),
       '\\end{document}\n', file=tmptex, sep='\n')
   sc <- if(.Platform$OS.type == 'unix') ';' else '&'
 
-  ## Create system call to hevea to convert enclosed latex file to html.
+  ## Create system call to convert enclosed latex file to html.
   cmd <-
-    if(missing(file) || file == '') 
+    if(missing(file) || ! length(file) || file == '') 
       paste(optionsCmds(method), shQuote(tmptex))
     else 
       paste(optionsCmds(method), '-o', file, shQuote(tmptex))
@@ -1289,11 +1306,12 @@ html.latex <- function(object, file, where=c('cwd', 'tmp'),
   ## perform system call
   sys(cmd)
   if(cleanup && method == 'htlatex')
-    unlink(paste(tmp, c('tmp','idv','lg','4tc','aux','dvi','log','xref','4ct'),
-                 sep='.'))
-  
-  if(! missing(file) && file == '') {
+    unlink(paste(tmp, c('tex', 'tmp','idv','lg','4tc','aux','dvi','log',
+                        'xref','4ct'), sep='.'))
+  if(! missing(file) && (length(file) == 0 || file == '' || file == 'rmd')) {
     w <- readLines(paste(tmp, 'html', sep='.'))
+    if(rmarkdown) return(ehtml(w))
+    if(! length(file)) return(paste(w, collapse='\n'))
     cat(w, sep='\n')
     return(invisible())
   }

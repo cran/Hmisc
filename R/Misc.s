@@ -993,13 +993,13 @@ inverseFunction <- function(x, y) {
     turns[j] <- approxExtrap(d[l], xd[l], xout=0, na.rm=TRUE)$y
   }
 
-  h <- function(y, xx, yy, turns, xrange, yrange, what, coef) {
+  hh <- function(y, xx, yy, turns, xrange, yrange, what, coef) {
     what <- match.arg(what)
     ## Find number of monotonic intervals containing a given y value
     ylo <- pmin(yrange[,1],yrange[,2])
     yhi <- pmax(yrange[,1],yrange[,2])
-    n <- outer(y, ylo, function(a,b)a >= b) &
-         outer(y, yhi, function(a,b)a <= b)
+    n <- outer(y, ylo, function(a,b) a >= b) &
+         outer(y, yhi, function(a,b) a <= b)
     ## Columns of n indicate whether or not y interval applies
     ni <- nrow(yrange)
     fi <- matrix(NA, nrow=length(y), ncol=ni)
@@ -1025,11 +1025,11 @@ inverseFunction <- function(x, y) {
        if(length(z)==1) z else if(length(z)==0) NA else sample(z, size=1)
        }) else fi
   }
-  formals(h) <- list(y=numeric(0), xx=x, yy=y, turns=turns,
-                     xrange=xrange, yrange=yrange,
-                     what=c('all', 'sample'), coef=numeric(0))
+  formals(hh) <- list(y=numeric(0), xx=x, yy=y, turns=turns,
+                      xrange=xrange, yrange=yrange,
+                      what=c('all', 'sample'), coef=numeric(0))
   ## coef is there for compatibility with areg use
-  h
+  hh
 }
 
 Names2names <- function(x)
@@ -1527,12 +1527,16 @@ latexBuild <- function(..., insert=NULL, sep='') {
 }
 
 getRs <- function(file=NULL,
+                  guser='harrelfe', grepo='rscripts',
+                  gdir='raw/master', dir=NULL,
                   where='https://github.com/harrelfe/rscripts/raw/master',
                   browse=c('local', 'browser'), cats=FALSE,
                   put=c('rstudio', 'source')) {
   
   browse <- match.arg(browse)
   put    <- match.arg(put)
+  where  <- paste('https://github.com', guser, grepo, gdir, sep='/')
+  if(length(dir)) where <- paste(where, dir, sep='/')
   
   trim <- function(x) sub('^[[:space:]]+','',sub('[[:space:]]+$','', x))
 
@@ -1642,7 +1646,8 @@ getRs <- function(file=NULL,
   invisible()
 }
 
-knitrSet <- function(basename=NULL, w=4, h=3, fig.path=basename,
+knitrSet <- function(basename=NULL, w=4, h=3,
+                     fig.path=if(length(basename)) basename else '',
                      fig.align='center', fig.show='hold', fig.pos='htbp',
                      fig.lp=paste('fig', basename, sep=':'),
                      dev=switch(lang, latex='pdf', markdown='png'),
