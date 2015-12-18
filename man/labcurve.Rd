@@ -73,8 +73,8 @@ enough to hold the key, and draws the key using \code{putKey}.
 lines, step functions, polynomials, Bezier curves, and points, and
 automatically labeling the point groups using \code{labcurve} or
 \code{putKeyEmpty}.  When \code{drawPlot} is invoked it creates
-temporary functions \code{Points}, \code{Curve}, and \code{Abline} in
-the session frame (frame zero).  The user calls these functions inside
+temporary functions \code{Points}, \code{Curve}, and \code{Abline}.
+The user calls these functions inside
 the call to \code{drawPlot} to define groups of points in the order they
 are defined with the mouse.  \code{Abline} is used to call \code{abline}
 and not actually great a group of points. For some curve types, the
@@ -129,12 +129,12 @@ drawPlot(\dots, xlim=c(0,1), ylim=c(0,1), xlab='', ylab='',
          key=FALSE, opts=NULL)
 
 # Points(label=' ', type=c('p','r'),
-#        n, pch=pch.to.use[1], cex=par('cex'),
+#        n, pch=pch.to.use[1], cex=par('cex'), col=par('col'),
 #        rug = c('none','x','y','xy'), ymean)
 
 # Curve(label=' ',
-#       type=c('bezier','polygon','linear','pol','step','gauss'),
-#       n=NULL, lty=1, lwd=par('lwd'), degree=2,
+#       type=c('bezier','polygon','linear','pol','loess','step','gauss'),
+#       n=NULL, lty=1, lwd=par('lwd'), col=par('col'), degree=2,
 #      evaluation=100, ask=FALSE)
 
 # Abline(\dots)
@@ -255,7 +255,8 @@ represent a non-1-to-1 function such as a circle), \code{"polygon"} for
 orginary line segments, \code{"linear"} for a straight line defined by two
 endpoints, \code{"pol"} for a \code{degree}-degree polynomial to be fitted to
 the mouse-clicked points, \code{"step"} for a left-step-function, \code{"gauss"}
-to plot a Gaussian density fitted to 3 clicked points, or a function
+to plot a Gaussian density fitted to 3 clicked points, \code{"loess"} to
+use the \code{lowess} function to smooth the clicked points, or a function
 to draw a user-specified function, evaluated at \code{evaluation} points
 spanning the whole x-axis.  For the density the user must click in the
 left tail, at the highest value (at the mean), and in the right tail,
