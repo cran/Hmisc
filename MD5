@@ -1,8 +1,8 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-6a387083e5352bb2677623e4ccfe7c81 *DESCRIPTION
+3fdb77b627070de70e3f8aa8eceba1cf *DESCRIPTION
 728b3675165916161c31d6e9180f49eb *INDEX
-1d5410c1116a252799f12d75c214ec4e *NAMESPACE
-4df46e2ea5167011bfd7bc81c5488183 *NEWS
+10b3903d3d0aac5ededa3e749fc4b1c9 *NAMESPACE
+d6fd589ea3220000da62a14a5196a52e *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 62ef16fc333551d6c65f15dedfb5a697 *R/Cs.s
 7d0b0014572f85d46fa6a3417707344c *R/Key.s
@@ -20,7 +20,7 @@ bb0f5e114bad79ac6c8033ac0c8b74a6 *R/bystats.s
 b9862f09ba4c92cd873521799fcf9d5f *R/ciapower.s
 f77dbf71580e9bf653fadd0c2f491f85 *R/cnvrt.coords.s
 8c002470a851e0d14571cfda085e6c42 *R/confbar.s
-1274fe9b36deb504e596de1fc99cdbcb *R/consolidate.s
+fee41ba4aafe4811d4025e948a67bea5 *R/consolidate.s
 c04e31869fdc5107eb6af6886eadb566 *R/cpower.s
 45de10ab5edf3d2a193a8617fe6128f4 *R/curveRep.s
 5da6635f342086cedeee652e296ce9e1 *R/cut2.s
@@ -39,11 +39,12 @@ f1353c18475724f1c211adc872483648 *R/errbar.s
 f6f60ab400ea2df181948ccb799eccba *R/event.history.s
 6975e416ed990ff8818aa824784bf632 *R/ffCompress.r
 8f6279b9164a57be894cb2f12abb6ac6 *R/find.matches.s
+c121a12a354cd6f9dc9710e97a5d5bcb *R/fit.mult.impute.s
 c238614fb72943362407d74442bf236a *R/format.pval.s
 aace929824aad6ebdfba910950b6cc2b *R/ftu.s
 1adfa3a976732cd315829ae8354418fa *R/gbayes.s
 f76f66eae7faef0e445143d9e367619d *R/gettext.s
-b32f77e401a95c17f6324a7e1240c4b8 *R/ggMisc.s
+769b009b031f6f656a0e9b748057bfae *R/ggMisc.s
 b70800bb3730a5b84500d43e97d951f4 *R/groupn.s
 29cf6d5ee0c8444cb58ed0afb85ac57b *R/hist.data.frame.s
 2c589d0201496b50745d72d385a425eb *R/histSpikeg.s
@@ -56,7 +57,7 @@ f681f31c073f4cce7f950b6b6610669b *R/inc-dec.s
 e1bbabaa533c22a5378d1a4b645a80d2 *R/is.present.s
 8cf9e0a10997c59a5be3f19a39c73684 *R/james.stein.s
 742464954f4066c0997499db9999f88d *R/labcurve.s
-8b215ffcb6f7d0d6993d73fa54db75d5 *R/label.s
+4fbbc44c08228fa2dff65f4dc775d3f1 *R/label.s
 adf79aeb80e666d2edb2bbe6e57d67c3 *R/latex.s
 15f9f1d9ce01c4624523182f7a514244 *R/latexDotchart.s
 9fafa76ce37fa2f42c27236c9bbcfb9d *R/latexTabular.s
@@ -69,7 +70,7 @@ e5f0eef89d954522d56fb5399066a6d3 *R/mask.s
 f4cc097babcda3c1edcd60f516713ff2 *R/matxv.s
 75f491b81a9d55dba94e989b2ef7b56b *R/mdb.get.s
 3db82c2a01925e3102527876f71b06bc *R/minor.tick.s
-7ac748c52cc2f218fe376dc021df0925 *R/misc.get.s
+990fbd8c60c911e9734ee960b7397fa0 *R/misc.get.s
 32a369e847b95005134970ac15b4ba73 *R/model.frame.default.s
 fc71dbaeeb57983dcfa3ac0497ed837b *R/mtitle.s
 1f7cc9e23302fa42a853d794880b6140 *R/multLines.s
@@ -116,7 +117,7 @@ b47544f6b133f394f2fda329de60f733 *R/strgraphwrap.s
 b42e6d7953adef86625842fa4bdbe291 *R/strwrap.s
 055ef617ac4b0362b6466e6436ba69fb *R/subplot.s
 14e533b635192fae8b28ca81b9c86f5d *R/substi.s
-fac24c93e909a49db97f254a9aef0d9b *R/summary.formula.s
+8c1cf1ee61020ffb29fbe5ac319784e7 *R/summary.formula.s
 13917abfe4b40bfdf322f6ed1f82b645 *R/summaryM.s
 9702f46041aa126f35f5be2f6b7913e1 *R/summaryP.s
 dc27150ba262b8c3844ce46d36f1e492 *R/summaryRc.s
@@ -127,7 +128,7 @@ f7377430eeb3da9eb05ffe53f045fd32 *R/summaryS.s
 242b4293ae1beb4ab74d921dd0635c21 *R/tabulr.s
 c1dba69a612fd6fb121adb946a77596e *R/tex.s
 a8dd455605905ea4fec12b49853eac34 *R/transace.s
-c80037677e4b9596baad7ddbc970756c *R/transcan.s
+8ed3939b02974185400a6f3462748e66 *R/transcan.s
 847daf7fa4e67d6641c763a7873df93c *R/translate.s
 91c82b7b8e9ad8cff084bf7b2069d11b *R/units.s
 8acbca640a4d111c6e37416e1cf79864 *R/upData.s
@@ -206,7 +207,7 @@ c7c3c2b2e87271ab3efc21dea205f510 *man/impute.Rd
 216bb0989ebf4378cb87841082451438 *man/inc-dec.Rd
 cadcb96fd38ac0ed317e4365f61a30f7 *man/knitrSet.Rd
 524547558fd8322083d3a5bc341a943b *man/labcurve.Rd
-9bead03ff9c82007f84c2ea215e4a5f3 *man/label.Rd
+2249db7c259654a5b1937805232495c6 *man/label.Rd
 acb1fe98c820d282892d7a63cb1ee43c *man/latex.Rd
 211c0afb26e58d9aee079d5ee9bebc95 *man/latexDotchart.Rd
 27998cfcd912e12c8ca2a0ae72a0f3fb *man/latexTabular.Rd
@@ -262,7 +263,7 @@ c63b29fcce92356968e66f1c66cd9bcd *man/simplifyDims.Rd
 32aeaf16b41f0b5cc1f9552b0e8946ff *man/solvet.Rd
 269b7c2f93cb5ba87ec00a835b94e5ac *man/somers2.Rd
 f431b42cc5ebebb89b88851f5ccb44da *man/spower.Rd
-91105504dd17a57847ebecc234f2060f *man/spss.get.Rd
+0d65cf3c6aae05214e17b55a8865b7d0 *man/spss.get.Rd
 d63d4d4bd78f7c6e545bc226dfd58481 *man/src.Rd
 3f94978dff73d4752e3f65f4999fd8da *man/stat_plsmo.Rd
 55bfb1b85ee0343288eebfa236a736a2 *man/stata.get.Rd
@@ -299,7 +300,7 @@ bc5f53ee64bd18f64dd31271902608ca *man/windows/sas.get.Rd
 a376e82806f5056eb2734193039f2193 *man/yearDays.Rd
 c87ff598535f37eaf4c78f044e722b74 *man/ynbind.Rd
 edcf05627a85e73dea9b7ea4bafd4f51 *src/Hmisc.c
-49cd1f68a9ee96ef99b5ce5e0962d2e3 *src/Hmisc.h
+9c83d403e115dcc22d338480d4a29246 *src/Hmisc.h
 06d9b6e7e6a7e22898fc0134691889b3 *src/cidxcn.f
 ac182f4144cfd7853f252be1e4b3d75b *src/cidxcp.f
 d4f5c03178344f826cf5e1f7090e6efd *src/hoeffd.f
@@ -335,12 +336,14 @@ aa63c7d2c13113604223850ab3fe03e3 *tests/cut2.r
 83ef2f75fdba346104cf289db2f49c88 *tests/dataframeReduce.r
 fe59102477004bfd8dad6e2ca452082e *tests/dataload.r
 cfd5ed703e86daf89c13c7c144666c2f *tests/fit.mult.impute.bootstrap.r
+44047c6260fc023709d57056d73c99c6 *tests/fit.mult.impute.r
 15175f29e455ff23d155ef75a6a69696 *tests/histSpike.r
 ce584821d9700b8f2f191180add2266e *tests/histSpikeg.r
 9a2aa1aec08464f6cf8eeeb2bfab8993 *tests/hoeff.r
 fb5a32fba03003505f33815e5152dce6 *tests/howto.html
 8efced68b3467e5c09c875ab7ddc8d46 *tests/html-summaryM.r
 bc723e6e82c91373f2c3f142bbe0be59 *tests/inverseFunction.r
+4dd4b3b76ef12c7e6dea7dc633f35029 *tests/label.r
 573465e16901912adb87c138b62056c6 *tests/largest.empty.r
 30c299061f543ca648113ab0269dbc74 *tests/latex-html.Rmd
 a1e0437dadc110e13e67c1f72235bfb5 *tests/latex.s
