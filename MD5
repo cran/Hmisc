@@ -1,12 +1,12 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-3fdb77b627070de70e3f8aa8eceba1cf *DESCRIPTION
+3189d394b6913f4f28523a29f8d5ee0d *DESCRIPTION
 728b3675165916161c31d6e9180f49eb *INDEX
 10b3903d3d0aac5ededa3e749fc4b1c9 *NAMESPACE
-d6fd589ea3220000da62a14a5196a52e *NEWS
+d7e95adc7f5072f59dfec7edc840cc7c *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 62ef16fc333551d6c65f15dedfb5a697 *R/Cs.s
 7d0b0014572f85d46fa6a3417707344c *R/Key.s
-7865b7d068582db9a3a55e2c388ecee5 *R/Misc.s
+bc3b6fbfad75e14256feae2d591065ed *R/Misc.s
 9043da0ab6b8288636bb399cdb0f89bf *R/abs.error.pred.s
 bdf1cbb1952b1cdf53a296a6d29ecb08 *R/areg.s
 146cbf7cb161fc73bef71599df0a3deb *R/aregImpute.s
@@ -58,7 +58,7 @@ e1bbabaa533c22a5378d1a4b645a80d2 *R/is.present.s
 8cf9e0a10997c59a5be3f19a39c73684 *R/james.stein.s
 742464954f4066c0997499db9999f88d *R/labcurve.s
 4fbbc44c08228fa2dff65f4dc775d3f1 *R/label.s
-adf79aeb80e666d2edb2bbe6e57d67c3 *R/latex.s
+9e17ccd6d9189e096ef9889b83cc978d *R/latex.s
 15f9f1d9ce01c4624523182f7a514244 *R/latexDotchart.s
 9fafa76ce37fa2f42c27236c9bbcfb9d *R/latexTabular.s
 330de4a4106a11330d54434e2d7a8c32 *R/latexTherm.s
@@ -96,6 +96,7 @@ b12dbe9ce2cf315734a1264b75945ea5 *R/rcspline.plot.s
 34c42b055fb42e97d299640e3341c849 *R/rcspline.restate.s
 1aa8a7124aa396e467f86a42f6651a53 *R/reShape.s
 d6669c123f34a1c754b9f0e8889390ca *R/redun.s
+3314865263ea474380ecbbb73a675601 *R/reformM.r
 41b180f15250bedd222f2c334d13eb1f *R/regexpEscape.s
 8c57a7bf3f50a9288576ff9830cb5201 *R/responseSummary.s
 3978f2ee3511549cb906af4618024a53 *R/rm.boot.s
@@ -121,7 +122,7 @@ b42e6d7953adef86625842fa4bdbe291 *R/strwrap.s
 13917abfe4b40bfdf322f6ed1f82b645 *R/summaryM.s
 9702f46041aa126f35f5be2f6b7913e1 *R/summaryP.s
 dc27150ba262b8c3844ce46d36f1e492 *R/summaryRc.s
-f7377430eeb3da9eb05ffe53f045fd32 *R/summaryS.s
+011199482194a90044f9a08eed8981f4 *R/summaryS.s
 0af65ac91b7c04b13aac7791bdf758af *R/symbol.freq.s
 474107a89a3a998eb78bbee1ac2dfdbe *R/sys.s
 849d9c6060bd73ac3a57d842bcea783a *R/t.test.cluster.s
@@ -158,7 +159,7 @@ b160374e0edf2d4fed831421dead49bd *man/addMarginal.Rd
 2db34295a22ca5a59d3557f50e4ac2e7 *man/all.is.numeric.Rd
 89bde30f0578686f86512ffe08e7e4be *man/approxExtrap.Rd
 f2176967a616b854d66ed751081546ee *man/areg.Rd
-fd1faae19816ea6976e1126c33fd40ed *man/aregImpute.Rd
+e0149f9b75bdfe4ee5dd94b691d6a4f5 *man/aregImpute.Rd
 06f861dda4163bbf6b06bcb6da72bb47 *man/biVar.Rd
 c6b61f5f8a001f8748635bde7ff92fb8 *man/binconf.Rd
 f8801718d4558dede5bb92263178b827 *man/bootkm.Rd
@@ -197,7 +198,7 @@ b8c947ebb9ea63a9ecf543e9248a512b *man/event.chart.Rd
 5b6533c6b3d4591303df384f034bf236 *man/getHdata.Rd
 b407f1e3bde7d98ca5e6a5c04c74f132 *man/getRs.Rd
 4d26dc8d111307e8c66102c9a6f9b7d6 *man/getZip.Rd
-56ab5ce90dceb8e35056a2464367addc *man/ggMisc.Rd
+5896a6dfeb28871f92a180112035bde6 *man/ggMisc.Rd
 bd30d6597a6591b2d3b6202931502245 *man/hdquantile.Rd
 8256dd2a02e789ad86ec974fa90420cd *man/hist.data.frame.Rd
 901875cc993a500f248fb22af00183d4 *man/histbackback.Rd
@@ -218,7 +219,7 @@ e110de27ad37decbe96987691beb7555 *man/legendfunctions.Rd
 6aaa5648e29fa7bbbffcc6abb94a003e *man/mChoice.Rd
 c2c3d7fd7b6118a5480308fcacb57afa *man/makeNstr.Rd
 441a5fa600432bdd47470d85f8dc7337 *man/mdb.get.Rd
-02d1f868b81a79ca95f29a1237ffea4e *man/mgp.axis.Rd
+ad5ca5884567e50edeba874e3f6e0566 *man/mgp.axis.Rd
 0cf3a98732d51d53b5a75ea6eacc4c53 *man/minor.tick.Rd
 d513cb5e98a79934c27f37e090d9c849 *man/mtitle.Rd
 8824a1afc7bd38742ca36580e1455dfa *man/multLines.Rd
@@ -322,10 +323,10 @@ deb89e768d46bd7d91231ed5984383b9 *src/rcorr.f
 6391fc48464e9b488b3626eaacbe967d *src/string_box.c
 4966ee836b899392c07d690265906264 *src/wclosest.f
 e041077a4b6e1be43bde49623aee2977 *tests/Ecdf.r
-85b5b81d790bbc9bc28d1a4ba1d0d461 *tests/ace.s
+0b3a69351a7c10b16eca69a9a713fa9e *tests/ace.s
 d3ccd55b47e92d78445f1880c69aa380 *tests/areg.s
-2bedbe9ed72ce0734d19af8e11731d45 *tests/aregImpute.r
-274528fcb5fbf02b5cd24b4ba6879d15 *tests/aregImpute2.r
+b4ca43805f7aa45aae3d146ef8abf22e *tests/aregImpute.r
+34700afdaa45acbbc7cfb598163d9c95 *tests/aregImpute2.r
 0b73b76245a462191695af917f104d7d *tests/aregImpute3.r
 2c2ca2a3c60ff347a101d41002c775e4 *tests/aregImpute4.r
 8c71471c170cd4b7f0bee73fca3055fe *tests/consolidate.R
@@ -334,7 +335,7 @@ d3ccd55b47e92d78445f1880c69aa380 *tests/areg.s
 0f4e7bbe74214f3fb0c6faca2ca4d423 *tests/csv/_contents_.csv
 aa63c7d2c13113604223850ab3fe03e3 *tests/cut2.r
 83ef2f75fdba346104cf289db2f49c88 *tests/dataframeReduce.r
-fe59102477004bfd8dad6e2ca452082e *tests/dataload.r
+8c338f32ce90d771ce68fc14bc68b6b9 *tests/dataload.r
 cfd5ed703e86daf89c13c7c144666c2f *tests/fit.mult.impute.bootstrap.r
 44047c6260fc023709d57056d73c99c6 *tests/fit.mult.impute.r
 15175f29e455ff23d155ef75a6a69696 *tests/histSpike.r
@@ -342,7 +343,7 @@ ce584821d9700b8f2f191180add2266e *tests/histSpikeg.r
 9a2aa1aec08464f6cf8eeeb2bfab8993 *tests/hoeff.r
 fb5a32fba03003505f33815e5152dce6 *tests/howto.html
 8efced68b3467e5c09c875ab7ddc8d46 *tests/html-summaryM.r
-bc723e6e82c91373f2c3f142bbe0be59 *tests/inverseFunction.r
+e35ac7e45fd97681d2a50bcc4dddac8f *tests/inverseFunction.r
 4dd4b3b76ef12c7e6dea7dc633f35029 *tests/label.r
 573465e16901912adb87c138b62056c6 *tests/largest.empty.r
 30c299061f543ca648113ab0269dbc74 *tests/latex-html.Rmd
@@ -355,14 +356,13 @@ c0668a4323dcc6d83736668c00456d23 *tests/minor.tick.r
 dc25c71a732941ce1d970f8585068a6b *tests/panelbp.r
 badcf6388bfae0071da3c10a2b77bac6 *tests/procmeans.txt
 cc8253dbe7c1739dbec34b7ad9779d33 *tests/readsasxml.r
-9cc3fb4ab2821804ac365c5573a09af9 *tests/redun.r
+4cec1c4f2df5dab4ab8118a0c5211e14 *tests/redun.r
 c17621d7759320c355a948272a8f587d *tests/summary.formula.r
 93d6cc6040ff9451c6559b41b539a76e *tests/summary.formula.response.stratify.r
-9509c473975c8c6aa68e7efe9312111a *tests/summaryD.r
-40b10330bfb0045056717ca222c0a82f *tests/summaryP.r
+14bcba4f49d11349b51d95dda35007a7 *tests/summaryD.r
+88847b5ae12f542f79cb83e6294bf742 *tests/summaryP.r
 1c451c58093a60464ddab77a55f034dd *tests/summaryRc.r
-957f37b87db1198e703acdd5b547e80b *tests/summaryS.r
-15ed256963dddc8577f87dd733ea0613 *tests/test.r
+572684d42f7e070fd1e4f639207c2bc7 *tests/summaryS.r
 b36692d5996f652cf69c36533bda7848 *tests/test.rda
 16fb6f4d0b48d6ef354c2f493170239d *tests/test.sas
 be545aff97891d7a2d7a89060601d639 *tests/test.xml
@@ -371,4 +371,4 @@ f7ecdf35cbda3600541a5a24b2fef03c *tests/test2.xpt
 7d8799b50e0922e62f230d1d9d6f619e *tests/testexportlib.r
 52c79beb3d98d36025262007f39d5884 *tests/testexportlib.sas
 58ee64af0de3dd6d0cb23e7607cf626c *tests/wtd.r
-494a68c264841676707438c6c699bc57 *tests/xYplotFilledBands.r
+93023f35f678f7674a067e4ac72c4cb1 *tests/xYplotFilledBands.r
