@@ -1,11 +1,12 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-3189d394b6913f4f28523a29f8d5ee0d *DESCRIPTION
-728b3675165916161c31d6e9180f49eb *INDEX
-10b3903d3d0aac5ededa3e749fc4b1c9 *NAMESPACE
-d7e95adc7f5072f59dfec7edc840cc7c *NEWS
+55d7f2a6f2de5fd9150e05ab4033897d *DESCRIPTION
+b88fb7cf9dc9f8d5d290a9d142a7eb85 *INDEX
+20ec7fd1aeb9d6e981eb95a215d4d424 *NAMESPACE
+25f5f47e428af15d9372c0e1d4ea8fb8 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 62ef16fc333551d6c65f15dedfb5a697 *R/Cs.s
 7d0b0014572f85d46fa6a3417707344c *R/Key.s
+69c646cbfef1423e5fe49f5c42a7b037 *R/Merge.r
 bc3b6fbfad75e14256feae2d591065ed *R/Misc.s
 9043da0ab6b8288636bb399cdb0f89bf *R/abs.error.pred.s
 bdf1cbb1952b1cdf53a296a6d29ecb08 *R/areg.s
@@ -92,7 +93,7 @@ e22010f70796ef97819ab32eef5be1c5 *R/rcorr.cens.s
 2f87d06498fa6cf45c276890e73289ed *R/rcorr.s
 812ca28ba742bab663d97e1e561c4174 *R/rcorrp.cens.s
 62264d939e616b9d1dc7070096b679e5 *R/rcspline.eval.s
-b12dbe9ce2cf315734a1264b75945ea5 *R/rcspline.plot.s
+bd5869619261cea0beb0bbc69f9d539f *R/rcspline.plot.s
 34c42b055fb42e97d299640e3341c849 *R/rcspline.restate.s
 1aa8a7124aa396e467f86a42f6651a53 *R/reShape.s
 d6669c123f34a1c754b9f0e8889390ca *R/redun.s
@@ -120,7 +121,7 @@ b42e6d7953adef86625842fa4bdbe291 *R/strwrap.s
 14e533b635192fae8b28ca81b9c86f5d *R/substi.s
 8c1cf1ee61020ffb29fbe5ac319784e7 *R/summary.formula.s
 13917abfe4b40bfdf322f6ed1f82b645 *R/summaryM.s
-9702f46041aa126f35f5be2f6b7913e1 *R/summaryP.s
+f7dd88e668b59997de8cfaf73bad3a97 *R/summaryP.s
 dc27150ba262b8c3844ce46d36f1e492 *R/summaryRc.s
 011199482194a90044f9a08eed8981f4 *R/summaryS.s
 0af65ac91b7c04b13aac7791bdf758af *R/symbol.freq.s
@@ -140,7 +141,7 @@ ce9c8d4ed31e5172583f329e103dcbe4 *R/varclus.s
 fafd82249f6870351f42d4ad6c3757c5 *R/xYplot.s
 ceb40edad1b482275efde229ce48cdea *R/xtfrm.labelled.s
 b72b2ab287d4c1af9d741022300a18bb *R/xy.group.s
-12e53e0d464d65eb10f15769ce4489d3 *R/ynbind.s
+0a499c3f620db08f6dcea342d1598a7d *R/ynbind.s
 d03ed0f2f7b4a9b1e6d86f7f3643d3f1 *R/zoom.s
 233da168d62b4a13e9280bb6499fafa8 *README.md
 357fee92fdddd451d253d7a50836b510 *inst/CHANGELOG
@@ -151,6 +152,7 @@ e6cd214b7ad4e1dce5bd7566842fcb81 *man/Cs.Rd
 78ee9363c7e22b88897defbe217621e0 *man/Ecdf.Rd
 5f39fe8df1e2a358dd29bfe8520203c0 *man/Hmisc-internal.Rd
 a8d3213ffdeb74c3f50bb2d54a8b9ab5 *man/Lag.Rd
+31401627949e991a58fe419424b4810e *man/Merge.Rd
 1dcfad836f562a867431ea9225ef009d *man/Misc.Rd
 0beff88dfa85ab0fd7b4306272170a8f *man/Overview.Rd
 19b5a4f352bf53dfc1dce289e53456ed *man/Save.Rd
@@ -329,6 +331,7 @@ b4ca43805f7aa45aae3d146ef8abf22e *tests/aregImpute.r
 34700afdaa45acbbc7cfb598163d9c95 *tests/aregImpute2.r
 0b73b76245a462191695af917f104d7d *tests/aregImpute3.r
 2c2ca2a3c60ff347a101d41002c775e4 *tests/aregImpute4.r
+dc5f8faa672401adafaddd97d901a1f9 *tests/bootkm.r
 8c71471c170cd4b7f0bee73fca3055fe *tests/consolidate.R
 40313999a2d82fb8ffac5f8c2306ceaa *tests/csv/FORMAT.csv
 5fee907037836b5e42e0f163e608325f *tests/csv/TEST.csv
@@ -355,12 +358,13 @@ a1e0437dadc110e13e67c1f72235bfb5 *tests/latex.s
 c0668a4323dcc6d83736668c00456d23 *tests/minor.tick.r
 dc25c71a732941ce1d970f8585068a6b *tests/panelbp.r
 badcf6388bfae0071da3c10a2b77bac6 *tests/procmeans.txt
+8b5ae36bde7c6fc08b577f34ebea9268 *tests/rcspline.plot.r
 cc8253dbe7c1739dbec34b7ad9779d33 *tests/readsasxml.r
 4cec1c4f2df5dab4ab8118a0c5211e14 *tests/redun.r
 c17621d7759320c355a948272a8f587d *tests/summary.formula.r
 93d6cc6040ff9451c6559b41b539a76e *tests/summary.formula.response.stratify.r
 14bcba4f49d11349b51d95dda35007a7 *tests/summaryD.r
-88847b5ae12f542f79cb83e6294bf742 *tests/summaryP.r
+6596f5abf35f698eda75c1ef94fb22f8 *tests/summaryP.r
 1c451c58093a60464ddab77a55f034dd *tests/summaryRc.r
 572684d42f7e070fd1e4f639207c2bc7 *tests/summaryS.r
 b36692d5996f652cf69c36533bda7848 *tests/test.rda
