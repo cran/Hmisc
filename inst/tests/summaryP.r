@@ -39,12 +39,18 @@ dev.off()
 plot(s, groups='treat')
 # plot(s, groups=treat, outerlabels=FALSE) for standard lattice output
 plot(s, groups='region', key=list(columns=2, space='bottom'))
-ggplot(s, groups='treat')
+g <- ggplot(s, groups='treat')
+plotly::ggplotly(g, tooltip='text')   # poor output
+s <- summaryM(race + sex + x1 + x2 ~ treat + region, data=d)
+options(grType='plotly')
+plot(s)
 
-plot(summaryP(race + sex ~ region, data=d, exclude1=FALSE), col='green')
+options(grType='base')
+
+plot(s <- summaryP(race + sex ~ region, data=d, exclude1=FALSE), col='green')
 
 # Make your own plot using data frame created by summaryP
-dotplot(val ~ freq | region * var, groups=treat, data=s,
+dotplot(val ~ freq | region * var, data=s,   # was groups=treat
         xlim=c(0,1), scales=list(y='free', rot=0), xlab='Fraction',
         panel=function(x, y, subscripts, ...) {
           denom <- s$denom[subscripts]

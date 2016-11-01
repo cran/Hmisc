@@ -9,13 +9,15 @@ data frame in a simple \samp{tabular} environment.
 latexTabular(x, headings=colnames(x),
              align =paste(rep('c',ncol(x)),collapse=''),
              halign=paste(rep('c',ncol(x)),collapse=''),
-             helvetica=TRUE, translate=TRUE, hline=0, \dots)
+             helvetica=TRUE, translate=TRUE, hline=0, center=FALSE, \dots)
 }
 \arguments{
-  \item{x}{a matrix or data frame}
+  \item{x}{a matrix or data frame, or a vector that is automatically
+		converted to a matrix}
   \item{headings}{a vector of character strings specifying column
 		headings for \samp{latexTabular}, defaulting to \code{x}'s
-	\code{colnames}}
+	\code{colnames}.  To make multi-line headers use the newline character
+	inside elements of \code{headings}.}
   \item{align}{a character strings specifying column
 		alignments for \samp{latexTabular}, defaulting to
 		\code{paste(rep('c',ncol(x)),collapse='')} to center.  You may
@@ -24,11 +26,14 @@ latexTabular(x, headings=colnames(x),
 		column headings, defaulting to centered.}
   \item{helvetica}{set to \code{FALSE} to use default LaTeX font in
 		\samp{latexTabular} instead of helvetica.}
-	\item{translate}{set to \code{FALSE} if column headings are already in
+	\item{translate}{set to \code{FALSE} if column headings and table
+		entries are already in
 		LaTeX format, otherwise \code{latexTabular} will run them through
 		\code{latexTranslate}}
 	\item{hline}{set to 1 to put \code{hline} after heading, 2 to also put
 		\code{hline}s before and after heading and at table end}
+	\item{center}{set to \code{TRUE} to enclose the tabular in a LaTeX
+		\code{center} environment}
 	\item{\dots}{if present, \code{x} is run through \code{format.df} with
 		those extra arguments}
   }

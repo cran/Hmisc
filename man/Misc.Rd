@@ -2,6 +2,8 @@
 \alias{clowess}
 \alias{confbar}
 \alias{getLatestSource}
+\alias{grType}
+\alias{prType}
 \alias{inverseFunction}
 \alias{james.stein}
 \alias{km.quick}
@@ -11,6 +13,7 @@
 \alias{makeSteps}
 \alias{nomiss}
 \alias{outerText}
+\alias{plotlyParm}
 \alias{sepUnitsTrans}
 \alias{strgraphwrap}
 \alias{trap.rule}
@@ -35,6 +38,15 @@
   \code{getLatestSource} fetches and \code{source}s the most recent
   source code for functions in packages in the Vanderbilty University
   CVS repository.
+  
+  \code{grType} retrieves the system option \code{grType}, which is
+  forced to be \code{"base"} if the \code{plotly} package is not
+  installed.
+
+	\code{prType} retrieves the system option \code{prType}, which is
+	set to \code{"plain"} if the option is not set.  \code{print} methods
+	that allow for markdown/html/latex can be automatically invoked by
+	setting \code{options(prType="html")} or \code{options(prType='latex')}.
 
   \code{inverseFunction} generates a function to find all inverses of a
   monotonic or nonmonotonic function that is tabulated at vectors (x,y),
@@ -95,7 +107,11 @@
   with any element missing removed.
 
   \code{outerText} uses \code{axis()} to put right-justified text
-  strings in the right margin.  Placement depends on \code{par('mar')[4]}
+  strings in the right margin.  Placement depends on
+  \code{par('mar')[4]}
+
+	\code{plotlyParm} is a list of functions useful for specifying
+	parameters to \code{plotly} graphics.
 
   \code{sepUnitsTrans} converts character vectors containing values such
   as \code{c("3 days","3day","4month","2 years","2weeks","7")} to
@@ -144,7 +160,8 @@ confbar(at, est, se, width, q = c(0.7, 0.8, 0.9, 0.95, 0.99),
                             qnorm((1 +  x)/2))))
 getLatestSource(x=NULL, package='Hmisc', recent=NULL, avail=FALSE,
                 type=c('svn','cvs'))
-
+grType()
+prType()
 inverseFunction(x, y)
 james.stein(y, group)
 km.quick(S, times, q)
@@ -153,6 +170,7 @@ lm.fit.qr.bare(x, y, tolerance, intercept=TRUE, xpxi=FALSE, singzero=FALSE)
 matxv(a, b, kint=1, bmat=FALSE)
 nomiss(x)
 outerText(string, y, cex=par('cex'), \dots)
+plotlyParm
 sepUnitsTrans(x, conversion=c(day=1, month=365.25/12, year=365.25, week=7),
               round=FALSE, digits=0)
 strgraphwrap(x, width = 0.9 * getOption("width"),

@@ -1341,7 +1341,7 @@ Load <- function(object)
   load(file, .GlobalEnv)
 }
 
-Save <- function(object, name=deparse(substitute(object)), compress='xz')
+Save <- function(object, name=deparse(substitute(object)), compress=TRUE)
 {
   path <- .Options$LoadPath
   if(length(path))
@@ -1349,7 +1349,7 @@ Save <- function(object, name=deparse(substitute(object)), compress='xz')
   
   .FileName <- paste(path, name, '.rda', sep='')
   assign(name, object)
-  if(is.logical(compress) && compress) compress <- 'xz'
+  if(is.logical(compress) && compress) compress <- 'gzip'
   eval(parse(text=paste('save(', name, ', file="',
                         .FileName, '", compress="', compress, '")', sep='')))
 }
@@ -1485,7 +1485,6 @@ makeSteps <- function(x, y)
   else list(x = x[c(1, 2, 2)], y = y[c(1, 1, 2)])
 }
 
-#latexBuild <- function(..., afterEndtabular=NULL, beforeEndtable=NULL, sep='') {
 latexBuild <- function(..., insert=NULL, sep='') {
   w <- list(...)
   l <- length(w)
@@ -1509,7 +1508,7 @@ latexBuild <- function(..., insert=NULL, sep='') {
         for(ins in insert)
           if(length(ins) &&
              ins[[1]] == y && ins[[2]] == 'before')
-            w <- c(w, '\n\n', ins[[3]])
+            w <- c(w, '\n', ins[[3]])
       w <- c(w,
              if(y == '(') ')'
              else if(y == '{') '}'
@@ -1519,7 +1518,7 @@ latexBuild <- function(..., insert=NULL, sep='') {
         for(ins in insert)
           if(length(ins) &&
              ins[[1]] == y && ins[[2]] == 'after')
-            w <- c(w, '\n\n', ins[[3]])
+            w <- c(w, '\n', ins[[3]])
     }
     paste(w, collapse=sep)
   }
@@ -1675,6 +1674,15 @@ knitrSet <- function(basename=NULL, w=4, h=3,
   }
   else knitr::opts_chunk$set(message=FALSE, warning=FALSE)
   if(length(size)) knitr::opts_chunk$set(size = size)
+  ## For htmlcap see http://stackoverflow.com/questions/15010732
+  ## Causes collisions in html and plotly output; Original (no better)
+  ## enclosed in <p class="caption"> ... </p>
+#  if(lang == 'markdown')
+#    knitr::knit_hooks$set(htmlcap = function(before, options, envir) {
+#      if(! before) options$htmlcap
+#        htmltools::HTML(paste0('<br><div style="font-size: 75%;">',
+#                               options$htmlcap, "</div><br>"))
+#    })
   
   if(length(decinline)) {
     rnd <- function(x, dec) if(!is.numeric(x)) x else round(x, dec)
@@ -1711,11 +1719,13 @@ knitrSet <- function(basename=NULL, w=4, h=3,
                    if(any(i)) do.call('spar', pars[i]) else spar()
                  })
   knitr::opts_knit$set(
-    width=width,
-    aliases=c(h='fig.height', w='fig.width', cap='fig.cap', scap='fig.scap'))
+    width=width)
+    #aliases=c(h='fig.height', w='fig.width', cap='fig.cap', scap='fig.scap'))
     #eval.after = c('fig.cap','fig.scap'),
     #error=error)  #, keep.source=keep.source (TRUE))
-  knitr::opts_chunk$set(fig.path=fig.path, fig.align=fig.align, w=w, h=h,
+  # See if need to remove dev=dev from below because of plotly graphics
+  knitr::opts_chunk$set(fig.path=fig.path, fig.align=fig.align,
+                        fig.width=w, fig.height=h,
                  fig.show=fig.show, fig.lp=fig.lp, fig.pos=fig.pos,
                  dev=dev, par=TRUE, tidy=tidy, out.width=NULL, cache=cache,
                  echo=echo, error=error, comment='', results=results)
@@ -1727,7 +1737,70 @@ knitrSet <- function(basename=NULL, w=4, h=3,
     gsub('\\{\\\\centering (\\\\includegraphics.+)\n\n\\}', 
          '\\\\centerline{\\1}', res) 
   }) 
+  knitr::set_alias(w = 'fig.width', h = 'fig.height',
+                   cap = 'fig.cap', scap='fig.scap')
 }
 ## see http://yihui.name/knitr/options#package_options
 
 ## Use caption package options to control caption font size
+
+
+grType <- function() {
+	if('plotly' %nin% utils::installed.packages()[,1]) return('base')
+	if(length(g <- .Options$grType) && g == 'plotly') 'plotly' else 'base'
+}
+
+prType <- function() {
+  g <- .Options$prType
+  if(! length(g)) 'plain' else g
+  }
+
+
+## Save a plotly graphic with name foo.png where foo is the name of the
+## current chunk
+## http://stackoverflow.com/questions/33959635/exporting-png-files-from-plotly-in-r
+
+plotlySave <- function(x, ...) {
+  chunkname <- knitr::opts_current$get("label")
+  path      <- knitr::opts_chunk$get('fig.path')
+  if(is.list(x) & ! inherits(x, 'plotly_hash')) {
+    for(w in names(x)) {
+      file <- paste0(path, chunkname, '-', w, '.png')
+      plotly::plotly_IMAGE(x[[w]], format='png', out_file=file, ...)
+    }
+  }
+  else {
+    file <- paste0(path, chunkname, '.png')
+    plotly::plotly_IMAGE(x, format='png', out_file=file, ...)
+    }
+  invisible()
+}
+
+## Miscellaneous functions helpful for plotly specifications
+
+plotlyParm = list(
+  ## Needed height in pixels for a plotly dot chart given the number of
+  ## rows in the chart
+  heightDotchart = function(rows) min(800, max(200, 25 * rows)),
+
+  ## Colors for unordered categories
+  colUnorder = function(n=5, col=colorspace::rainbow_hcl) {
+    if(! is.function(col)) rep(col, length=n)
+    else col(n)
+  },
+
+  ## Colors for ordered levels
+  colOrdered = function(n=5, col=viridis::viridis) {
+    if(! is.function(col)) rep(col, length=n)
+    else col(n)
+  },
+
+  ## Margin to leave enough room for long labels on left or right as
+  ## in dotcharts
+  lrmargin = function(x, mult=7) {
+    if(is.character(x)) x <- max(nchar(x))
+    min(190, max(70, x * mult))
+    }
+ 
+  )
+

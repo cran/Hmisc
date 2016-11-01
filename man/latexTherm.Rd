@@ -1,6 +1,7 @@
 \name{latexTherm}
 \alias{latexTherm}
 \alias{latexNeedle}
+\alias{pngNeedle}
 \title{Create LaTeX Thermometers and Colored Needles}
 \description{
 \code{latexTherm} creates a LaTeX picture environment for drawing a
@@ -28,6 +29,9 @@ the pop-up.
 needles are produced and each may have its own color.  A grayscale box
 is placed around the needles and provides the 0-1 \code{y}-axis
 reference.  Horizontal grayscale grid lines may be drawn.
+
+\code{pngNeedle} is similar to \code{latexNeedle} but is for generating
+small png graphics.  The full graphics file name is returned invisibly.
 }
 \usage{
 latexTherm(y, name, w = 0.075, h = 0.15, spacefactor = 1/2, extra = 0.07,
@@ -35,27 +39,34 @@ latexTherm(y, name, w = 0.075, h = 0.15, spacefactor = 1/2, extra = 0.07,
 
 latexNeedle(y, col='black', href=0.5, name, w=.05, h=.15,
             extra=0, file = "", append=TRUE)
+
+pngNeedle(y, col='black', href=0.5, w=6, h=18,
+          file=tempfile(fileext='.png', tmpdir=dir),
+          dir='/tmp')
 }
 \arguments{
   \item{y}{a vector of 0-1 scaled values.  Boxes and their frames are
 		omitted for \code{NA} elements}
   \item{name}{name of LaTeX macro variable to be defined}
   \item{w}{width of a single box (thermometer) in inches.  For
-    \code{latexNeedle} is the spacing between needles.}
-  \item{h}{height of a single box in inches.  For \code{latexNeedle} is
-    the height of the frame.}
+    \code{latexNeedle} and \code{pngNeedle} is the spacing between
+          needles, the latter being in pixels.}
+  \item{h}{height of a single box in inches.  For \code{latexNeedle} and
+          \code{pngNeedle} is the height of the frame, the latter in pixels.}
   \item{spacefactor}{fraction of \code{w} added for extra space between
     boxes for \code{latexTherm}}
   \item{extra}{extra space in inches to set aside to the right of and
 		above the series of boxes or frame}
   \item{file}{name of file to which to write LaTeX code.  Default is the
-    console.} 
+    console.  Also used as base file name for png graphic.  Default for
+          that is from \code{tempfile}.}
   \item{append}{set to \code{FALSE} to write over \code{file}}
 	\item{col}{a vector of colors corresponding to positions in \code{y}.
     \code{col} is repeated if too short.}
 	\item{href}{values of \code{y} (0-1) for which horizontal grayscale
     reference lines are drawn for \code{latexNeedle}.  Set to
-    \code{NULL} to not draw any.} 
+    \code{NULL} to not draw any.}
+	\item{dir}{directory in which to place png graphic}
 }
 \author{Frank Harrell}
 \examples{
@@ -74,6 +85,8 @@ without extra:\\ltc END\\\\\nThird with extra:\\ltcc END\\\\
 \\vspace{2in}\\\\ 
 All data = zero, frame only:\\ltd\\\\
 \\end{document}\n')
+w <- pngNeedle(c(.2, .5, .7))
+cat(base64::img(w))  # can insert this directly into an html file
 }}
 \keyword{utilities}
 \keyword{interface}

@@ -502,3 +502,45 @@ histSpike <-
   
   invisible(xlim)
 }
+
+histSpikep <- function(p, x, y, z, group=NULL, color=NULL, hovertext=NULL,
+                       colors=NULL,
+                       bottom.align=TRUE, tracename='Proportion', ...) {
+
+  d <- data.frame(x=rep(x, each=3),
+                  y=rep(y, each=3),
+                  z=rep(z, each=3))
+  origcolor <- color
+
+  if(length(group))     d$group     <- rep(group,     each=3)
+  if(length(hovertext)) d$hovertext <- rep(hovertext, each=3)
+  if(length(color))     d$color     <- rep(color,     each=3)
+  
+  n <- nrow(d)
+  j <- seq(1, n, by=3)
+  if(length(hovertext)) d$hovertext[j] <- ''
+  if(! bottom.align)    d$y[j] <- d$y[j] - d$z[j] / 2
+  
+  j <- seq(3, n, by=3)
+  d$x[j] <- NA
+  if(length(hovertext)) d$hovertext[j] <- ''
+  
+  j <- seq(2, n, by=3)
+  d$y[j] <- d$y[j] + d$z[j] / ifelse(bottom.align, 1, 2)
+
+  plotly::plot_ly(d, x=~ x, y=~ y, mode='lines', type='scatter',
+#                  color=d$color,# colors=colors,
+                  line=list(color=d$color, width=1.4),  # ...
+                  text=~ hovertext,
+                  hoverinfo=if(length(hovertext)) 'text' else 'none')
+
+#  plotly::add_trace(p, data=d, x=x, y=y, mode='lines',
+#                    color=color, colors=colors,
+#                    line=list(..., width=1.4),
+#                    text=hovertext,
+#                    hoverinfo=if(length(hovertext)) 'text' else 'none',
+#                    evaluate=TRUE, name=tracename)
+}
+
+  
+  

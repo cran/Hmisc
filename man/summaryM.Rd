@@ -3,6 +3,7 @@
 \alias{print.summaryM}
 \alias{plot.summaryM}
 \alias{latex.summaryM}
+\alias{html.summaryM}
 \title{Summarize Mixed Data Types vs. Groups}
 \description{
   \code{summaryM} summarizes the variables listed in an S formula,
@@ -12,9 +13,18 @@
   groups marked by a single right-hand-side variable.  The summary
   statistics may be passed to \code{print} methods, \code{plot} methods
   for making annotated dot charts and extended box plots, and 
-  \code{latex} methods for typesetting tables using LaTeX. 
+  \code{latex} methods for typesetting tables using LaTeX.  The
+	\code{html} method uses \code{htmlTable::htmlTable} to typeset the
+	table in html, by passing information to the \code{latex} method with
+	\code{html=TRUE}.  This is for use with RMarkdown under RStudio.
   The \code{print} methods use the \code{print.char.matrix} function to
   print boxed tables.
+
+	The \code{plot} method creates \code{plotly} graphics if
+	\code{options(grType='plotly')}, otherwise base graphics are used.
+	\code{plotly} graphics provide extra information such as which
+	quantile is being displayed when hovering the mouse.  Test statistics
+	are displayed by hovering over the mean.
 
   Continuous variables are described by three quantiles (quartiles by
   default) when printing, or by the following quantiles when plotting
@@ -63,16 +73,14 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
       pdig = 3, eps = 0.001, prob = c(0.25, 0.5, 0.75), prN = FALSE, \dots)
 
 \method{plot}{summaryM}(x, vnames = c('labels', 'names'),
-     what  = c('proportion', '\%'),
-     which = c('both', 'categorical', 'continuous'),
-     xlim = if(what == 'proportion') c(0,1)
-            else c(0,100), 
-     xlab = if(what=='proportion') 'Proportion'
-            else 'Percentage', 
+     which = c('both', 'categorical', 'continuous'), vars=NULL,
+     xlim = c(0,1),
+     xlab = 'Proportion',
      pch = c(16, 1, 2, 17, 15, 3, 4, 5, 0), exclude1 = TRUE,
-     main, subtitles = TRUE,
+     main, subtitles = TRUE, ncols=2,
      prtest = c('P', 'stat', 'df', 'name'), pdig = 3, eps = 0.001,
-     conType = c('bp', 'dot', 'raw'), cex.means = 0.5, cex=par('cex'), \dots)
+     conType = c('bp', 'dot', 'raw'), cex.means = 0.5, cex=par('cex'),
+     height='auto', width=700, \dots)
 
 \method{latex}{summaryM}(object, title =
       first.word(deparse(substitute(object))),
@@ -80,14 +88,21 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
       prn = any(n != N), what=c('proportion', '\%'),
       pctdig = if(what == '\%') 0 else 2,
       npct = c('numerator', 'both', 'denominator', 'slash', 'none'),
-      npct.size = 'scriptsize', Nsize = 'scriptsize', exclude1 = TRUE,
+      npct.size = if(html) mspecs$html$smaller else 'scriptsize',
+      Nsize = if(html) mspecs$html$smaller else 'scriptsize',
+      exclude1 = TRUE,
       vnames=c("labels", "names"), prUnits = TRUE, middle.bold = FALSE,
-      outer.size = "scriptsize", caption, rowlabel = "",
+      outer.size = if(html) mspecs$html$smaller else "scriptsize",
+      caption, rowlabel = "", rowsep=html,
       insert.bottom = TRUE, dcolumn = FALSE, formatArgs=NULL, round=NULL,
       prtest = c('P', 'stat', 'df', 'name'), prmsd = FALSE,
-      msdsize = NULL, long = FALSE, pdig = 3, eps = 0.001,
+      msdsize = if(html) function(x) x else NULL, brmsd=FALSE,
+      long = FALSE, pdig = 3, eps = 0.001,
       auxCol = NULL, table.env=TRUE, tabenv1=FALSE, prob=c(0.25, 0.5, 0.75),
-      prN=FALSE, legend.bottom=FALSE, \dots)
+      prN=FALSE, legend.bottom=FALSE, html=FALSE,
+      mspecs=markupSpecs, \dots)
+
+\method{html}{summaryM}(object, \dots)
 }
 \arguments{
   \item{formula}{
@@ -175,11 +190,13 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
     list with the same components as created by \code{conTest}.  By default,
     the Proportional odds likelihood ratio test is done.
   }
-  \item{...}{
+  \item{\dots}{
     For \code{Key} and \code{Key2} these arguments are passed to \code{key},
     \code{text}, or \code{mtitle}.  For \code{print} methods these are
     optional arguments to \code{print.char.matrix}. For \code{latex} methods
-    these are passed to \code{latex.default}. 
+    these are passed to \code{latex.default}.  For \code{html} the
+		arguments are passed the \code{latex.summaryM}, and the arguments
+		may not include \code{file}.
   }
   \item{object}{an object created by \code{summaryM}}
   \item{quant}{
@@ -234,7 +251,7 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
     value of the \code{digits} system option.
   }
 	\item{what}{specifies whether proportions or percentages are to be
-      printed, plotted, or LaTeX'd} 
+      printed or LaTeX'd} 
   \item{pctdig}{
     number of digits to the right of the decimal place for printing
     percentages or proportions. The default is zero if \code{what='\%'},
@@ -301,8 +318,10 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
   \item{msdsize}{
     defaults to \code{NULL} to use the current font size for the mean and
     standard deviation if \code{prmsd} is \code{TRUE}.  Set to a character
-    string to specify an alternate LaTeX font size.
+    string or function to specify an alternate LaTeX font size.
   }
+	\item{brmsd}{set to \code{TRUE} to put the mean and standard deviation
+    on a separate line, for html}
   \item{long}{
     set to \code{TRUE} to print the results for the first category on its own
     line, not on the same line with the variable label
@@ -332,10 +351,11 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
 	\item{tabenv1}{set to \code{TRUE} in the case of stratification when
       you want only the first stratum's table to be in a table
       environment.  This is useful when using \code{hyperref}.}
-  \item{which}{
-	Specifies whether to plot results
-    for categorical variables, continuous variables, or both (the default).
-  }
+  \item{which}{Specifies whether to plot results for categorical variables,
+    continuous variables, or both (the default).}
+	\item{vars}{Subscripts (indexes) of variables to plot for
+    \code{plotly} graphics.  Default is to plot all variables of each
+    type (categorical or continuous).}
   \item{conType}{
     For drawing plots for continuous variables,
 	extended box plots (box-percentile-type plots) are drawn by default,
@@ -351,6 +371,14 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
   \item{cex.means}{
     character size for means in box-percentile plots; default is .5}
   \item{cex}{character size for other plotted items}
+	\item{height,width}{dimensions in pixels for the \code{plotly}
+    \code{subplot} object containing all the extended box plots.  If
+    \code{height="auto"}, \code{plot.summaryM} will set \code{height}
+    based on the number of 
+    continuous variables and \code{ncols} or for dot charts it will use
+    \code{Hmisc::plotlyHeightDotchart}.  At present \code{height} is
+    ignored for extended box plots due to vertical spacing problem with
+    \code{plotly} graphics.}
   \item{xlim}{
     vector of length two specifying x-axis limits.  This is only used
       for plotting categorical variables.  Limits for continuous
@@ -358,16 +386,14 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
       \code{quant}. 
   }
   \item{xlab}{x-axis label}
-  \item{main}{
-    a main title.  This applies only to the plot
-    for categorical variables.
-  }
+  \item{main}{a main title.  This applies only to the plot for
+    categorical variables.}
   \item{subtitles}{
     set to \code{FALSE} to suppress automatic subtitles
   }
-  \item{caption}{
-    character string containing LaTeX table captions.
-  }
+	\item{ncols}{number of columns for \code{plotly} graphics for extended
+    box plots.  Defaults to 2.  Recommendation is for 1-2.}
+  \item{caption}{character string containing LaTeX table captions.}
   \item{title}{
     name of resulting LaTeX file omitting the \code{.tex} suffix.  Default
     is the name of the \code{summary} object.  If \code{caption} is specied,
@@ -378,9 +404,11 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
       standard output rather than be stored in a  permanent file.
 		}
   \item{append}{specify \code{TRUE} to add code to an existing file}
-  \item{rowlabel}{
-    see \code{latex.default} (under the help file \code{latex})
-  }
+  \item{rowlabel}{see \code{latex.default} (under the help file
+    \code{latex})}
+	\item{rowsep}{if \code{html} is \code{TRUE}, instructs the function to
+    use a horizontal line to separate variables from one another.
+    Recommended if \code{brmsd} is \code{TRUE}.  Ignored for LaTeX.}
   \item{middle.bold}{
     set to \code{TRUE} to have LaTeX use bold face for the middle
     quantile
@@ -390,22 +418,34 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
   \item{insert.bottom}{
     set to \code{FALSE} to suppress inclusion of definitions placed at the
     bottom of LaTeX tables.  You can also specify a character string
-      containing other text that overrides the automatic text.
+      containing other text that overrides the automatic text.  At
+    present such text always appears in the main caption for LaTeX.
   }
   \item{legend.bottom}{
     set to \code{TRUE} to separate the table caption and legend.  This
     will place table legends at the bottom of LaTeX tables.
   }
+	\item{html}{set to \code{TRUE} to typeset with html}
+	\item{mspecs}{list defining markup syntax for various languages,
+    defauls to Hmisc \code{markupSpecs} which the user can use as a
+    starting point for editing}
   \item{dcolumn}{see \code{latex}}
   }
 \value{
   a list.  \code{plot.summaryM} returns the number
-  of pages of plots that were made.  The \code{latex} method returns
-      attributes \code{legend} and \code{nstrata}.
+  of pages of plots that were made if using base graphics, or
+  \code{plotly} objects created by \code{plotly::subplot} otherwise.
+	If both categorical and continuous variables were plotted, the
+    returned object is a list with two named elements \code{Categorical}
+    and \code{Continuous} each containing \code{plotly} objects.
+    Otherwise a \code{plotly} object is returned.
+    The \code{latex} method returns attributes \code{legend} and
+    \code{nstrata}.
 }
 \section{Side Effects}{
   \code{plot.summaryM} creates a function \code{Key} and
-  \code{Key2} in frame 0 that will draw legends.
+  \code{Key2} in frame 0 that will draw legends, if base graphics are
+    being used.
 }
 \author{
   Frank Harrell
@@ -418,7 +458,8 @@ summaryM(formula, groups=NULL, data=NULL, subset, na.action=na.retain,
 }
 \references{
   Harrell FE (2004): Statistical tables and plots using S and LaTeX.
-  Document available from \url{http://biostat.mc.vanderbilt.edu/twiki/pub/Main/StatReport/summary.pdf}.
+  Document available from
+    \url{http://biostat.mc.vanderbilt.edu/twiki/pub/Main/StatReport/summary.pdf}. 
 }
 \seealso{
   \code{\link{mChoice}}, \code{\link{label}}, \code{\link{dotchart3}},
@@ -458,7 +499,7 @@ f <- summaryM(age + sex + sbp + Symptoms ~ treatment, test=TRUE)
 f
 # trio of numbers represent 25th, 50th, 75th percentile
 print(f, long=TRUE)
-plot(f)
+plot(f)    # first specify options(grType='plotly') to use plotly
 plot(f, conType='dot', prtest='P')
 bpplt()    # annotated example showing layout of bp plot
 
@@ -482,7 +523,17 @@ Key2()           # draw legend at lower left corner of plot
                  # oma= above makes this default key fit the page better
 
 options(digits=3)
-w <- latex(s5, npct='both', here=TRUE, file='')     
+w <- latex(s5, npct='both', here=TRUE, file='')
+
+options(grType='plotly')
+pbc <- upData(pbc, moveUnits = TRUE)
+s <- summaryM(bili + albumin + alk.phos + copper + spiders + sex ~
+              drug, data=pbc, test=TRUE)
+html(s)
+a <- plot(s)
+a$Categorical
+a$Continuous
+plot(s, which='con')
 }
 }
 \keyword{category}

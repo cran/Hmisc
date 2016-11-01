@@ -38,6 +38,10 @@
   take place, and \code{force.single} is set to a default of
   \code{FALSE}, as StatTransfer already does conversion to integer.
 
+	Variables having labels but not classed \code{"labelled"} (e.g., data
+	imported using the \code{haven} package) have that class added to them
+	by \code{upData}.
+
   The \code{dataframeReduce} function removes variables from a data frame
   that are problematic for certain analyses.  Variables can be removed
   because the fraction of missing values exceeds a threshold, because they
@@ -56,7 +60,7 @@ cleanup.import(obj, labels, lowernames=FALSE,
 upData(object, \dots, 
        subset, rename, drop, keep, labels, units, levels, force.single=TRUE,
        lowernames=FALSE, caplabels=FALSE, moveUnits=FALSE,
-       charfactor=FALSE, print=TRUE)
+       charfactor=FALSE, print=TRUE, html=FALSE)
 
 dataframeReduce(data, fracmiss=1, maxlevels=NULL,  minprev=0, print=TRUE)
 }
@@ -86,8 +90,8 @@ dataframeReduce(data, fracmiss=1, maxlevels=NULL,  minprev=0, print=TRUE)
     a character vector the same length as the number of variables in
     \code{obj}.  These character values are taken to be variable labels in the
     same order of variables in \code{obj}.
-    For \code{upData}, \code{labels} is a named list or named vector with variables
-    in no specific order.
+    For \code{upData}, \code{labels} is a named list or named vector
+		with variables in no specific order.
   }
   \item{lowernames}{
     set this to \code{TRUE} to change variable names to lower case.
@@ -176,8 +180,11 @@ dataframeReduce(data, fracmiss=1, maxlevels=NULL,  minprev=0, print=TRUE)
     set to \code{TRUE} to look for units of measurements in variable
     labels and move them to a \code{"units"} attribute.  If an expression
     in a label is enclosed in parentheses or brackets it is assumed to be
-    units if \code{moveUnits=TRUE}.
-  }
+    units if \code{moveUnits=TRUE}.}
+  \item{html}{set to \code{TRUE} to print conversion information as html
+		vertabim at 0.6 size.  The user will need to put
+		\code{results='asis'} in a \code{knitr} chunk header to properly
+		render this output.}
   \item{fracmiss}{the maximum permissable proportion of \code{NA}s for a
     variable to be kept.  Default is to keep all variables no matter how
     many \code{NA}s are present.}

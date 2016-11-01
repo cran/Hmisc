@@ -2,28 +2,30 @@
 ##  attr(x, "label") <- value
 ##  x
 ##}
+## exact=TRUE and [['label']] to prevent matching with a different attribute
+## "labels" (Thanks: Ivan Puzek)
 
 label <- function(x, default=NULL, ...) UseMethod("label")
 
 label.default <- function(x, default=NULL, units=plot, plot=FALSE,
-                          grid=FALSE, ...)
+                          grid=FALSE, html=FALSE, ...)
 {
   if(length(default) > 1)
     stop("the default string cannot be of length greater then one")
 
   at <- attributes(x)
-  lab <- at$label
+  lab <- at[['label']]
   if(length(default) && (!length(lab) || lab==''))
     lab <- default
 
   un  <- at$units
   labelPlotmath(lab,
                 if(units) un else NULL,
-                plotmath=plot, grid=grid)
+                plotmath=plot, grid=grid, html=html)
 }
 
 label.Surv <- function(x, default=NULL, units=plot,
-                       plot=FALSE, grid=FALSE,
+                       plot=FALSE, grid=FALSE, html=FALSE,
                        type=c('any', 'time', 'event'), ...)
 {
   type <- match.arg(type)
@@ -32,7 +34,7 @@ label.Surv <- function(x, default=NULL, units=plot,
     stop("the default string cannot be of length greater then one")
 
   at  <- attributes(x)
-  lab <- at$label
+  lab <- at[['label']]
   ia  <- at$inputAttributes
   if((! length(lab) || lab == '') && length(ia)) {
     poss <- switch(type,
@@ -55,7 +57,7 @@ label.Surv <- function(x, default=NULL, units=plot,
   }
 
   labelPlotmath(lab, un,
-                plotmath=plot, grid=grid)
+                plotmath=plot, grid=grid, html=html)
 }
 
 
@@ -70,21 +72,25 @@ label.data.frame <- function(x, default=NULL, self=FALSE, ...) {
       default <- list(default)
     }
 
-    labels <- mapply(FUN=label, x=x, default=default, MoreArgs=list(self=TRUE), USE.NAMES=FALSE)
+    labels <- mapply(FUN=label, x=x, default=default,
+                     MoreArgs=list(self=TRUE), USE.NAMES=FALSE)
     names(labels) <- names(x)
     return(labels)
   }
 }
 
-labelPlotmath <- function(label, units=NULL, plotmath=TRUE, grid=FALSE,
-                          chexpr=FALSE)
+labelPlotmath <- function(label, units=NULL, plotmath=TRUE, html=FALSE,
+                          grid=FALSE, chexpr=FALSE)
 {
-  if(!length(label)) label <- ''
+  if(! length(label)) label <- ''
 
-  if(!length(units) || (length(units)==1 && is.na(units))) units <- ''
+  if(! length(units) || (length(units) == 1 && is.na(units))) units <- ''
 
+  if(html)       return(markupSpecs$html$varlabel (label, units))
+  if(! plotmath) return(markupSpecs$plain$varlabel(label, units))
+  
   g <-
-    if(plotmath) function(x, y=NULL, xstyle=NULL, ystyle=NULL)
+    function(x, y=NULL, xstyle=NULL, ystyle=NULL)
       {
         h <- function(w, style=NULL)
           if(length(style)) sprintf('%s(%s)', style, w) else w
@@ -100,13 +106,12 @@ labelPlotmath <- function(label, units=NULL, plotmath=TRUE, grid=FALSE,
         w <- paste('list(',h(plotmathTranslate(x), xstyle), ',',
                    h(plotmathTranslate(y), ystyle), ')', sep='')
         tryparse(w, paste(x, y), chexpr)
-      } else function(x, y=NULL, ...) if(length(y)) paste(x,y) else x
-
+      }
+  
   if(units=='') g(label)
-  else if(label=='') g(units)
-  else if(plotmath)
-    g(label, units, ystyle='scriptstyle')
-  else paste(label,' [',units,']',sep='')
+  else
+    if(label=='') g(units)
+  else g(label, units, ystyle='scriptstyle')
 }
 
 
@@ -207,11 +212,11 @@ labelLatex <- function(x=NULL, label='', units='', size='smaller[2]',
 
 "print.labelled"<- function(x, ...) {
   x.orig <- x
-  u <- attr(x,'units')
+  u <- attr(x, 'units', exact=TRUE)
   if(length(u))
     attr(x,'units') <- NULL   # so won't print twice
 
-  cat(attr(x, "label"),
+  cat(attr(x, "label", exact=TRUE),
       if(length(u))
         paste('[', u, ']', sep=''),
       "\n")
@@ -241,7 +246,7 @@ Label.data.frame <- function(object, file='', append=FALSE, ...)
 {
   nn <- names(object)
   for(i in 1:length(nn)) {
-    lab <- attr(object[[nn[i]]],'label')
+    lab <- attr(object[[nn[i]]], 'label', exact=TRUE)
     lab <- if(length(lab)==0) '' else lab
     cat("label(",nn[i],")\t<- '",lab,"'\n",
         append=if(i==1)
@@ -266,7 +271,7 @@ reLabelled <- function(object)
   for(i in 1:length(object))
     {
       x <- object[[i]]
-      lab <- attr(x, 'label')
+      lab <- attr(x, 'label', exact=TRUE)
       cl  <- class(x)
       if(length(lab) && !any(cl=='labelled')) {
         class(x) <- c('labelled',cl)
@@ -295,7 +300,7 @@ llist <- function(..., labels=TRUE)
       lab <- vname[i]
       if(labels)
         {
-          lab <- attr(dotlist[[i]],'label')
+          lab <- attr(dotlist[[i]],'label', exact=TRUE)
           if(length(lab) == 0)
             lab <- vname[i]
         }
@@ -307,6 +312,99 @@ llist <- function(..., labels=TRUE)
   dotlist
 }
 
+prList <- function(x, lcap=NULL, htmlfig=0, after=FALSE) {
+  if(! length(names(x))) stop('x must have names')
+  if(length(lcap) && (length(lcap) != length(x)))
+    stop('if given, lcap must have same length as x')
+  mu <- markupSpecs$html
+  g <- if(htmlfig == 0) function(x, X=NULL) paste(x, X)
+       else
+         if(htmlfig == 1) function(x, X=NULL) paste(mu$cap(x), mu$lcap(X))
+       else
+         function(x, X=NULL)
+           paste0('\n### ', mu$cap(x),
+                  if(length(X) && X != '') paste0('\n', mu$lcap(X)))
+  i <- 0
+  for(n in names(x)) {
+    i <- i + 1
+    y <- x[[n]]
+    if(length(names(y)) && length(class(y)) == 1 &&
+       class(y) == 'list' && length(y) > 1) {
+      for(m in names(y)) {
+        if(! after) 
+          cat('\n', g(paste0(n, ': ', m)), '\n', sep='')
+        suppressWarnings(print(y[[m]]))   # for plotly warnings
+        if(after) cat('\n', g(paste0(n, ': ', m)), '\n', sep='')
+      }
+      if(length(lcap) && lcap[i] != '') cat(mu$lcap(lcap[i]))
+    }
+    else {
+      if(! after)
+        cat('\n', g(n, if(length(lcap)) lcap[i]), '\n', sep='')
+      suppressWarnings(print(x[[n]]))
+      if(after) cat('\n', g(n, if(length(lcap)) lcap[i]), '\n', sep='')
+    }
+  }
+  invisible()
+}
+
+putHfig <- function(x, ..., scap=NULL, extra=NULL, subsub=TRUE, hr=TRUE,
+                    table=FALSE, file='', append=FALSE,
+                    expcoll=NULL) {
+  ec <- length(expcoll) > 0
+  if(ec && ! table)
+    stop('expcoll can only be specified for tables, not figures')
+  
+  mu <- markupSpecs$html
+  
+  lcap <- unlist(list(...))
+  if(length(lcap)) lcap <- paste(lcap, collapse=' ')
+  
+  if(! length(lcap) && ! length(scap)) {
+    if(ec) {
+      if(hr) x <- c(mu$hrule, x)
+      x <- mu$expcoll(paste(expcoll, collapse=' '),
+                      paste(x, collapse='\n'))
+      cat(x, file=file, append=append, sep='\n')
+      return(invisible())
+    }
+    if(hr) cat(mu$hrule, '\n', sep='', file=file, append=append)
+    if(table) cat(x, file=file, append=append || hr, sep='\n')
+    else suppressWarnings(print(x))  # because of # colors in pallette warning
+    return(invisible())
+  }
+  if(! length(scap)) {
+    scap <- lcap
+    lcap <- NULL
+  }
+  scap <- if(table) mu$tcap(scap) else mu$cap(scap)
+  if(subsub) scap <- paste0('\n### ', scap)
+  if(hr && ! ec) cat(mu$hrule, '\n', sep='', file=file, append=append)
+  if(! ec) cat(scap, '\n', sep='', file=file, append=append | hr)
+  if(length(lcap)) {
+    lcap <- if(table) mu$ltcap(lcap) else mu$lcap(lcap)
+    if(length(extra))
+      lcap <- paste0(
+        '<TABLE width="100%" BORDER="0" CELLPADDING="3" CELLSPACING="3">',
+        '<TR><TD>', lcap, '</TD>',
+        paste(paste0('<TD style="text-align:right;padding: 0 1ex 0 1ex;">',
+                     extra, '</TD>'), collapse=''),
+        '</TR></TABLE>')
+    if(ec) x <- c(lcap, x)
+    else
+      cat(lcap, '\n', sep='', file=file, append=TRUE)
+  }
+  if(ec)
+    x <- mu$expcoll(paste(expcoll, collapse=' '),
+                    paste(c(if(hr) mu$hrule, scap, x), collapse='\n'))
+
+if(table) cat(x, sep='\n', file=file, append=TRUE)
+else
+  suppressWarnings(print(x))
+invisible()
+}
+
+  
 combineLabels <- function(...)
   {
     w <- list(...)

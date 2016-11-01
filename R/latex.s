@@ -1000,21 +1000,21 @@ latex.list <- function(object,
 ## that surrounding  by $$ is OK
 ## latexTranslate is used primarily by summary.formula
 latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
-                           greek=FALSE, ...)
+                           greek=FALSE, na='', ...)
 {
-  text <- object
+  text <- ifelse(is.na(object), na, as.character(object))
   
   inn <- c("|",  "%",  "#",   "<=",     "<",  ">=",     ">",  "_", "\\243",
            "&", inn, 
            if(pb)
-             c("[","(","]",")"))
+             c("[", "(", "]", ")"))
 
-  out <- c("$|$","\\%","\\#", "$\\leq$","$<$","$\\geq$","$>$","\\_", "\\pounds",
-           "\\&", out, 
+  out <- c("$|$", "\\%", "\\#", "$\\leq$", "$<$", "$\\geq$", "$>$", "\\_",
+           "\\pounds", "\\&", out, 
            if(pb)
-             c("$\\left[","$\\left(","\\right]$","\\right)$"))
+             c("$\\left[", "$\\left(", "\\right]$", "\\right)$"))
 
-  text <- sedit(text, '$', 'DOLLARS', wild.literal=TRUE)   ##17Nov00
+  text <- sedit(text, '$', 'DOLLARS', wild.literal=TRUE)
   text <- sedit(text, inn, out)
 
   ##See if string contains an ^ - superscript followed by a number
@@ -1024,7 +1024,7 @@ latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
 
   for(i in 1 : length(text)) {
     lt <- nchar(text[i])
-    x <- substring(text[i],1 : lt,1 : lt)
+    x <- substring(text[i], 1 : lt, 1 : lt)
     j <- x == '^'
     if(any(j)) {
       is <- ((1 : lt)[j])[1]  #get first ^
@@ -1035,21 +1035,16 @@ latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
          (length(remain) > 1 && remain[1] == '-' && remain[2] %in% dig))
         k[-1] <- k[-1] | remain[-1] %nin% dig
       
-      ie <-
-        if(any(k))
-          is + ((1 : length(remain))[k])[1]
+      ie <- if(any(k)) is + ((1 : length(remain))[k])[1]
         else
           length(x)+1
       
       ##See if math mode already turned on (odd number of $ to left of ^)
-      dol <-
-        if(sum(x[1 : is] == '$') %% 2)
-          ''
+      dol <- if(sum(x[1 : is] == '$') %% 2) ''
         else '$'
       
-      substring2(text[i],is,ie-1) <- paste(dol,'^{',
-                                           substring(text[i],is+1,ie-1),'}',
-                                           dol,sep='')  # 25May01
+      substring2(text[i],is,ie-1) <-
+        paste(dol, '^{', substring(text[i], is + 1, ie - 1), '}', dol,sep='')
     }
     
     if(greek) {
@@ -1065,7 +1060,7 @@ latexTranslate <- function(object, inn=NULL, out=NULL, pb=FALSE,
     }
   }
   
-  sedit(text, 'DOLLARS', '\\$', wild.literal=TRUE)  ## 17Nov00
+  sedit(text, 'DOLLARS', '\\$', wild.literal=TRUE)
 }
 
 
@@ -1234,5 +1229,17 @@ latexSN <- function(x) {
              c('',
                '\\!\\times\\!10^{-*}','\\!\\times\\!10^{-*}',
                '\\!\\times\\!10^{*}','\\!\\times\\!10^{*}'))
+  x
+}
+
+htmlSN <- function(x) {
+  x <- format(x)
+  x <- sedit(x, c('e+00','e-0*',
+                  'e-*',
+                  'e+0*',
+                  'e+*'),
+             c('',
+               '&times;10<sup>-*</sup>', '&times;10<sup>-*</sup>',
+               '&times;10<sup>*</sup>',  '&times;10<sup>*</sup>'))
   x
 }

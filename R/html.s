@@ -90,65 +90,478 @@ html.data.frame <-
   function(object,
            file=paste(first.word(deparse(substitute(object))),
                       'html',sep='.'),
+           header, caption=NULL, rownames=FALSE,
+           align='r', align.header='c', bold.header=TRUE,
+           col.header='Black', border=2,
+           width=NULL, size=100, translate=FALSE,
            append=FALSE, link=NULL, linkCol=1,
            linkType=c('href','name'), ...)
 {
   linkType <- match.arg(linkType)
+  mu <- markupSpecs$html
+
+  tr <- c(c='center', l='left', r='right')
+  align        <- tr[align]
+  align.header <- tr[align.header]
+
+  trans <- if(translate) htmlTranslate else function(x) x
   
   x   <- as.matrix(object)
-  for(i in 1:ncol(x))
-    {
-      xi <- x[,i]
-      if(is.numeric(object[,i]))
-        x[,i] <- paste('<div align=right>',xi,'</div>',sep='')
-    }
-  if(length(r <- dimnames(x)[[1]]))
+#  for(i in 1:ncol(x)) {
+#    xi <- x[,i]
+#    if(is.numeric(object[,i]))
+#      x[,i] <- paste0('<div align=right>', xi, '</div>')
+#  }
+  if(rownames && length(r <- rownames(x)))
     x <- cbind(Name=as.character(r), x)
+
+  b <- c('border: 1px solid gray;', 'border-collapse: collapse;')
+  ## Give style a name hmisctablexxx where xxx is a random 6-digit integer
+  ## because if you reuse the same style in the same document, style
+  ## elements will affect tables that preceeded this one
+  sn  <- paste0('hmisctable', floor(runif(1, 100000, 999999)))
+  psn <- paste0('.', sn)
   
-  cat('<TABLE BORDER>\n', file=file, append=append)
-  cat('<tr>', paste('<td><h3>', dimnames(x)[[2]], '</h3></td>',sep=''), '</tr>\n',
-      sep='', file=file, append=file!='')
-  
+  ## Duplicate specifications because can't get any single one to work
+  lua <- length(unique(align))
+  sty <- c('<style>',
+           paste0(psn, ' {'),
+           if(border == 0) 'border: none;' else b,
+           paste0('font-size: ', size, '%;'),
+           '}',
+           paste0(psn, ' td {'),
+           if(lua == 1) paste0('text-align: ', align, ';'),
+           'padding: 0 1ex 0 1ex;',   ## top left bottom right
+           '}',
+           paste0(psn, ' th {'),
+           paste0('color: ', col.header, ';'),
+           paste0('text-align: ', align.header, ';'),
+           'padding: 0 1ex 0 1ex;',
+           if(bold.header) 'font-weight: bold;' else 'font-weight: normal;',
+           '}',
+           '</style>')
+          
+  R <- c(sty, paste0('<table class="', sn, '"',
+                     if(length(width) == 1)
+                       paste0(' width="', width, '"'),
+                     if(border == 1) ' border="0"',
+                     if(border == 2) ' border="1"', '>'))
+
+  if(length(caption))
+    R <- c(R, paste0('<caption>', mu$lcap(caption), '</caption>'))
+  if(missing(header)) header <- colnames(x)
+  if(length(header)) {
+    head <- trans(header)
+    head <- paste0('<th>', head, '</th>')
+    head <- paste0('<tr>', paste(head, collapse=''), '</tr>')
+    R <- c(R, head)
+    }
+
   if(length(link)) {
-    if(is.matrix(link)) 
-      x[link!=''] <- paste('<a ',linkType,'="', link[link!=''],'">',
-                           x[link!=''],'</a>',sep='') else
-    x[,linkCol] <- ifelse(link == '',x[,linkCol],
-                          paste('<a ',linkType,'="',link,'">',
-                                x[,linkCol],'</a>',sep=''))
+    if(is.matrix(link))
+      for(j in 1 : ncol(x))
+        x[, j] <- ifelse(link[, j] == '', x[, j],
+                         paste0('<a ', linkType, '="', link[, j], '">',
+                              trans(x[, j]), '</a>'))
+#      x[link != ''] <- paste('<a ',linkType,'="', link[link!=''],'">',
+#                              trans(x[link != '']), '</a>', sep='')
+    else
+      x[,linkCol] <- ifelse(link == '', trans(x[, linkCol]),
+                            paste0('<a ',linkType, '="', link, '">',
+                                   trans(x[, linkCol]), '</a>'))
   }
 
-  for(i in 1:nrow(x))
-    cat('<tr>',paste('<td>',x[i,],'</td>',sep=''),'</tr>\n',
-        sep='', file=file, append=file!='')
+  for(i in 1 : nrow(x)) {
+    rowt <- if(lua == 1) paste0('<td>', x[i, ], '</td>')
+            else
+              paste0('<td style="text-align:', align, ';">',
+                    x[i, ], '</td>')
+    R <- c(R, paste0('<tr>', paste(rowt, collapse=''), '</tr>'))
+    }
 
-  cat('</TABLE>\n', file=file, append=file!='')
+  R <- c(R, '</table>')
+  if(is.logical(file) && ! file)
+    return(htmltools::HTML(paste0(R, '\n')))
+
+  cat(R, file=file, append=append && file != '', sep='\n')
   structure(list(file=file), class='html')
 }
 
 
 html.default <- function(object,
                          file=paste(first.word(deparse(substitute(object))),
-                                    'html',sep='.'),
+                                    'html', sep='.'),
                          append=FALSE,
                          link=NULL, linkCol=1, linkType=c('href','name'),
                          ...)
-{
   html.data.frame(object, file=file, append=append, link=link,
                   linkCol=linkCol, linkType=linkType, ...)
+
+
+if(FALSE) {
+  show.html <- function(object)
+  {
+    browser <- .Options$help.browser
+    if(!length(browser))
+      browser <- .Options$browser
+    
+    if(!length(browser))
+      browser <- 'netscape'
+    
+    sys(paste(browser, object, if(.Platform$OS.type == 'unix') '&'))
+    invisible()
+  }
+  
+  print.html <- function(x, ...) show.html(x)
 }
 
-show.html <- function(object)
+
+htmlVerbatim <- function(..., size = 75, width = 85,
+                         scroll=FALSE, rows=10, cols=100) {
+  if(scroll) {
+    nam <- as.character(sys.call()[2])
+    w <- paste0('<textarea class="scrollabletextbox" rows=', rows,
+                ' cols=', cols, ' style="font-size:', size,
+                '%; font-family:Courier New;" name="', nam, '">')
+    }
+  else w <- paste0('<pre style="font-size:', size, '%;">')
+  op <- options(width=width)
+  for(x in list(...)) w <- c(w, capture.output(print(x)))
+  options(op)
+  w <- c(w, if(scroll) '</textarea>' else '</pre>')
+  w <- paste0(w, '\n')
+  htmltools::HTML(w)
+}
+
+
+markupSpecs <- list(html=list(
+  ## <span> needed for text in plotly graphics
+  bold     = function(x, span=TRUE)
+    if(span) paste0('<span style="font-weight:bold">', x, '</span>')
+      else   paste0('<strong>', x, '</strong>'),
+  italics  = function(x) paste0('<i>', x, '</i>'),
+  math     = function(x) paste0('<i>', x, '</i>'),
+  code     = function(x) paste0('<code style="font-size:0.8em">', x, '</code>'),
+  sup      = function(x, ...) paste0('<sup>', x, '</sup>'),
+  sub      = function(x, ...) paste0('<sub>', x, '</sub>'),
+  size     = function(x, pct) paste0('<span style="font-size: ', pct,
+                                     '%;">', paste(x, collapse=' '),
+                                     '</span>'),
+  smaller  = function(x) paste0('<span style="font-size: 80%;">', x,
+                                '</span>'),
+  larger   = function(x) paste0('<span stype="font-size: 125%;">', x,
+                                '</span>'),
+  smaller2 = function(x) paste0('<span style="font-size: 64%;">', x,
+                                 '</span>'),
+  larger2  = function(x) paste0('<span style="font-size: 156%;">', x,
+                                 '</span>'),
+  center   = function(x) paste0('<div align=center>', x, '</div>'),
+  subtext  = function(..., color='blue')
+    paste0('<br><font size=1 color="', color, '">',
+           paste(unlist(list(...)), collapse=' '),
+           '</font>'),
+
+  cap      = function(...) { # figure caption formatting
+    lcap <- paste(unlist(list(...)), collapse=' ')
+    paste0('<span style="font-family:Verdana;font-size:10px;">Figure: </span><span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
+             lcap, '</span>')
+  },
+  
+  lcap     = function(...) # for continuation of figure caption
+    paste0('<span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
+           paste(unlist(list(...)), collapse=' '), '</span>'),
+
+  tcap      = function(...) { # table caption formatting
+    lcap <- paste(unlist(list(...)), collapse=' ')
+    paste0('<span style="font-family:Verdana;font-size:10px;">Table: </span><span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
+             lcap, '</span>')
+  },
+  
+  ltcap     = function(...) # for continuation of table caption
+    paste0('<span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
+           paste(unlist(list(...)), collapse=' '), '</span>'),
+
+  expcoll = function(vis, invis) {
+      id <- floor(runif(1, 100000, 999999))  # unique html id
+      paste0('<a href="#', id, '" id="', id,
+             '_earrows" class="earrows" onclick="expand_collapse(\'',
+             id, '\');">&#9660;</a>',
+             vis, '<span id="', id,
+             '" style="display:none;">',
+             invis, '</span>')
+    },
+  
+  session  = function(cite=TRUE, loadedOnly=FALSE) {
+    si <- sessionInfo()
+    if(! loadedOnly) si$loadedOnly <- NULL
+    w <- c('<pre>',
+           capture.output(print(si, locale=FALSE)),
+           '</pre>',
+           if(cite) 'To cite R in publication use:',
+           if(cite) capture.output(print(citation(), style='html')))
+    w <- paste0(w, '\n')
+    htmltools::HTML(w)
+  },
+  installcsl = function(cslname, rec=FALSE) {
+    if(rec) {
+      cat('Shows URLs:', 'american-medical-association',
+                '',
+                'Does not show URLs:', 'council-of-science-editors',
+          'american-medical-association-no-url', sep='\n')
+      return(invisible())
+      }
+    if(missing(cslname))
+      browseURL('https://www.zotero.org/styles')
+    else
+      download.file(paste0('https://raw.githubusercontent.com/citation-style-language/styles/master/',
+                           cslname, '.csl'), paste0(cslname, '.csl'))
+  },
+  citeulikeShow = function(user, bibkeys=NULL, tags=NULL, file=NULL) {
+    if(length(file)) {
+      x <- readLines(file)
+      ## See http://stackoverflow.com/questions/8613237
+      bibkeys <- unlist(regmatches(x, gregexpr("(?<=\\[@).*?(?=\\])",
+                                               x, perl=TRUE)))
+      }
+    if(length(bibkeys)) {
+      keys <- paste(paste0('bibkey%3A+', bibkeys), collapse='+OR+')
+      browseURL(paste0('http://www.citeulike.org/search/username?q=',
+                       keys, '&search=Search+library&username=', user))
+    } else browseURL(paste0('http://www.citeulike.org/user/',
+                            user, '/tag/', tags))
+    invisible(bibkeys)
+    },
+  widescreen = function(width='4000px')
+    htmltools::HTML(paste0('<style>div.main-container {max-width:',
+                           width, ';}</style>')),
+  tocsize = function(width = '20%', maxwidth = '260px', maxheight='85%')
+    htmltools::HTML(paste0('<style>div.tocify {width: ', width,
+                           '; max-width: ', maxwidth, '; max-height: ',
+                           maxheight, ';}</style>')),
+  scroll   = function(x, size=75, rows=10, cols=100,
+                      font='', name='') {
+    w <- paste0('<div style="width: ', cols, 'ex; overflow: auto; height: ',
+                rows, 'ex;">')
+    c(w, x, '</div>')
+    },
+  chisq    = function(x, ...)
+#    paste0('\u03C7&<span class="xscript" style="font-size: 75%;"><sup>2</sup><sub>', x,
+#           '</sub></span>')
+                 if(missing(x)) paste0('\u03C7<sup>2</sup>')
+                 else
+                   paste0("\u03C7", markupSpecs$html$subsup(x, '2')),
+  fstat    = function(x, ...) paste0('<i>F</i><sub><span style="font-size: 80%;">',
+                                     x[1], '\u2009', x[2], '</span></sub>'),
+  ## \u2009 is thin space
+  frac     = function(a, b, size=82, ...)
+    paste0('<span style="font-size: ', size, '%;"><sup>',
+           a, '</sup>\u2044<sub>', b, '</sub></span>'),   # \u2044 is html &frasl
+  subsup   = function(a, b) paste0("<sup><span style='font-size: 70%;'>", b,
+                                   "</span></sup><sub style='position: relative; left: -.47em; bottom: -.4em;'><span style='font-size: 70%;'>",
+                                   a, "</span></sub>"),
+  varlabel = function(label, units='', size=75, hfill=FALSE) {
+    if(units=='') label
+    else
+      if(hfill) paste0("<div style='float: left; text-align: left;'>", label,
+                       "</div><div style='float: right; text-align: right; font-family: Verdana; font-size:", size, "%;'>", units, "</div>")
+    else
+      paste0(label,
+             "\u2003<span style='font-family:Verdana;font-size:", size, "%;'>",
+             units, "</span>") },   # \2003 is &emsp;
+  space    = '\u00A0',    # html &nbsp;
+  lspace   = '\u2003',
+  sspace   = '\u2009',    # html &thinsp
+  smallskip= '<br><br>',
+  medskip  = '<br><br><br>',
+  bigskip  = '<br><br><br><br>',
+  lineskip = function(n) paste0('\n<p style="padding-top:', n, 'em;">'),
+  br       = '<br>',
+  hrule    = '<hr>',
+  hrulethin= '<hr class="thinhr">',
+  plminus  = '\u00B1',    # &plminus
+  times    = '\u00D7',         # &times
+  xbar     = '<span style="text-decoration: overline">X</span>',
+  styles   = function(...) htmltools::HTML('
+<script type="text/javascript">
+<!--
+    function expand_collapse(id) {
+       var e = document.getElementById(id);
+       var f = document.getElementById(id+"_earrows");
+       if(e.style.display == \'none\'){
+          e.style.display = \'block\';
+          f.innerHTML = \'&#9650\';
+       }
+       else {
+          e.style.display = \'none\';
+          f.innerHTML = \'&#9660\';
+       }
+    }
+//-->
+</script>
+<style>
+.earrows {color:silver;font-size:11px;}
+
+fcap {
+ font-family: Verdana;
+ font-size: 12px;
+ color: MidnightBlue
+ }
+
+smg {
+ font-family: Verdana;
+ font-size: 10px;
+ color: &#808080;
+}
+
+hr.thinhr { margin-top: 0.15em; margin-bottom: 0.15em; }
+
+span.xscript {
+position: relative;
+}
+span.xscript sub {
+position: absolute;
+left: 0.1em;
+bottom: -1ex;
+}
+</style>
+'),
+
+## The following is to create html file so that can copy and paste unicode chars
+## To do actual conversions best to use http://www.endmemo.com/unicode/unicodeconverter.php
+unicodeshow = function(x, surr=TRUE, append=FALSE) {
+  if(surr) x <- paste0('&', x, ';')
+  cat('<meta charset="utf-8">', paste(x, collapse=''), '<br>', file='/tmp/z.html', append=append)
+}
+
+),
+
+latex = list(
+  bold     = function(x) paste0('\\textbf{', x, '}'),
+  italics  = function(x) paste0('\\emph{', x, '}'),
+  math     = function(x) paste0('$', x, '$'),
+  code     = function(x) paste0('\\texttt{\\smaller ', x, '}'),
+  sup      = function(x, add='$') paste0(add, '^{',x, '}', add),
+  sub      = function(x, add='$') paste0(add, '_{',x, '}', add),
+  smaller  = function(x) paste0('{\\smaller ',     x, '}' ),
+  larger   = function(x) paste0('{\\smaller[-1]{', x, '}' ),
+  smaller2 = function(x) paste0('{\\smaller[2]{',  x, '}' ),
+  larger2  = function(x) paste0('{\\smaller[-2]{', x, '}' ),
+  center   = function(x) paste0('\\centerline{', x,   '}' ),
+  chisq    = function(x, add='$') if(missing(x)) paste0(add, '\\chi^{2}', add)
+                                  else paste0(add, '\\chi^{2}_{', x,    '}', add),
+  fstat    = function(x, add='$')
+    paste0(add, 'F_{', x[1], ',', x[2], '}', add),
+  frac     = function(a, b, add='$', ...)
+    paste0(add, '\\frac{', a, '}{', b, '}', add),
+  subsup   = function(a, b) paste0('$_{', a, '}^{', b, '}$'),
+  varlabel = function(label, units='', hfill=FALSE, ...) {
+    if(units=='') return(label) else units <- latexTranslate(units)
+    fill <- if(hfill) '~\\hfill' else '~~~'
+    paste0(label, fill, '\\texttt{\\smaller[2] ',
+           gsub('\\*', ' ', units), '}')
+    },
+  space    = '~',
+  lspace   = '~~',
+  sspace   = '\\,',
+  smallskip= '\\smallskip',
+  medskip  = '\\medskip',
+  bigskip  = '\\bigskip',
+  lineskip = function(n) paste0('\n\\vspace{', n, 'ex}\n\n'),
+  br       = '\\\\',
+  hrule    = '\\hrule',
+  plminus  = '$\\pm$',
+  times    = '$\\times$',
+  xbar     = '$\\bar{X}$'
+),
+
+plain = list(
+  space = ' ',
+  lspace = '   ',
+  sspace = ' ',
+  br     = '\n',
+  lineskip = function(n) paste(rep('\n', n), collapse=''),
+  hrule  = '',
+  code   = function(x) x,
+  frac   = function(a, b, ...) paste0(a, '/', b),
+  varlabel = function(label, units='', ...)
+    if(units == '') label else  paste0(label, '  [', units, ']'),
+  times  = 'x'
+),
+
+plotmath = list(
+  varlabel = function(label, units='', ...)
+    labelPlotmath(label, units)
+  )
+)
+
+## For expand_collapse see http://dickervasti.com/wiki-style-text-expand-collapse-no-jquery.htm#01000
+
+## Function to translate several expressions to html form.
+## Arguments inn and out specify additional input and translated
+## strings over the usual defaults.
+
+htmlTranslate <- function(object, inn=NULL, out=NULL,
+                           greek=FALSE, na='', ...)
 {
-  browser <- .Options$help.browser
-  if(!length(browser))
-    browser <- .Options$browser
-  
-  if(!length(browser))
-    browser <- 'netscape'
-  
-  sys(paste(browser, object, if(.Platform$OS.type == 'unix') '&'))
-  invisible()
+  text <- ifelse(is.na(object), na, as.character(object))
+
+  ## Must translate & first so won't be converted to &amp; when other
+  ## symbols are translated
+  inn <- c("&", "|",  "%",  "#",   "<=",     "<",  ">=",     ">",  "_", "\\243",
+           "\\$", inn, c("[", "(", "]", ")"))
+
+
+#  out <- c("&amp;", "&#124;", "&#37", "&#35;", "&#8804;", "&#60;", "&#8805;",
+#           "&#62;", "&#95;",  "&pound;",
+#           "&dollar;", out, 
+#           c("&#91;", "&#40;", "&#93;", "&#41;"))
+#  markupSpecs$html$unicodeshow(out, surr=FALSE)
+  out1 <- substring('\u27\u26\u7C\u25\u23\u2264\u3C\u2265\u3E\u5F\uA3\u24', 1:11, 1:11)
+  out2 <- substring('[(])', 1:4, 1:4)
+  out <- c(out1, out, out2)
+
+  ##See if string contains an ^ - superscript followed by a number
+
+  dig <- c('0','1','2','3','4','5','6','7','8','9')
+
+  for(i in 1 : length(text)) {
+    lt <- nchar(text[i])
+    x <- substring(text[i], 1 : lt, 1 : lt)
+    j <- x == '^'
+    if(any(j)) {
+      is <- ((1 : lt)[j])[1]  #get first ^
+      remain <- x[-(1 : is)]
+      k <- remain %in% c(' ',',',')',']','\\','$')
+      if(remain[1] %in% dig ||
+         (length(remain) > 1 && remain[1] == '-' && remain[2] %in% dig))
+        k[-1] <- k[-1] | remain[-1] %nin% dig
+      
+      ie <- if(any(k)) is + ((1 : length(remain))[k])[1]
+        else
+          length(x) + 1
+      
+      substring2(text[i], is, ie - 1) <-
+        paste0('BEGINSUP', substring(text[i], is + 1, ie - 1), 'ENDSUP')
+    }
+    text[i] <- sedit(text[i], c(inn, '^', 'BEGINSUP', 'ENDSUP'),
+                     c(out, '\u5E', '<sup>', '</sup>'), wild.literal=TRUE)   # \u5E is ^
+
+    if(greek) {
+      gl <- c('alpha','beta','gamma','delta','epsilon','varepsilon',
+              'zeta', 'eta',
+              'theta','vartheta','iota','kappa','lambda','mu','nu',
+              'xi','pi','varpi','rho','varrho','sigma','varsigma','tau',
+              'upsilon','phi','chi','psi','omega','Gamma','Delta',
+              'Theta','Lambda','Xi','Pi','Sigma','Upsilon','Phi','Psi','Omega')
+ #     markkupSpecs$html$unicodeshow(gl, append=TRUE)
+      ## See http://stackoverflow.com/questions/22888646/making-gsub-only-replace-entire-words
+      for(j in 1 : length(gl)) 
+        text[i] <- gsub(paste0('\\<', gl[j], '\\>'),
+                        substring('\u3B1\u3B2\u3B3\u3B4\u3B5\u3F5\u3B6\u3B7\u3B8\u3D1\u3B9\u3BA\u3BB\u3BC\u3BD\u3BE\u3C0\u3D6\u3C1\u3F1\u3C3\u3C2\u3C4\u3C5\u3C6\u3C7\u3C8\u3C9\u393\u394\u398\u39B\u39E\u3A0\u3A3\u3A5\u3A6\u3A8\u3A9', j, j),
+                        text[i])
+    }
+  }
+  text
 }
 
-print.html <- function(x, ...) show.html(x)
+## markupSpecs$html$unicodeshow(c('#9660', 'chi', 'thinsp', 'frasl', 'emsp', 'plusmn', 'times'), append=TRUE)

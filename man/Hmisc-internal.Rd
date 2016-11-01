@@ -25,6 +25,7 @@
 \alias{ftupwr}
 \alias{get2rowHeads}
 \alias{groupn}
+\alias{markupSpecs}
 \alias{importConvertDateTime}
 \alias{is.present}
 \alias{lookupSASContents}
@@ -44,6 +45,7 @@
 \alias{ordGridFun}
 \alias{parGrid}
 \alias{pasteFit}
+\alias{plotpsummaryM}
 \alias{print.substi}
 \alias{print.timePOSIXt}
 \alias{read.xportDataload}

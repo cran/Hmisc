@@ -5,9 +5,7 @@
 \alias{html.contents.data.frame}
 \alias{contents.list}
 \alias{print.contents.list}
-\title{
-  Metadata for a Data Frame
-}
+\title{Metadata for a Data Frame}
 \description{
   \code{contents} is a generic method for which \code{contents.data.frame}
   is currently the only method.  \code{contents.data.frame} creates an
@@ -37,9 +35,8 @@ contents(object, \dots)
     number=FALSE, \dots) 
 \method{html}{contents.data.frame}(object,
            sort=c('none','names','labels','NAs'), prlevels=TRUE, maxlevels=Inf,
-           file=paste('contents',object$dfname,'html',sep='.'),
            levelType=c('list','table'),
-           append=FALSE, number=FALSE, nshow=TRUE, \dots)
+           number=FALSE, nshow=TRUE, \dots)
 \method{contents}{list}(object, dslabels, \dots)
 \method{print}{contents.list}(x,
     sort=c('none','names','labels','NAs','vars'), \dots)
@@ -85,18 +82,10 @@ contents(object, \dots)
   \item{nshow}{set to \code{FALSE} to suppress outputting number of
    observations and number of \code{NA}s; useful when these counts
    would unblind information to blinded reviewers}
-  \item{file}{
-    file to which to write the html code.  Default is
-    \code{"conents.dfname.html"} where \code{dfname} is the name of the data
-    frame processed by \code{contents}.
-  }
   \item{levelType}{
     By default, bullet lists of category levels are
     constructed in html.  Set \code{levelType='table'} to put levels in
     html table format.
-  }
-  \item{append}{
-    set to \code{TRUE} to add html code to an existing file
   }
   \item{\dots}{
     arguments passed from \code{html} to \code{format.df},
@@ -109,7 +98,8 @@ contents(object, \dots)
 }
 \value{
   an object of class \code{"contents.data.frame"} or
-  \code{"contents.list"}
+  \code{"contents.list"}.  For the \code{html} method is an \code{html}
+  character vector object.
 }
 
 \author{
@@ -135,7 +125,6 @@ print(k, sort='names', prlevels=FALSE)
 \dontrun{
 html(k)
 html(contents(dfr))            # same result
-w <- html(k, file='my.html')   # create my.html, don't display
 latex(k$contents)              # latex.default just the main information
 }
 }
