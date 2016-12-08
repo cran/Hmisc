@@ -39,8 +39,9 @@ lcap <- mu$lcap          # for continuation for long caption
 The following (<code>r mu$styles()</code>) defines HTML styles and javascript functions, such as <code>ffig, smg</code> and the function for expanding and collapsing text as done by the <code>expcoll</code> function. 
 `r mu$styles()`
 
-Example using <code>expcoll</code>.  Click on the down arrow to expand; it turns to an up arrow which can be clicked to contract.
-`r mu$expcoll('Example table', html(data.frame(x1=runif(10), x2=letters[1:10]),file=FALSE))`
+Here is an example using <code>expcoll</code>.  Click on the down arrow to expand; it turns to an up arrow which can be clicked to contract.
+
+`r mu$expcoll('Example table<br>', html(data.frame(x1=runif(10), x2=letters[1:10]),file=FALSE))`
 
 The following (<code>r mu$widescreen()</code>) causes the html notebook to use an entire wide screen.
 `r mu$widescreen()`
@@ -55,7 +56,7 @@ The `getHdata` function is used to fetch a dataset from the Vanderbilt `DataSets
 - automatically move units of measurements from parenthetical expressions in labels to separate `units` attributed used by `Hmisc` and `rms` functions for table making and graphics
 
 `contents` is used to print a data dictionary, run through an `html` method for nicer output.  Information about the data source may be found [here](http://biostat.mc.vanderbilt.edu/wiki/pub/Main/DataSets/pbc.html).
-```{r metadata,results='asis'}
+```{r metadata}
 getHdata(pbc)
 
 # Have upData move units from labels to separate attribute
@@ -77,7 +78,8 @@ The html method is used for the `describe` function, and the output is put in a 
 
 [^1]: The default is 75% size.
 
-```{r describe,results='asis'}
+```{r describe}
+# did have results='asis' above
 d <- describe(pbc)
 html(d, size=80, scroll=TRUE)
 
@@ -134,6 +136,13 @@ html(s, caption='Baseline characteristics by randomized treatment',
      exclude1=TRUE, npct='both', digits=3,
      prmsd=TRUE, brmsd=TRUE, msdsize=mu$smaller2)
 ```
+Now show almost the full raw data for one continuous variable stratified by treatment.  This display spike histograms using at most 100 bins, and also shows the mean and quantiles similar to what is in an extended box plot: 0.05, 0.25, 0.5, 0.75, 0.95.  Measures of spread are also shown if the user clicks on their legend entries: Gini's mean difference (mean absolute difference between any two values) and the SD.  These can be seen as horizontal lines up against the minimum x-value.
+```{r histbox,results='asis'}
+p <- with(pbc, histboxp(x=sgot, group=drug, sd=TRUE))
+putHfig(p, "Spike histograms, means, quantiles, Gini's mean difference, and SD stratified by treatment",
+       scap="Stratified spike histograms and quantiles")
+```
+
 The following is a better way to display proportions, for categorical variables.  If computing marginal statistics by running the dataset through the `Hmisc` `addMarginal` function, the `plot` method with `options(grType='plotly')` is especially useful.
 
 ```{r summaryM5,results='asis'}

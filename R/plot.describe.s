@@ -111,8 +111,8 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
         z$proplev <- r[2] + .2
         pcat <-
           if(any(z$Missing > 0))
-            ggplot(z) + geom_point(aes(x=Proportion, y=cumy,
-                                       text=text, color=Missing)) +
+            ggplot(z, aes(text=text)) +
+              geom_point(aes(x=Proportion, y=cumy, color=Missing)) +
               geom_text(aes(x=proplev, y=cumy, label=category),
                         size=2.5, hjust=1) +
               scale_y_continuous(breaks=tly, labels=un) +
@@ -121,8 +121,7 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
               ylab(NULL) +
               theme(panel.grid.minor.y = element_blank())
           else
-            ggplot(z) + geom_point(aes(x=Proportion, y=cumy,
-                                       text=text)) +
+            ggplot(z, aes(text=text)) + geom_point(aes(x=Proportion, y=cumy)) +
               geom_text(aes(x=proplev, y=cumy, label=category),
                         size=2.5, hjust=1) +
               scale_y_continuous(breaks=tly, labels=un) +
@@ -137,11 +136,13 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                 plotly::plot_ly(z, x = ~ Proportion, y= ~ cumy, text= ~ text,
                              color=~ Missing, mode='markers',
                              hoverinfo='text',
-                             type='scatter', name='')
+                             type='scatter', name='',
+                             height=plotlyParm$heightDotchart(nrow(z)))
            else
              plotly::plot_ly(z, x=Proportion, y=cumy, text=text,
                              mode='markers', hoverinfo='text',
-                             type='scatter', name='')
+                             type='scatter', name='',
+                             height=plotlyParm$heightDotchart(nrow(z)))
       
 ###      z$proplev <- 1.15
         pcat <-
@@ -162,8 +163,7 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                                         title='Proportion'),
                              yaxis=list(title='', autorange='reversed',
                                         tickvals=tly, ticktext=un),
-                             autosize=FALSE,
-                             height=plotlyParm$heightDotchart(nrow(z)),
+#                             autosize=FALSE,
                              margin=list(l=plotlyParm$lrmargin(un)))
       }
     }
@@ -215,11 +215,10 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
       z$yy <- match(as.character(z$xname), unam)
       ## Scale Proportion so that max over all variables is 0.9
       z$Proportion <- 0.9 * z$Proportion / max(z$Proportion)
-
       g <- if(any(z$Missing > 0))
-             ggplot(z) +
+             ggplot(z, aes(text=text)) +
                geom_segment(aes(x=X, xend=X, y=yy, yend=yy + Proportion,
-                                text=text, color=Missing)) +
+                                color=Missing)) +
                scale_y_continuous(breaks=1 : length(unam), labels=unam) +
                scale_color_gradientn(colors=viridis::viridis(10)) +
                xlab(NULL) + ylab(NULL) +
@@ -229,9 +228,8 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                      panel.grid.minor.y = element_blank(),
                      axis.ticks.x = element_blank())
            else
-             ggplot(z) +
-               geom_segment(aes(x=X, xend=X, y=yy, yend=yy + Proportion,
-                                text=text)) + 
+             ggplot(z, aes(text=text)) +
+               geom_segment(aes(x=X, xend=X, y=yy, yend=yy + Proportion)) + 
                scale_y_continuous(breaks=1 : length(unam), labels=unam) +
                xlab(NULL) + ylab(NULL) +
                theme(axis.text.x = element_blank(),
@@ -240,8 +238,8 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                      panel.grid.minor.y = element_blank(),
                      axis.ticks.x = element_blank())
 
-      ## ggplotly would not hover text at x=0 when height < 300 px
-      curtail <- function(x) min(1000, max(x, 300))
+      ## ggplotly would not hover text at x=0 when height < 350 px
+      curtail <- function(x) min(1000, max(x, 350))
       pcon <- if(! pty) g
               else
                 plotly::ggplotly(g, tooltip='text', width=800,

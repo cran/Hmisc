@@ -1,3 +1,30 @@
+Changes in version 4.0-1 (2016-12-04)
+   * gbayes: new test file, fixed bug in posterior mean when mix=0,1 in gbayesMixPost
+	 * ggfreqScatter: added prfreq and cuts arguments
+	 * latex.summary.formula.reverse, latex.summaryM, html.summaryM: fixed bug with backslash added before % for html, improved typesetting language logic
+	 * latex.describe: fixed bug that prevented spike histogram from appearing
+	 * ggplot.summaryP: moved text out of aes in geom_point, left in main aes
+	 * plot.describe, plot.summaryP: put text aes in ggplot(), increased ggplotly height to allow popups for top continuous variables in plot.describe
+	 * dotchartp, dotchartpl, plot.describe: moved height and width from plotly::layout to plot_ly because of changes in plotly 4.5.6
+	 * bppltp: added data= to plot::add_* because plotly was evaluating using the wrong copy of x,y, etc.
+	 * plot.summary.formula.reverse, plot.summaryM: removed subtitles argument since not used
+	 * upData: fixed bug when converting existing variable to factor; was not recognizing new storage model and tried to run floor()
+	 * latex.summary.formula.reverse: fixed bug where outer quantiles and frequencies were not being rendered
+	 * latex.default: put \par in front of insert.bottom if table.env is FALSE, so that text is not put to the side of the table
+	 * histboxp: new function for plotly stratified spike histograms with box plot statistics also depicted
+	 * format.df, latex.default: added arguments already.math.row.names, already.math.col.names that if TRUE prevent any math mode changes
+	 * latex.default: fixed problem with duplication of columns in the cellT...exCmds array (thanks: Thomas Dupont)
+	 * tests/summaryM-customtest: new test (see https://github.com/harrelfe/Hmisc/issues/61)
+	 * describe: improved logic for deciding when and how to show frequency table, changed condense argument
+	 * htmlVerbatim: added propts and omit1b arguments
+	 * latexNeedle, pngNeedle: added x argument
+	 * latex.describe: allowed for unequally-spaced x in spike histograms
+	 * html.describe: added spike histograms
+	 * base64: new IMPORTS in DESCRIPTION
+	 * sedit, latexTranslate: changed 1 : length(text) to seq_along(text). Thanks: Greg Snow
+	 * ggfreqScatter: better formatting of axis tick mark labels
+	 * latexVerbatim: implemented file=''
+
 Changes in version 4.0-0 (2016-10-31)
    * summaryP: fixed exclude1 logic - was not excluding enough levels (inconsistent use of variable names vs. labels)
 	 * latexTranslate: any NAs in first argument changed to "" before conversion
