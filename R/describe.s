@@ -51,9 +51,9 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
     weights <- sum(present) * weights / sum(weights[present])
     n <- sum(present)
   } else n <- sum(weights[present])
-  
+
   if(exclude.missing && n==0)
-    return(structure(NULL, class="describe"))
+    return(structure(list(), class="describe"))
   
   missing <- sum(weights[! present], na.rm=TRUE)
   atx <- attributes(x)
@@ -270,7 +270,7 @@ describe.data.frame <- function(x, descript, exclude.missing=TRUE,
                         digits=digits,...)
       else	  
         describe.vector(xx,nam[i],exclude.missing=exclude.missing,
-                        digits=digits,...)  #13Mar99
+                        digits=digits,...)
     
     all.missing <- length(z)==0
     if(exclude.missing && all.missing)
@@ -779,6 +779,8 @@ html.describe.single <-
   fsize  <- m$size
   smaller<- m$smaller
 
+  pngfile <- paste(tempdir(), 'needle1234567890a.png', sep='/')
+
   oldw <- options(width=if(size < 90) 95 else 85)
   on.exit(options(oldw))
   
@@ -817,8 +819,9 @@ html.describe.single <-
       }
     w <- if(lco >= 50) 150 / lco else 3
     des <- paste0(des,
-                  m$rightAlign(base64::img(pngNeedle(counts,
-                                                     x=va, w=w, h=13, lwd=2))))
+                  m$rightAlign(tobase64image(pngNeedle(counts,
+                                                       x=va, w=w, h=13, lwd=2,
+                                                       file=pngfile))))
   }
 
   R <- des
