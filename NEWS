@@ -1,3 +1,22 @@
+Changes in version 4.0-3 (2017-04-30)
+   * bpplot: added plotopts argument
+   * describe, histboxp: improved logic to still slighty round numeric variables with fewer than 100 distinct values, in case some values are really close, when computing frequency distribution (for spike histograms in plot.describe)
+   * all.is.numeric: fixed to handle case where all values are " "; makes describe work
+   * latex.describe.single: changed to always issue vbox, to improve vertical spacing
+   * histboxp: removed zero line so wouldn't collide with data
+   * ggfreqScatter: added smoother to example
+   * latex.summaryM: more transparent naming of quantiles preserving full precision
+   * cut2,describe,dotchart3,ecdf,latex,list.tree,bpplt,panel.plsmo,pstamp,summary.formula,summaryM,transace,t.test.cluster,wtd.Ecdf,Dotplot,zoom: fixed on.exit to properly restore options() to original state
+   * [.pBLock: fixed old behavior of only rataining the pBlock class if the result is a matrix (thanks: Michael Lawrence - lawremi)
+   * addMarginal: added nested argument
+   * putHfig: now throw error if lcap is given with expcoll because of interaction with divs in markdown sub-subheading
+   * plotmathTranslate: improved to put any non-legal expression inside paste()
+   * wtd.var: was returning Inf for fractional weights with method='unbiased'; chaged to use stats:cov.wt for both methods - https://github.com/harrelfe/Hmisc/issues/69
+   * plsmo, summaryS: new example in help files
+   * plot.summaryS: separated xlim and ylim to fix bug where xlim was ignored
+   * plsmo: stop on error if no. observations not large enough for m with method='intervals'
+   * Fortran calls: registered all Fortran functions, removed package name and quotes in first argument in .Fortran(), added F_ to entry point name in those calls, changed useDynLib call in NAMESPACE, added \alias{} for all F_ entries
+   	 
 Changes in version 4.0-2 (2016-12-30)
    * pngNeedle: fixed bug in html.describe under Windows by not specifying /tmp as the temporary file directory - https://github.com/harrelfe/Hmisc/issues/63; used tempdir() instead of tempfile()
    * html.describe.single: reuse the same temporary file for intermediate png output for spike histograms

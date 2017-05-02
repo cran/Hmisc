@@ -13,6 +13,9 @@ plsmo <-
   if(method == 'intervals')
     doint <- function(x, y, m, ifun, fun) {
       g <- cut2(x, m=m)
+      if(length(levels(g)) < 2)
+        stop(paste('number of observations not large enough for',
+                   m, 'observations per interval'))
       w <- cut2(x, m=m, onlycuts=TRUE)
       p <- fun(tapply(y, g, ifun, na.rm=TRUE))
       seg1 <- list(x1=w[- length(w)], y1=p, x2=w[-1], y2=p)
@@ -216,7 +219,8 @@ panel.plsmo <- function(x, y, subscripts, groups=NULL, type='b',
     
     if(ng > 1) {
       Key <- function(x=NULL, y=NULL, lev, cex, col, font, pch){
-        oldpar <- par(usr=c(0, 1, 0, 1), xpd=NA)
+		oldpar <- par('usr', 'xpd')
+        par(usr=c(0, 1, 0, 1), xpd=NA)
         on.exit(par(oldpar))
         if(is.list(x)) {
           y <- x[[2]]

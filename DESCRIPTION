@@ -1,6 +1,6 @@
 Package: Hmisc
-Version: 4.0-2
-Date: 2016-12-30
+Version: 4.0-3
+Date: 2017-04-30
 Title: Harrell Miscellaneous
 Author: Frank E Harrell Jr <f.harrell@vanderbilt.edu>, with
   contributions from Charles Dupont and many others.
@@ -22,6 +22,6 @@ LazyLoad: Yes
 URL: http://biostat.mc.vanderbilt.edu/Hmisc,
         https://github.com/harrelfe/Hmisc
 NeedsCompilation: yes
-Packaged: 2016-12-30 16:26:12 UTC; harrelfe
+Packaged: 2017-05-01 18:00:23 UTC; harrelfe
 Repository: CRAN
-Date/Publication: 2016-12-31 09:59:06
+Date/Publication: 2017-05-02 06:31:42 UTC

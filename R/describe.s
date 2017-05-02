@@ -16,7 +16,8 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
                             listunique=0, listnchar=12,
                             weights=NULL, normwt=FALSE, minlength=NULL, ...)
 {
-  oldopt <- options(digits=digits)
+  oldopt <- options('digits')
+  options(digits=digits)
   on.exit(options(oldopt))
 
   weighted <- length(weights) > 0
@@ -193,11 +194,14 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
         values <- tableIgnoreCaseWhiteSpace(x)
     else
       if(isnum || n.unique <= 100) {
-        if(isnum && n.unique >= 100) {
-          pret <- pretty(xnum, 100)
-          dist <- pret[2] - pret[1]
-          r    <- range(pret)
-          xnum <- r[1] + dist * round((xnum - r[1]) / dist)
+        if(isnum) {
+          if(n.unique >= 100 ||
+             min(diff(sort(unique(xnum)))) < diff(range(xnum)) / 500) {
+            pret <- pretty(xnum, if(n.unique >= 100) 100 else 500)
+            dist <- pret[2] - pret[1]
+            r    <- range(pret)
+            xnum <- r[1] + dist * round((xnum - r[1]) / dist)
+          }
         }
         values <- wtd.table(if(isnum) xnum else if(isdat) format(x) else x,
                             weights, normwt=FALSE, na.rm=FALSE)
@@ -377,7 +381,8 @@ formatdescribeSingle <-
   
   is.standard <- length(v) && is.list(v) &&
                  all(names(v) == c('value', 'frequency'))
-  val.wide    <- sum(nchar(as.character(v$value))) > 200
+
+  val.wide    <- length(v$value) && sum(nchar(as.character(v$value))) > 200
   val.few     <- length(v$value) && (length(v$value) <= 20)
   print.freq  <- is.standard && val.few && ! val.wide
   print.ext   <- length(x$extremes) && ! print.freq
@@ -549,14 +554,15 @@ latex.describe <-
         length(val) && ! is.matrix(val) &&
            length(val) != 10 || ! all(names(val)==
                    c("L1","L2","L3","L4","L5","H5","H4","H3","H2","H1"))
-      if(! potentiallyLong) cat('\\vbox{', file=file, append=TRUE)
+      dovbox <- TRUE     # was ! potentiallyLong
+      if(dovbox) cat('\\vbox{', file=file, append=TRUE)
 
       latex.describe.single(z, vname=vnames[i],
                             file=file, append=TRUE,
                             tabular=tabular, greek=greek,
                             lspace=lspace, ...)
       ct('\\smallskip\\hrule\\smallskip\n', file=file, append=TRUE)
-      if(! potentiallyLong) cat('}\n', file=file, append=TRUE)
+      if(dovbox) cat('}\n', file=file, append=TRUE)
     }
     
     if(length(mv <- at$missing.vars)) {
@@ -576,12 +582,13 @@ latex.describe <-
       length(val) && ! is.matrix(val) &&
         length(val) != 10 || ! all(names(val)==
                 c("L1","L2","L3","L4","L5","H5","H4","H3","H2","H1"))
-    if(! potentiallyLong) cat('\\vbox{', file=file, append=TRUE)
+    dovbox <- TRUE   # was ! potentiallyLong
+    if(dovbox) cat('\\vbox{', file=file, append=TRUE)
     latex.describe.single(object,
                           vname=first.word(expr=at$descript),
                           file=file, append=TRUE, size=size,
                           tabular=tabular, lspace=lspace, ...)
-    if(! potentiallyLong) cat('}\n', file=file, append=TRUE)
+    if(dovbox) cat('}\n', file=file, append=TRUE)
     spc <- if(spacing == 0) '\n' else '\\end{spacing}\n'
     ct(spc, file=file, append=TRUE)
   }
@@ -602,7 +609,8 @@ latex.describe.single <-
     invisible()
   }
   
-  oldw <- options(width=if(size == 'small') 95 else 85)
+  oldw <- options('width')
+  options(width=if(size == 'small') 95 else 85)
   on.exit(options(oldw))
   
   wide <- switch(size,
@@ -781,7 +789,8 @@ html.describe.single <-
 
   pngfile <- paste(tempdir(), 'needle1234567890a.png', sep='/')
 
-  oldw <- options(width=if(size < 90) 95 else 85)
+  oldw <- options('width')
+  options(width=if(size < 90) 95 else 85)
   on.exit(options(oldw))
   
   wide <- if(size >= 90) 73 else if(size >= 75) 95 else 110

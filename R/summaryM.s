@@ -145,11 +145,13 @@ summaryM <- function(formula, groups=NULL, data=NULL, subset,
           type[i] <- 1
         } else {
           sfn <- function(x, quant) {
-            o <- options(digits=10)
-            ## So won't lose precision in quantile names
-            on.exit(options(o))
-            c(quantile(x,quant), Mean=mean(x), SD=sqrt(var(x)),
-              N=sum(!is.na(x)))
+            ## Won't lose precision in quantile names with digits=15
+            y <- c(quantile(x,quant), Mean=mean(x), SD=sqrt(var(x)),
+                   N=sum(!is.na(x)))
+            names(y) <-
+              c(paste0(formatC(100 * quant, format='fg', width=1, digits=15),
+                       '%'), 'Mean', 'SD', 'N')
+            y
           }
 
           qu <- tapply(w, g, sfn, simplify=TRUE, quants)
@@ -351,7 +353,8 @@ plot.summaryM <-
         .setKey(Key1)
       } else { ##set up for key() if > 1 column
         Key3 <- function(x=NULL, y=NULL, lev, pch) {
-          oldpar <- par(usr=c(0, 1, 0, 1), xpd=NA)
+		  oldpar <- par('usr', 'xpd')
+          par(usr=c(0, 1, 0, 1), xpd=NA)
           on.exit(par(oldpar))
           if(is.list(x)) {
             y <- x$y
@@ -496,7 +499,8 @@ print.summaryM <-
     gnames <- names(x$group.freq)
 
     if(!missing(digits)) {
-      oldopt <- options(digits=digits)
+	  oldopt <- options('digits')
+      options(digits=digits)
       on.exit(options(oldopt))
     }
     
@@ -653,7 +657,8 @@ latex.summaryM <-
         length(unique(sapply(test,function(a)a$testname))) > 1
 
     if(!missing(digits)) {
-      oldopt <- options(digits=digits)
+	  oldopt <- options('digits')
+      options(digits=digits)
       on.exit(options(oldopt))
     }
     
