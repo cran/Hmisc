@@ -239,7 +239,7 @@ htmlVerbatim <- function(..., size = 75, width = 85,
   htmltools::HTML(w)
 }
 
-htmlGreek <- function(x, mult=FALSE, unicode=FALSE) {
+htmlGreek <- function(x, mult=FALSE, code=htmlSpecialType()) {
   orig <- c('alpha','beta','gamma','delta','epsilon','varepsilon',
             'zeta', 'eta',
             'theta','vartheta','iota','kappa','lambda','mu','nu',
@@ -249,7 +249,7 @@ htmlGreek <- function(x, mult=FALSE, unicode=FALSE) {
   
   l <- length(orig)
   
-  new <- if(unicode)
+  new <- if(code == 'unicode')
            substring('\u3B1\u3B2\u3B3\u3B4\u3B5\u3F5\u3B6\u3B7\u3B8\u3D1\u3B9\u3BA\u3BB\u3BC\u3BD\u3BE\u3C0\u3D6\u3C1\u3F1\u3C3\u3C2\u3C4\u3C5\u3C6\u3C7\u3C8\u3C9\u393\u394\u398\u39B\u39E\u3A0\u3A3\u3A5\u3A6\u3A8\u3A9',
                      1 : l, 1 : l)
          else
@@ -268,20 +268,33 @@ htmlGreek <- function(x, mult=FALSE, unicode=FALSE) {
   new[x]
 }
 
-htmlSpecial <- function(x, unicode=FALSE) {
-  orig <- c('nbsp', 'thinsp', 'emsp', 'ensp', 'plusmn', 'times', 'caret',
-            'frasl', 'half')
-  
-  l <- length(orig)
-  
-  new <- if(unicode)
-           substring('\u00A0\u2009\u2003\u2002\u00B1\u00D7\u005E\u2044\u00BD', 
-                     1 : l, 1 : l)
-         else
-           paste0('&#', c(160,8201,8195,8194,177,215,94,8260,189), ';')
-  names(new) <- orig
+htmlSpecial <- function(x, code=htmlSpecialType()) {
 
-  if(! all(x %in% orig)) stop(paste0('illegal character name:', x))
+  z <- c(nbsp   = '160\u00A0',
+         thinsp = '8201\u2009',
+         emsp   = '8195\u2003',
+         ensp   = '8194\u2002',
+         plusmn = '177\u00B1',
+         times  = '215\u00D7',
+         caret  = '94\u005E',
+         frasl  = '8260\u2044',
+         half   = '189\u00BD',
+         angrt  = '8735\u221F',
+         squarecrosshatch        = '9638\u2586',
+         whitesquareverticalline = '9707\u25EB',
+         blackdowntriangle       = '9660\u25BC',
+         mediumsmallwhitecircle  = '9900\u26AC',
+         combiningcircumflexaccent = '770\u005E',
+         part   = '8706\u2202')
+
+  u <- substring(z, nchar(z), nchar(z))
+  n <- substring(z, 1, nchar(z) - 1)
+  
+  new <- if(code == 'unicode') u else paste0('&#', n, ';')
+  names(new) <- names(z)
+
+  if(! all(x %in% names(z))) stop(paste0('illegal character name:',
+                                     x[x %nin% names(z)]))
   new[x]
 }
 
@@ -301,7 +314,7 @@ markupSpecs <- list(html=list(
                                      '</span>'),
   smaller  = function(x) paste0('<span style="font-size: 80%;">', x,
                                 '</span>'),
-  larger   = function(x) paste0('<span stype="font-size: 125%;">', x,
+  larger   = function(x) paste0('<span style="font-size: 125%;">', x,
                                 '</span>'),
   smaller2 = function(x) paste0('<span style="font-size: 64%;">', x,
                                  '</span>'),
@@ -315,9 +328,9 @@ markupSpecs <- list(html=list(
            paste(unlist(list(...)), collapse=' '),
            '</font>'),
 
-  cap      = function(..., symbol='&#8735;') { # figure caption formatting
+  cap      = function(..., symbol=htmlSpecial('angrt')) { # figure caption formatting
   ## alternative: symbol='Figure:'; default is right angle
-  ## use symbol='&#9638;' for grid graph paper symbol
+  ## use symbol=htmlSpecial('squarecrosshatch') for grid graph paper symbol
     lcap <- paste(unlist(list(...)), collapse=' ')
     paste0('<span style="font-family:Verdana;font-size:10px;">', symbol,
            ' </span><span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
@@ -328,7 +341,7 @@ markupSpecs <- list(html=list(
     paste0('<span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
            paste(unlist(list(...)), collapse=' '), '</span>'),
 
-  tcap      = function(..., symbol='&#9707;') { # table caption formatting
+  tcap      = function(..., symbol=htmlSpecial('whitesquareverticalline')) { # table caption formatting
     # alt: symbol='Table:'; default is white square w/vertical bisecting line
     lcap <- paste(unlist(list(...)), collapse=' ')
     paste0('<span style="font-family:Verdana;font-size:10px;">', symbol,
@@ -344,11 +357,40 @@ markupSpecs <- list(html=list(
       id <- floor(runif(1, 100000, 999999))  # unique html id
       paste0('<br><a href="#', id, '" id="', id,
              '_earrows" class="earrows" onclick="expand_collapse(\'',
-             id, '\');">&#9660;</a>',
+             id, '\');">', htmlSpecial('blackdowntriangle'), '</a>',
              vis, '<span id="', id,
              '" style="display:none;">',
              invis, '</span>')
-    },
+  },
+
+  uncover = function(before, options, envir) {
+    ## https://stackoverflow.com/questions/44866287
+    ## usage: knitrSet(lang='markdown')  # issues knit_hooks$set(uncover=uncover)
+    ##        <script>
+    ##        function uncover(id) {
+    ##            var x = document.getElementById(id);
+    ##            x.style.display = 'block';
+    ##        }
+    ##        </script>
+    ##
+    ##        ```{r, uncover=TRUE, label='text for button', id='script'}
+    ##        1 + 1
+    ##        ```
+
+        if (before) {
+          id <- options$id
+          label <- options$label
+          if(! length(label)) label <- 'Uncover'
+          button_string <- paste0("<button onclick=\"uncover('", 
+                                  id, "')\">", label, "</button>")
+          div_string <- paste0("<div id = '", id, 
+                               "', style = 'display:none'>")
+          paste0(button_string, "\n", div_string)
+        }
+        else {
+          "</div>"
+        }
+  },
   
   session  = function(cite=TRUE, loadedOnly=FALSE) {
     si <- sessionInfo()
@@ -397,6 +439,13 @@ markupSpecs <- list(html=list(
     htmltools::HTML(paste0('<style>div.tocify {width: ', width,
                            '; max-width: ', maxwidth, '; max-height: ',
                            maxheight, ';}</style>')),
+  sectionNumberDepth = function() {
+    ## Set depth for numbering sections the same as TOC depth
+    ## See https://stackoverflow.com/questions/47124299/
+    toc_depth <- rmarkdown::metadata$output$html_document$toc_depth
+    sel <- paste0("h", (toc_depth + 1) : 10, collapse = " > span, ")
+    paste0("<style>", sel, " > .header-section-number { display: none; } </style>")    
+    },
   scroll   = function(x, size=75, rows=10, cols=100,
                       font='', name='') {
     w <- paste0('<div style="width: ', cols, 'ex; overflow: auto; height: ',
@@ -406,15 +455,19 @@ markupSpecs <- list(html=list(
   chisq    = function(x, ...)
 #    paste0('\u03C7&<span class="xscript" style="font-size: 75%;"><sup>2</sup><sub>', x,
 #           '</sub></span>')
-                 if(missing(x)) paste0(htmlGreek('chi'), '<sup>2</sup>')
+    if(missing(x)) paste0(htmlGreek('chi'),
+                          '<sup>2</sup>')
                  else
-                   paste0(htmlGreek('chi'), markupSpecs$html$subsup(x, '2')),
-  fstat    = function(x, ...) paste0('<i>F</i><sub><span style="font-size: 80%;">',
+                   paste0(htmlGreek('chi'),
+                          markupSpecs$html$subsup(x, '2')),
+  fstat    = function(x, ...)
+    paste0('<i>F</i><sub><span style="font-size: 80%;">',
                                      x[1], htmlSpecial('thinsp'),
                                      x[2], '</span></sub>'),
   frac     = function(a, b, size=82, ...)
     paste0('<span style="font-size: ', size, '%;"><sup>',
-           a, '</sup>', htmlSpecial('frasl'), '<sub>', b, '</sub></span>'),
+           a, '</sup>', htmlSpecial('frasl'),
+           '<sub>', b, '</sub></span>'),
   half     = function(...) htmlSpecial('half'),
   subsup   = function(a, b) paste0("<sup><span style='font-size: 70%;'>", b,
                                    "</span></sup><sub style='position: relative; left: -.47em; bottom: -.4em;'><span style='font-size: 70%;'>",
@@ -580,7 +633,7 @@ plotmath = list(
 ## strings over the usual defaults.
 
 htmlTranslate <- function(object, inn=NULL, out=NULL,
-                           greek=FALSE, na='', unicode=FALSE, ...)
+                           greek=FALSE, na='', code=htmlSpecialType(), ...)
 {
   text <- ifelse(is.na(object), na, as.character(object))
 
@@ -589,12 +642,12 @@ htmlTranslate <- function(object, inn=NULL, out=NULL,
   inn <- c("&", "|",  "%",  "#",   "<=",     "<",  ">=",     ">",  "_", "\\243",
            "\\$", inn, c("[", "(", "]", ")"))
 
-  w <- if(unicode)
-         substring('\u27\u26\u7C\u25\u23\u2264\u3C\u2265\u3E\u5F\uA3\u24',
+  w <- if(code == 'unicode')
+         substring('\u26\u7C\u25\u23\u2264\u3C\u2265\u3E\u5F\uA3\u24',
                    1:11, 1:11)
        else
          c("&#38;", "&#124;", "&#37",   "&#35;", "&#8804;", "&#60;", "&#8805;",
-           "&#62;", "&#95;",  "&#164;", "&#36;")
+           "&#62;", "&#95;",  "&#163;", "&#36;")  # 163 was 164
 
   ## htmlarrows.com
   ##  markupSpecs$html$unicodeshow(out, surr=FALSE)
@@ -626,10 +679,10 @@ htmlTranslate <- function(object, inn=NULL, out=NULL,
     }
     text[i] <- sedit(text[i], c(inn, '^', 'BEGINSUP', 'ENDSUP'),
                      c(out,
-                       htmlSpecial('caret', unicode=unicode),
+                       htmlSpecial('caret', code=code),
                        '<sup>', '</sup>'), wild.literal=TRUE)
 
-    if(greek) text[i] <- htmlGreek(text[i], unicode=unicode, mult=TRUE)
+    if(greek) text[i] <- htmlGreek(text[i], code=code, mult=TRUE)
   }
   text
 }

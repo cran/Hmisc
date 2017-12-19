@@ -829,6 +829,7 @@ impute.transcan <-
 
       v <- if(missing(data)) get(nam, pos=pos.in)
            else data[[nam]]
+      if(is.character(v)) v <- as.factor(v)   #####
 
       ## Below was names(i) instead of match(...)
       if(length(namvar)) {
@@ -849,7 +850,11 @@ impute.transcan <-
            ! all(is.na(v[sub])))
           stop(paste('variable',nam,
                      'does not have same missing values as were present when transcan was run'))
-      v[sub] <- if(is.factor(v)) levels(v)[as.integer(i)] else i
+      v[sub] <- if(is.factor(v)) levels(v)[as.integer(i)]
+                else
+                  if(is.logical(v)) i == 1
+                else
+                  i
       ## Note: if v was empty before, new v would have arbitrary length
       ## Avoid problem by requiring all variables to be in data
       attr(v,'imputed') <- sub
@@ -940,7 +945,10 @@ impute.transcan <-
   if(m == 0)
     return(var)
   var[sub] <- if(is.factor(var)) levels(var)[as.integer(impval)]
-              else impval
+              else
+                if(is.logical(var)) impval == 1
+              else
+                impval
   
   attr(var, 'imputed') <- sub
   attr(var, 'class') <- c("impute", attr(var,'class'))

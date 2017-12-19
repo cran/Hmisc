@@ -725,8 +725,7 @@ latex.summaryM <-
     if(!length(gl)) gl <- " "
 
     if(! html) {
-      lab <- sedit(lab, c(" ", "&"), c("~", "\\&"))
-      lab <- latexTranslate(lab, greek=TRUE)
+      lab <- latexTranslate(lab, c(" "), c("~"), greek=TRUE)
       gl  <- latexTranslate(gl,  greek=TRUE)
       }
 
@@ -898,7 +897,7 @@ latex.summaryM <-
                               align    = col.just, rnames=Lab,
                               tspanner=tspanner, n.tspanner=n.tspanner,
                               tfoot=insert.bottom,
-                              css.cell=cs)
+                              css.cell=cs, escape.html=FALSE)
   }
   else 
     w <- htmlTable::htmlTable(Cstats, header=heads,
@@ -907,7 +906,7 @@ latex.summaryM <-
  #                             n.rgroup = if(rowsep) rows.per.var,
                               align    = col.just, rnames=lab,
                               tfoot    = insert.bottom,
-                              css.cell = cs)
+                              css.cell = cs, escape.html=FALSE)
   
   return(htmltools::HTML(as.character(w)))
 }
