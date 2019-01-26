@@ -402,15 +402,19 @@ latex.default <-
     rowname <- paste("~~", rowname, sep="")
 
   sl <- ifelse(double.slash, "\\\\", "\\")
-  if(ctable) {
-    eol <- paste(sl, 'NN\n', sep='')
-    eog <- ""
-  } else if(longtable && length(n.rgroup)) {
-    eol <- paste(sl,"tabularnewline*\n", sep='')
-    eog <- paste(sl, "tabularnewline\n", sep='')
-  } else {
-    eol <- paste(sl,"tabularnewline\n",  sep='')
-    eog <- paste(sl, "tabularnewline\n", sep='')      
+
+  if(ctable && !booktabs) {
+      eol <- paste(sl, 'NN\n', sep='')
+      eog <- ""
+    } else if(ctable) {
+      eol <- paste(sl, 'NN\n', sep='')
+      eog <- paste(sl, 'NN\n', sep='')
+    } else if(longtable && length(n.rgroup)) {
+      eol <- paste(sl,"tabularnewline*\n", sep='')
+      eog <- paste(sl, "tabularnewline\n", sep='')
+    } else {
+      eol <- paste(sl,"tabularnewline\n",  sep='')
+      eog <- paste(sl, "tabularnewline\n", sep='')      
   }
   
   if(booktabs) {
@@ -562,8 +566,11 @@ latex.default <-
   vbar <- ifelse(vbar, "|", "")
 
   if(! append) cat("", file=file)	#start new file
-  
-  cat("%", deparse(sys.call()), "%\n", file=file, append=file != '', sep='')
+
+  ## pandoc used by R Markdown gets fooled by LaTeX comments
+  olc <- getOption('omitlatexcom')
+  if(! length(olc) || ! olc)
+    cat("%", deparse(sys.call()), "%\n", file=file, append=file != '', sep='')
 
   if(dcolumn) {
     decimal.point <- ifelse(cdot, paste(sl, "cdot", sep=""), ".")
@@ -1230,17 +1237,12 @@ latexSN <- function(x) {
   x
 }
 
-htmlSN <- function(x) {
-  x <- format(x)
+htmlSN <- function(x, pretty=TRUE, ...) {
+  x <- if(pretty) prettyNum(x, ...) else format(x, ...)
   times <- htmlSpecial('times')
-  x <- sedit(x, c('e+00','e-0*',
-                  'e-*',
-                  'e+0*',
-                  'e+*'),
-             c('',
-               paste0(times, '10<sup>-*</sup>'),
-               paste0(times, '10<sup>-*</sup>'),
-               paste0(times, '10<sup>*</sup>'),
-               paste0(times, '10<sup>*</sup>')))
-  x
+  x <- gsub('e\\+00', '', x)
+  x <- gsub('e\\+0([0-9])', '\u00D710<sup>\\1</sup>', x)
+  x <- gsub('e\\+(.*)', '\u00D710<sup>\\1</sup>', x)
+  x <- gsub('e-0([0-9])', '\u00D710<sup>-\\1</sup>', x)
+  gsub('e-(.*)', '\u00D710<sup>-\\1</sup>', x)
 }

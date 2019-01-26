@@ -530,22 +530,15 @@ if(FALSE)
   d$y[j] <- d$y[j] + d$z[j] / ifelse(bottom.align, 1, 2)
 
   plotly::plot_ly(d, x=~ x, y=~ y, mode='lines', type='scatter',
-#                  color=d$color,# colors=colors,
                   line=list(color=d$color, width=1.4),  # ...
                   text=~ hovertext,
                   hoverinfo=if(length(hovertext)) 'text' else 'none')
-
-#  plotly::add_trace(p, data=d, x=x, y=y, mode='lines',
-#                    color=color, colors=colors,
-#                    line=list(..., width=1.4),
-#                    text=hovertext,
-#                    hoverinfo=if(length(hovertext)) 'text' else 'none',
-#                    evaluate=TRUE, name=tracename)
-}
+  }
 
 histboxp <- function(p=plotly::plot_ly(height=height),
                      x, group=NULL, xlab=NULL,
-                     gmd=TRUE, sd=FALSE, bins=100, wmax=190, mult=7) {
+                     gmd=TRUE, sd=FALSE, bins=100, wmax=190, mult=7,
+                     connect=TRUE, showlegend=TRUE) {
 
   if(! length(xlab)) xlab <- label(x, html=TRUE, plot=TRUE,
                                    default=deparse(substitute(x)))
@@ -569,18 +562,24 @@ histboxp <- function(p=plotly::plot_ly(height=height),
   }
 
   mu <- markupSpecs$html
+  fmt <- function(x) htmlSN(x, digits=5)
   
   y <- 0
   dh <- dm <- dq1 <- dq2 <- dq3 <- dgmd <- dsd <- levs <- NULL
 
   group <- as.factor(group)
   mis   <- is.na(x)
+  levs  <- levels(group)
+  ng    <- length(levs)
+  Qu    <- matrix(NA, nrow=ng, ncol=5)
+  j     <- 0
+
   for(g in levels(group)) {
     i <- group == g
+    j <- j + 1
     miss <- sum(mis[i])
     if(miss > 0) i <- i & ! mis
     if(! any(i)) next
-    levs <- c(levs, g)
     u     <- x[i]
     ur    <- xr[i]
     tab   <- as.data.frame(table(ur))
@@ -588,7 +587,7 @@ histboxp <- function(p=plotly::plot_ly(height=height),
     prop  <- tab$Freq / length(ur)
     y <- y - 1
     dh <- rbind(dh, data.frame(x=z, prop=prop, freq=tab$Freq,
-                      txt=paste0(format(z), '<br>', round(prop, 3),
+                      txt=paste0(fmt(z), '<br>', round(prop, 3),
                                  '<br>n=', tab$Freq),
                       y=y))
 
@@ -598,30 +597,30 @@ histboxp <- function(p=plotly::plot_ly(height=height),
       Gmd <- GiniMd(u)
       dgmd <- rbind(dgmd, data.frame(Gmd, x=xmin,
                                      txt=paste0('Gini mean difference:',
-                                                format(Gmd, digits=5)),
+                                                fmt(Gmd)),
                                      y=y))
     }
 
     if(sd) {
       Sd  <- sd(u)
       dsd <- rbind(dsd, data.frame(sd=Sd, x=xmin,
-                                   txt=paste0('SD:', format(Sd, digits=5)),
+                                   txt=paste0('SD:', fmt(Sd)),
                                    y=y))
       }
 
     probs <- c(0.05, 0.25, 0.5, 0.75, 0.95)
     qu  <- quantile(u, probs)
+    Qu[j, ] <- qu
     nam <- paste0('Q', mu$sub(probs))
-    txt <- paste0(nam, ':', format(qu, digits=5))
+    txt <- paste0(nam, ':', fmt(qu))
     dq1 <- rbind(dq1, data.frame(Median=qu[3], txt=txt[3], y=y))
     dq2 <- rbind(dq2, data.frame(quartiles=qu[c(2,4)], txt=txt[c(2,4)], y=y))
     dq3 <- rbind(dq3, data.frame(outer=qu[c(1,5)], txt=txt[c(1,5)], y=y))
   }
 
-  ng <- length(levs)
-  height <- plotlyParm$heightDotchart(ng) + 50 * (gmd & sd)
+  height <- plotlyParm$heightDotchart(1.2 * ng) + 50 * (gmd & sd)
 
-  dh$prop <- 0.8 * dh$prop / max(dh$prop)
+  dh$prop <- 0.6 * dh$prop / max(dh$prop)
   p <- plotly::add_segments(p, data=dh,
                             x = ~ x,
                             y = ~ y,
@@ -630,46 +629,57 @@ histboxp <- function(p=plotly::plot_ly(height=height),
                             text = ~ txt,
                             hoverinfo = 'text',
                             color = I('black'),
-                            name  = 'Histogram')
+                            name  = 'Histogram',
+                            legendgroup = 'Histogram',
+                            showlegend=showlegend)
 
-  dm$txt <- with(dm, paste0('Mean:', format(Mean, digits=5), '<br>n=', n,
+  dm$txt <- with(dm, paste0('Mean:', fmt(Mean), '<br>n=', n,
                             '<br>', miss, ' missing'))
 
-  yoff <- 0.09
+  a <- 0.05
+  b <- 0.4
+  k <- (a + b) / 2
+  w <- (b - a) / 2
 
   p <- plotly::add_markers(p, data=dm, mode='markers', color=I('black'),
-                           x = ~ Mean, y = ~ y - yoff,
+                           x = ~ Mean, y = ~ y - k,
                            text = ~ txt,
-                           hoverinfo = 'text',
-                           name = 'Mean')
+                           hoverinfo = 'text', size=I(5),
+                           name='Mean', legendgroup='Mean',
+                           showlegend=showlegend)
 
-  p <- plotly::add_markers(p, mode='markers', data=dq1,
-                           x = ~ Median,
-                           y = ~ y - yoff,
-                           text = ~ txt,
-                           hoverinfo = 'text',
-                           marker = list(symbol='line-ns-open',
-                                         color='black', size=8),
-                           name = 'Median')
-  
-  p <- plotly::add_markers(p, mode='markers', data=dq2,
-                           x = ~ quartiles,
-                           y = ~ y - yoff,
-                           text = ~ txt,
-                           hoverinfo = 'text',
-                           marker = list(symbol='line-ns-open',
-                                         color='blue', size=6),
-                           name = 'Quartiles')
-  
-  p <- plotly::add_markers(p, mode='markers', data=dq3,
-                           x = ~ outer,
-                           y = ~ y - yoff,
-                           text = ~ txt,
-                           hoverinfo = 'text',
-                           marker = list(symbol='line-ns-open',
-                                         color='red', size=4),
-                           name = '0.05, 0.95<br>Quantiles')
+  segs <- function(p, x, y, yend, text, data, color, name, width=2) {
+    
+    plotly::add_segments(p, data=data,
+                         x=x, y=y,
+                         xend=x, yend=yend,
+                         text=text, hoverinfo='text',
+                         name=name, legendgroup=name,
+                         showlegend=showlegend,
+                         color=color, line=list(width=width))
+  }
 
+  p <- segs(p, x=~Median, y=~y-k-w, yend=~y-k+w, text=~txt,
+            data=dq1, color=I('black'), name='Median', width=3)
+  p <- segs(p, x=~quartiles, y=~y-k-w*.8, yend=~y-k+w*.8, text=~txt,
+            data=dq2, color=I('blue'), name='Quartiles')
+  onam <- '0.05, 0.95<br>Quantiles'
+  p <- segs(p, x=~outer, y=~y-k-w*.64, yend=~y-k+w*.64, text=~txt,
+            data=dq3, color=I('red'), name=onam)
+
+  if(connect) {
+    ys <- -(1 : ng) - k
+    qs <- function(p, x, xend, color, lg)
+      plotly::add_segments(p, x=x, xend=xend, y=~ys, yend=~ys,
+                           hoverinfo='none', showlegend=FALSE,
+                           alpha=0.3, color=color,
+                           legendgroup=lg, name='ignored')
+    p <- qs(p, x= ~ Qu[,1], xend=~ Qu[,2], color=I('red'),  lg=onam)
+    p <- qs(p, x= ~ Qu[,2], xend=~ Qu[,4], color=I('blue'), lg='Quartiles')
+    p <- qs(p, x= ~ Qu[,4], xend=~ Qu[,5], color=I('red'),  lg=onam)
+    }
+
+  gnam <- paste0('Gini ', mu$overbar(paste0('|', htmlGreek('Delta'), '|')))
   if(gmd)
     p <- plotly::add_segments(p, data=dgmd,
                               x = ~ x,
@@ -679,10 +689,9 @@ histboxp <- function(p=plotly::plot_ly(height=height),
                               text = ~ txt,
                               hoverinfo = 'text',
                               color = I('light gray'),
-                              name = paste0('Gini ',
-                                       mu$overbar(paste0('|',
-                                                    htmlGreek('Delta'), '|'))),
-                              visible='legendonly')
+                              name = gnam, legendgroup=gnam,
+                              visible='legendonly',
+                              showlegend=showlegend)
                               
   if(sd)
     p <- plotly::add_segments(p, data=dsd,
@@ -693,8 +702,9 @@ histboxp <- function(p=plotly::plot_ly(height=height),
                               text = ~ txt,
                               hoverinfo = 'text',
                               color = I('light blue'),
-                              name = 'SD',
-                              visible='legendonly')
+                              name = 'SD', legendgroup='SD',
+                              visible='legendonly',
+                              showlegend=showlegend)
 
   p <- plotly::layout(p,
                       margin = list(l=plotlyParm$lrmargin(levs,
@@ -705,3 +715,190 @@ histboxp <- function(p=plotly::plot_ly(height=height),
                                    ticktext = levs))
   p
 }
+
+dhistboxp <- function(x, group=NULL, strata=NULL, xlab=NULL,
+                      gmd=FALSE, sd=FALSE, bins=100, nmin=5, ff1=1, ff2=1) {
+
+  if(! length(group)) group <- rep(1, length(x))
+  if(length(x) != length(group)) stop('x and group must be same length')
+  if(! length(strata)) strata <- rep(1, length(x))
+  if(length(x) != length(strata)) stop('x and strata must be same length')
+
+  distinct <- unique(x)
+  distinct <- distinct[! is.na(distinct)]
+  xmin     <- min(distinct)
+  xr       <- x
+  ustrata  <- sort(unique(strata))
+
+  ## Still do slight rounding if < bins distinct values because
+  ## values extremely close to each other won't show otherwise
+  if(length(distinct) > bins ||
+     min(diff(sort(distinct))) < range(distinct) / (5 * bins)) {
+    pret <- pretty(x, if(length(distinct) > bins) bins else 5 * bins)
+    dist <- pret[2] - pret[1]
+    r    <- range(pret)
+    xr   <- r[1] + dist * round((x - r[1]) / dist)
+  }
+  mu  <- markupSpecs$html
+  fmt <- function(x) htmlSN(x, digits=5)
+  quant <- function(x, probs=0.5) {
+    x <- x[! is.na(x)]
+    n <- length(x)
+    if(! n)   return(rep(NA, length(probs)))
+    if(n < 3) return(quantile(x, probs))
+    hdquantile(x, probs, se=FALSE)
+    }
+    
+  
+  group <- as.factor(group)
+  mis   <- is.na(x)
+  levs  <- levels(group)
+  ng    <- length(levs)
+
+  stdel <- diff(range(ustrata)) * 0.025 * ff1
+  stmin <- min(strata, na.rm=TRUE)
+  R     <- NULL
+
+  ## Compute maximum proportion in any bin in any group/stratum
+  prop <- numeric(0)
+  nn   <- integer(0)
+  j <- 0
+  for(st in ustrata) {
+    for(g in levels(group)) {
+      i <- strata == st & group == g
+      if(any(i)) {
+        tab <- table(xr[i])
+        den <- sum(tab)
+        if(den > 0) {
+          j <- j + 1
+          prop <- c(prop, max(tab) / den)
+          nn <- c(nn, den)
+          }
+      }
+    }
+  }
+  maxp <- if(any(nn >= nmin)) max(prop[nn >= nmin]) else max(prop)
+  maxp <- min(maxp, wtd.quantile(prop, probs=0.98, weights=nn))
+  propfac <- stdel / maxp
+
+  j <- 0
+  for(st in ustrata) {
+    stdir    <- 1
+    ig <- 0
+    for(g in levels(group)) {
+      ig <- ig + 1
+      stdir    <- - stdir
+      stoffset <- stdir * (stdel * floor((ig + 1) / 2))
+      i <- strata == st & group == g
+      miss <- sum(mis[i])
+      if(miss > 0) i <- i & ! mis
+      if(! any(i)) next
+      u     <- x[i]
+      ur    <- xr[i]
+      nn    <- length(ur)
+      if(nn >= nmin) {
+        tab   <- as.data.frame(table(ur))
+        z     <- as.numeric(as.character(tab$ur))
+        prop  <- tab$Freq / nn
+        R <- rbind(R,
+                   data.frame(x=z,
+                              y  =st + 0.5 * stdir * stdel, xhi=NA,
+                              yhi=st + 0.5 * stdir * stdel +
+                                stoffset * prop * propfac * ff2,
+                              group=g, strata=st,
+                              txt=paste0(fmt(z), '<br>', round(prop, 3),
+                                         '<br>n=', tab$Freq),
+                              type='histogram', connect=NA))
+        }
+      med <- quant(u)
+      R <- rbind(R,
+                 data.frame(x=med, y=st, xhi=NA, yhi=NA,
+                            group=g, strata=st,
+                            txt=paste0('Median:', fmt(med),
+                                       '<br>n=', length(u),
+                                       '<br>', miss, ' missing'),
+                            type='median', connect=TRUE))
+      if(gmd) {
+        gnam <- paste0('Gini ', mu$overbar(paste0('|', htmlGreek('Delta'), '|')))
+        Gmd  <- GiniMd(u)
+        R <- rbind(R,
+                   data.frame(x   = xmin,
+                              xhi = xmin + Gmd,
+                              y   = st - stdel * 2,
+                              yhi = NA,
+                              group=g, strata=st,
+                              txt=paste0(gnam, ': ', fmt(Gmd)),
+                              type=gnam, connect=NA))
+      }
+      if(sd) {
+        Sd  <- sd(u)
+        R <- rbind(R,
+                   data.frame(x   = xmin,
+                              xhi = xmin + Sd,
+                              y   = st - stdel * (if(gmd) 3 else 2),
+                              yhi = NA,
+                              group=g, strata=st,
+                              txt = paste0('SD:', fmt(Sd)),
+                              type = 'SD', connect=NA))
+      }
+
+      if(nn >= nmin) {
+        probs <- c(0.5, 0.25, 0.75, 0.05, 0.95)
+        qu   <- quant(u, probs)
+        nam  <- paste0('Q', mu$sub(probs))
+        txt  <- paste0(nam, ':', fmt(qu))
+        mult <- c(1.15, 1, 1, 0.64, 0.64)
+        
+        yinc    <- 0.3 * stdir * stdel * mult
+        ycenter <- st + stdir * stdel + stoffset * maxp * propfac
+        R <- rbind(R,
+                   data.frame(x   = qu,
+                              xhi = NA,
+                              y   = ycenter - yinc,
+                              yhi = ycenter + yinc,
+                              group=g, strata=st,
+                              txt = txt,
+                              type='quantiles', connect=FALSE))
+        R <- rbind(R,
+                   data.frame(x   = min(qu),
+                              xhi = max(qu),
+                              y   = ycenter,
+                              yhi = ycenter,
+                              group=g, strata=st,
+                              txt = '',
+                              type='quantiles', connect=FALSE))
+        }
+    }    ## end groups
+  }    ## end strata
+  R
+}
+
+histboxpM <- function(p=plotly::plot_ly(height=height), x, group=NULL,
+                      gmd=TRUE, sd=FALSE, nrows=NULL, ncols=NULL, ...) {
+  ## See stackoverflow.com/questions/26939121
+  ##     stackoverflow.com/questions/39948151
+  nx <- if(is.data.frame(x)) ncol(x) else 1
+  ng <- if(length(group)) length(unique(group)) else 1
+  height <- nx * (plotlyParm$heightDotchart(1.2 * ng) + 50 * (gmd & sd))
+  height <- min(height, 1700)
+
+  nam <- deparse(substitute(x))
+  if(is.data.frame(x) && ncol(x) == 1) x <- x[[1]]
+  if(! is.data.frame(x))
+    return(histboxp(p=p, x=x, group=group,
+                    xlab=labelPlotmath(label(x, default=nam), units(x),
+                                       html=TRUE), gmd=gmd, sd=sd, ...))
+
+  P <- list()
+  for(i in 1 : nx) {
+    y <- x[[i]]
+    xlab <- labelPlotmath(label(y, default=names(x)[i]), units(y), html=TRUE)
+    P[[i]] <- histboxp(p, x=y, group=group, xlab=xlab, showlegend=i==nx,
+                       gmd=gmd, sd=sd, ...)
+  }
+
+  if(length(ncols)) nrows <- ceil(ncol(x) / ncols)
+  else if(! length(nrows)) nrows <- ncol(x)
+  plotly::subplot(P, nrows=nrows, shareX=FALSE, shareY=FALSE,
+                  titleX=TRUE, margin=c(.02, .02, .05, .04))
+  }

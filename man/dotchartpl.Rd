@@ -38,7 +38,8 @@ dotchartpl(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
            lower=NULL, upper=NULL,
            refgroup=NULL, sortdiff=TRUE, conf.int=0.95,
            minkeep=NULL, xlim=NULL, xlab='Proportion',
-           tracename=NULL, limitstracename=NULL,
+           tracename=NULL, limitstracename='Limits',
+           nonbigtracename='Stratified Estimates',
            width=800,
            col=colorspace::rainbow_hcl)
 }
@@ -55,8 +56,8 @@ dotchartpl(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
 		right on horizontal lines) vs. minor (smaller, transparent points
 		slightly below the line).}
 	\item{htext}{additional hover text per point}
-	\item{num}{if \code{x} represents proportions, optinally specifies to
-		numerators, to be used in fractions added to hover text.  When
+	\item{num}{if \code{x} represents proportions, optionally specifies
+		numerators to be used in fractions added to hover text.  When
 		\code{num} is given, \code{x} is automatically added to hover text,
 		rounded to 3 digits after the decimal point.}
 	\item{denom}{like \code{num} but for denominators}
@@ -81,6 +82,9 @@ dotchartpl(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
 	\item{tracename}{\code{plotly} trace name if \code{group} is not used}
 	\item{limitstracename}{\code{plotly} trace name for \code{lower} and
 		\code{upper} if \code{group} is not used}
+	\item{nonbigtracename}{\code{plotly} trace name used for non-big
+	elements, which usually represent stratified versions of the "big"
+	observations}
 	\item{col}{a function or vector of colors to assign to \code{group}.
 	If a function it will be evaluated with an argument equal to the
 	number of distinct groups.}

@@ -5,11 +5,11 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
                        refgroup=NULL, sortdiff=TRUE, conf.int=0.95,
                        minkeep=NULL,
                        xlim=NULL, xlab='Proportion',
-                       tracename=NULL, limitstracename=NULL,
+                       tracename=NULL, limitstracename='Limits',
+                       nonbigtracename='Stratified Estimates',
                        width=800,
                        col=colorspace::rainbow_hcl
                        ) {
-
   mu   <- markupSpecs$html
   bold <- mu$bold
 
@@ -19,7 +19,7 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
   majorpres <- length(major) > 0
   major <- if(majorpres) as.character(major) else rep('', length(x))
   minorpres <- length(minor) > 0
-  grouppres <- length(group) > 0
+  grouppres <- length(group) > 0  ## superpositioning variable
   multpres  <- length(mult)  > 0
   limspres  <- length(lower) * length(upper) > 0
   rgpres    <- length(refgroup) > 0
@@ -32,6 +32,7 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
   if(rgpres) {
     if(! grouppres || multpres || length(big))
       stop('when refgroup is given, group must be given and mult and big must not be used')
+    ## big=TRUE for non-stratified estimates
     if(length(ugroup) != 2)
       stop('refgroup only works for 2 groups')
     if(refgroup %nin% unique(group))
@@ -46,7 +47,7 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
               if(grouppres) col(length(unique(group)))
             else
               col(1) }
-  if(! length(col) && ! grouppres) col <- 'black'
+  if(! length(col) && ! grouppres) cols <- 'black'
 
   levelsRemoved <- character(0)
   
@@ -106,9 +107,9 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
   ht <- paste0(ht, if(length(ht)) '<br>',
                if(majorpres) paste0(major, ': '))
   if(minorpres) ht <- paste0(ht, minor)
-  if(grouppres) ht <- paste0(ht, '<br>', group)
+  if(grouppres) ht <- paste0(ht, '<br>',
+                             gsub(' stratified<br>by .*', '', group))
   if(multpres)  ht <- paste0(ht, '<br>', mult)
-
   n <- length(x)
 
   minor <- if(minorpres) minor else rep('', n)
@@ -170,10 +171,19 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
                         round(diff, 3))
 
         if(! is.logical(conf.int) && length(num) && length(denom)) {
-          va <- x[ja] * (1 - x[ja]) / denom[ja]
-          vb <- x[jb] * (1 - x[jb]) / denom[jb]
-          se <- sqrt(va + vb)
           zcrit  <- qnorm((1 + conf.int) / 2)
+          ## If either proportion is 0 or 1, backsolve variance from
+          ## Wilson interval
+          wi <- function(p, n) {
+            if(p == 0 || p == 1) {
+              ci <- binconf(round(n * p), n)[1, ]
+              w  <- ci['Upper'] - ci['Lower']
+              (0.5 * w / zcrit) ^ 2
+            } else p * (1. - p) / n
+          }
+          va <- wi(x[ja], denom[ja])
+          vb <- wi(x[jb], denom[jb])
+          se <- sqrt(va + vb)
           dlower <- format(round(x[jb] - x[ja] - zcrit * se, 3), nsmall=3)
           dupper <- format(round(x[jb] - x[ja] + zcrit * se, 3), nsmall=3)
           htd <- paste0(htd, '<br>', conf.int, ' C.L.: [', dlower,
@@ -212,8 +222,9 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
   
   if(! grouppres) d$Group <- NULL  ####
   if(any(d$Big)) {
-    db <- subset(d, Big)
-    p <- plotly::plot_ly(data=db,
+    db <- subset(d, Big)  # non-stratified estimates
+    ## For some reason, colors= in add_marker did not always take
+    p <- plotly::plot_ly(data=db, colors=cols,
                          height=plotlyParm$heightDotchart(lines), width=width)
 
     if(length(difflower)) {
@@ -238,7 +249,8 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
                                   name = paste0(htmlSpecial('half'),
                                                 ' CL of difference<br>',
                                                 coldiff[Diff <= 0][1]))
-      }
+    }
+    ## tracename and limitstracename are used if groups not used
     if(limspres)
       p <- if(grouppres)
              plotly::add_segments(p, x=~ Lower, xend=~ Upper,
@@ -259,14 +271,15 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
          else
            plotly::add_markers(p, x=~ X, y=~ Y,
                                text=~ Htext, color=I('black'),
-                               hoverinfo='text', name=tracename)
+                               hoverinfo='text',
+                               name=if(length(tracename)) tracename
+                                    else
+                                      if(any(! d$Big)) 'All' else '')
 
-  }
-  else
-    p <- plotly::plot_ly()
+  } else p <- plotly::plot_ly(colors=cols)   # Big is not used
     
   if(any(! d$Big)) {
-    dnb <- subset(d, ! Big)
+    dnb <- subset(d, ! Big)  # stratified estimates
     if(limspres)
       p <- if(grouppres)
              plotly::add_segments(p, data=dnb,
@@ -281,18 +294,28 @@ dotchartpl <- function(x, major=NULL, minor=NULL, group=NULL, mult=NULL,
                                   color=I('lightgray'), hoverinfo='text',
                                   name=limitstracename)
 
+    dnb$sGroup <- paste0(dnb$Group, '\nby ',
+                         gsub('Stratified by\n', '', nonbigtracename))
+    ## Don't understand why if use ~ sGroup right below the symbols no
+    ## longer appear in the legend for the non-stratified estimates
     p <- if(grouppres)
-           plotly::add_markers(p, data=dnb, x=~ X, y=~ Y,
-                               color=~ Group, text=~ Htext,
+           plotly::add_markers(p, data=dnb,
+                               x=~ X, y=~ Y,
+                               color=~ Group,
+                               text=~ Htext,
                                colors=cols,
                                marker=list(opacity=0.45, size=4),
                                hoverinfo='text')
-    else   plotly::add_markers(p, data=dnb, x=~ X, y=~ Y,
+#                               name=nonbigtracename)
+         else
+           plotly::add_markers(p, data=dnb,
+                               x=~ X, y=~ Y,
                                text=~ Htext,
                                marker=list(opacity=0.45, size=4),
                                color=I('black'), hoverinfo='text',
-                               name=tracename)
-    }
+                               name=nonbigtracename)
+    
+    }  # end if(any(! Big))
   leftmargin <- plotlyParm$lrmargin(ytnb)
   p <- plotly::layout(p,
                  xaxis=list(title=xlab,

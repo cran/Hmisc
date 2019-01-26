@@ -1644,19 +1644,31 @@ getRs <- function(file=NULL,
   invisible()
 }
 
-knitrSet <- function(basename=NULL, w=4, h=3, wo=NULL, ho=NULL,
-                     fig.path=if(length(basename)) basename else '',
-                     fig.align='center', fig.show='hold', fig.pos='htbp',
-                     fig.lp=paste('fig', basename, sep=':'),
-                     dev=switch(lang, latex='pdf', markdown='png'),
-                     tidy=FALSE, error=FALSE,
-                     messages=c('messages.txt', 'console'),
-                     width=61, decinline=5, size=NULL, cache=FALSE,
-                     echo=TRUE, results='markup', lang=c('latex','markdown')) {
+knitrSet <-
+  function(basename  = NULL,
+           w=if(! bd) 4,
+           h=if(! bd) 3,
+           wo=NULL, ho=NULL,
+           fig.path  = if(length(basename)) basename else '',
+           fig.align = if(! bd) 'center',
+           fig.show  = 'hold',
+           fig.pos   = if(! bd) 'htbp',
+           fig.lp    = if(! bd)
+                         paste('fig', basename, sep=':'),
+           dev       = switch(lang,
+                              latex='pdf', markdown='png', blogdown=NULL),
+           tidy=FALSE, error=FALSE,
+           messages=c('messages.txt', 'console'),
+           width=61, decinline=5, size=NULL, cache=FALSE,
+           echo=TRUE, results='markup',
+           lang=c('latex','markdown','blogdown')) {
 
   if(! requireNamespace('knitr')) stop('knitr package not available')
+  
   messages <- match.arg(messages)
-  lang  <- match.arg(lang)
+  lang     <- match.arg(lang)
+  bd       <- lang == 'blogdown'
+  
   ## Specify e.g. dev=c('pdf','png') or dev=c('pdf','postscript')
   ## to produce two graphics files for each plot
   ## But: dev='CairoPNG' is preferred for png
@@ -1666,12 +1678,15 @@ knitrSet <- function(basename=NULL, w=4, h=3, wo=NULL, ho=NULL,
   ## is in effect (use 65 without svmono)
 
   if(lang == 'latex') knitr::render_listings()
+  
   if(messages != 'console') {
-	unlink(messages) # Start fresh with each run
-	hook_log = function(x, options) cat(x, file=messages, append=TRUE)
-	knitr::knit_hooks$set(warning = hook_log, message = hook_log)
+    unlink(messages) # Start fresh with each run
+    hook_log = function(x, options) cat(x, file=messages, append=TRUE)
+    knitr::knit_hooks$set(warning = hook_log, message = hook_log)
   }
-  else knitr::opts_chunk$set(message=FALSE, warning=FALSE)
+  else
+    knitr::opts_chunk$set(message=FALSE, warning=FALSE)
+  
   if(length(size)) knitr::opts_chunk$set(size = size)
   ## For htmlcap see http://stackoverflow.com/questions/15010732
   ## Causes collisions in html and plotly output; Original (no better)
@@ -1688,52 +1703,62 @@ knitrSet <- function(basename=NULL, w=4, h=3, wo=NULL, ho=NULL,
     formals(rnd) <- list(x=NULL, dec=decinline)
     knitr::knit_hooks$set(inline = rnd)
   }
-
-  spar <- function(mar=if(!axes)
-                 c(2.25+bot-.45*multi,2*(las==1)+2+left,.5+top+.25*multi,
-                   .5+rt) else
-                 c(3.25+bot-.45*multi,2*(las==1)+3.5+left,.5+top+.25*multi,
-                   .5+rt),
-                 lwd = if(multi)1 else 1.75,
-                 mgp = if(!axes) mgp=c(.75, .1, 0) else
-                 if(multi) c(1.5, .365, 0) else c(2.4-.4, 0.475, 0),
-                 tcl = if(multi)-0.25 else -0.4, xpd=FALSE, las=1,
-                 bot=0, left=0, top=0, rt=0, ps=if(multi) 14 else 10,
-                 mfrow=NULL, axes=TRUE, cex.lab=1.15, cex.axis=.8,
-                 ...) {
-  multi <- length(mfrow) > 0
-  par(mar=mar, lwd=lwd, mgp=mgp, tcl=tcl, ps=ps, xpd=xpd,
-      cex.lab=cex.lab, cex.axis=cex.axis, las=las, ...)
-  if(multi) par(mfrow=mfrow)
-}
+  
 
   knitr::knit_hooks$set(par=function(before, options, envir)
-                 if(before && options$fig.show != 'none') {
-                   p <- c('bty','mfrow','ps','bot','top','left','rt','lwd',
-                          'mgp','las','tcl','axes','xpd')
-                   pars <- knitr::opts_current$get(p)
-                   pars <- pars[!is.na(names(pars))]
-                   ## knitr 1.6 started returning NULLs for unspecified pars
-                   i <- sapply(pars, function(x) length(x) > 0)
-                   if(any(i)) do.call('spar', pars[i]) else spar()
-                 })
-  knitr::opts_knit$set(
-    width=width)
-    #aliases=c(h='fig.height', w='fig.width', cap='fig.cap', scap='fig.scap'))
-    #eval.after = c('fig.cap','fig.scap'),
-    #error=error)  #, keep.source=keep.source (TRUE))
-  # See if need to remove dev=dev from below because of plotly graphics
-  knitr::opts_chunk$set(fig.path=fig.path, fig.align=fig.align,
-                        fig.width=w, fig.height=h,
-                        out.width=wo,out.height=ho,
-                        fig.show=fig.show, fig.lp=fig.lp, fig.pos=fig.pos,
-                        dev=dev, par=TRUE, tidy=tidy, out.width=NULL,
-                        cache=cache,
-                        echo=echo, error=error, comment='', results=results)
+    if(before && options$fig.show != 'none') {
+      p <- c('bty','mfrow','ps','bot','top','left','rt','lwd',
+             'mgp','las','tcl','axes','xpd')
+      pars <- knitr::opts_current$get(p)
+      pars <- pars[! is.na(names(pars))]
+      ## knitr 1.6 started returning NULLs for unspecified pars
+      i <- sapply(pars, function(x) length(x) > 0)
+      .spar. <-
+        function(mar=if(!axes)
+                       c(2.25+bot-.45*multi,2*(las==1)+2+left,.5+top+.25*multi,
+                         .5+rt) else
+                                  c(3.25+bot-.45*multi,2*(las==1)+3.5+left,.5+top+.25*multi,
+                                    .5+rt),
+                 lwd = if(multi)1 else 1.75,
+                 mgp = if(!axes) mgp=c(.75, .1, 0) else
+                       if(multi) c(1.5, .365, 0) else c(2.4-.4, 0.475, 0),
+                 tcl = if(multi)-0.25 else -0.4, xpd=FALSE, las=1,
+                 bot=0, left=0, top=0, rt=0, ps=if(multi) 14 else 12,
+                 mfrow=NULL, axes=TRUE, cex.lab=1.15, cex.axis=1,
+                 ...) {
+          multi <- length(mfrow) > 0
+          par(mar=mar, lwd=lwd, mgp=mgp, tcl=tcl, ps=ps, xpd=xpd,
+              cex.lab=cex.lab, cex.axis=cex.axis, las=las, ...)
+          if(multi) par(mfrow=mfrow)
+        }
+
+      if(any(i)) do.call(.spar., pars[i]) else .spar.()
+    })
   
-  if(lang == 'markdown') knitr::knit_hooks$set(uncover=markupSpecs$html$uncover)
+  knitr::opts_knit$set(width=width)
   
+  ## aliases=c(h='fig.height', w='fig.width', cap='fig.cap', scap='fig.scap'))
+  ## eval.after = c('fig.cap','fig.scap'),
+  ## error=error)  #, keep.source=keep.source (TRUE))
+
+  ## See if need to remove dev=dev from below because of plotly graphics
+  w <- list(fig.path=fig.path, fig.align=fig.align,
+            fig.width=w, fig.height=h,
+            out.width=wo,out.height=ho,
+            fig.show=fig.show, fig.lp=fig.lp, fig.pos=fig.pos,
+            dev=dev, par=TRUE, tidy=tidy,
+            cache=cache,
+            echo=echo, error=error, comment='', results=results)
+  if(bd) w$fig.path <- NULL
+  w <- w[sapply(w, function(x) length(x) > 0)]
+  ## knitr doesn't like null fig.align etc.
+  do.call(knitr::opts_chunk$set, w)
+
+
+  if(lang != 'latex') knitr::knit_hooks$set(uncover=markupSpecs$html$uncover)
+
   hook_chunk = knitr::knit_hooks$get('chunk')
+
   ## centering will not allow too-wide figures to go into left margin
   if(lang == 'latex') knitr::knit_hooks$set(chunk = function(x, options) { 
     res = hook_chunk(x, options) 
@@ -1741,9 +1766,9 @@ knitrSet <- function(basename=NULL, w=4, h=3, wo=NULL, ho=NULL,
     gsub('\\{\\\\centering (\\\\includegraphics.+)\n\n\\}', 
          '\\\\centerline{\\1}', res) 
   }) 
-  knitr::set_alias(w = 'fig.width', h = 'fig.height',
-                   wo= 'out.width', ho= 'out.height',
-                   cap = 'fig.cap', scap='fig.scap')
+  knitr::set_alias(w   = 'fig.width', h    = 'fig.height',
+                   wo  = 'out.width', ho   = 'out.height',
+                   cap = 'fig.cap',   scap ='fig.scap')
 }
 ## see http://yihui.name/knitr/options#package_options
 
@@ -1791,7 +1816,28 @@ plotlySave <- function(x, ...) {
 plotlyParm = list(
   ## Needed height in pixels for a plotly dot chart given the number of
   ## rows in the chart
-  heightDotchart = function(rows) min(800, max(200, 25 * rows)),
+  heightDotchart = function(rows, per=25, low=200, high=800)
+    min(high, max(low, per * rows)),
+
+  ## Given a vector of row labels that appear to the left on a dot chart,
+  ## compute the needed chart height taking label line breaks into account
+  ## Since plotly devotes the same vertical space to each category,
+  ## just need to find the maximum number of breaks present
+  heightDotchartb = function(x, per=40,
+      low=c(200, 200, 250, 300, 375)[min(nx, 5)],
+      high=1700) {
+    x  <- if(is.factor(x)) levels(x) else sort(as.character(x))
+    nx <- length(x)
+    m <- sapply(strsplit(x, '<br>'), length)
+    # If no two categories in a row are at the max # lines,
+    # reduce max by 1
+    mx   <- max(m)
+    lm   <- length(m)
+    mlag <- if(lm == 1) 0 else c(0, m[1:(lm - 1)])
+    if(! any(m == mx & mlag == mx)) mx <- mx - 1
+    z <- 1 + (if(mx > 1) 0.5 * (mx - 1) else 0)
+    min(high, max(low, per * length(x) * z))
+  },
 
   ## Colors for unordered categories
   colUnorder = function(n=5, col=colorspace::rainbow_hcl) {
@@ -1826,3 +1872,5 @@ tobase64image <- function (file, Rd = FALSE, alt = "image") {
                                   "}"
                                 else "")
 }
+
+plotp <- function(data, ...) UseMethod("plotp")

@@ -323,6 +323,20 @@ markupSpecs <- list(html=list(
   center   = function(x) paste0('<div align=center>', x, '</div>'),
   color    = function(x, col) paste0('<font color="', col, '">', x,
                                      '</font>'),
+
+  ## Break a long string into two lines with <br> inserted at a space
+  ## between words that is close to the middle of the string
+  ## Cole Beck 2018-10-18
+  addBreak = function(x, minbreak=30) {
+    sl <- nchar(x)
+    if(sl < minbreak) return(x)
+    si <- c(gregexpr(' ', x)[[1]])
+    ix <- si[which.min(abs(si - sl/2))]
+    p1 <- substr(x, 1, ix - 1)
+    p2 <- substr(x, ix + 1, sl)
+    paste0(p1, "<br>", p2)
+  },
+
   subtext  = function(..., color='blue')
     paste0('<br><font size=1 color="', color, '">',
            paste(unlist(list(...)), collapse=' '),
@@ -331,7 +345,7 @@ markupSpecs <- list(html=list(
   cap      = function(..., symbol=htmlSpecial('angrt')) { # figure caption formatting
   ## alternative: symbol='Figure:'; default is right angle
   ## use symbol=htmlSpecial('squarecrosshatch') for grid graph paper symbol
-    lcap <- paste(unlist(list(...)), collapse=' ')
+    lcap <- htmlTranslate(paste(unlist(list(...)), collapse=' '), greek=TRUE)
     paste0('<span style="font-family:Verdana;font-size:10px;">', symbol,
            ' </span><span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
              lcap, '</span>')
@@ -339,11 +353,12 @@ markupSpecs <- list(html=list(
   
   lcap     = function(...) # for continuation of figure caption
     paste0('<span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
-           paste(unlist(list(...)), collapse=' '), '</span>'),
+           htmlTranslate(paste(unlist(list(...)), collapse=' '), greek=TRUE),
+           '</span>'),
 
   tcap      = function(..., symbol=htmlSpecial('whitesquareverticalline')) { # table caption formatting
     # alt: symbol='Table:'; default is white square w/vertical bisecting line
-    lcap <- paste(unlist(list(...)), collapse=' ')
+    lcap <- htmlTranslate(paste(unlist(list(...)), collapse=' '), greek=TRUE)
     paste0('<span style="font-family:Verdana;font-size:10px;">', symbol,
            ' </span><span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
              lcap, '</span>')
@@ -351,7 +366,8 @@ markupSpecs <- list(html=list(
   
   ltcap     = function(...) # for continuation of table caption
     paste0('<span style="font-family:Verdana;font-size:12px;color:MidnightBlue;">',
-           paste(unlist(list(...)), collapse=' '), '</span>'),
+           htmlTranslate(paste(unlist(list(...)), collapse=' '), greek=TRUE),
+           '</span>'),
 
   expcoll = function(vis, invis) {
       id <- floor(runif(1, 100000, 999999))  # unique html id
@@ -473,14 +489,16 @@ markupSpecs <- list(html=list(
                                    "</span></sup><sub style='position: relative; left: -.47em; bottom: -.4em;'><span style='font-size: 70%;'>",
                                    a, "</span></sub>"),
   varlabel = function(label, units='', size=75, hfill=FALSE) {
-    if(units=='') label
+    if(units=='') htmlTranslate(label, greek=TRUE)
     else
-      if(hfill) paste0("<div style='float: left; text-align: left;'>", label,
-                       "</div><div style='float: right; text-align: right; font-family: Verdana; font-size:", size, "%;'>", units, "</div>")
+      if(hfill) paste0("<div style='float: left; text-align: left;'>",
+                       htmlTranslate(label, greek=TRUE),
+                       "</div><div style='float: right; text-align: right; font-family: Verdana; font-size:", size, "%;'>", htmlTranslate(units, greek=TRUE),
+                       "</div>")
     else
-      paste0(label, htmlSpecial('emsp'),
+      paste0(htmlTranslate(label, greek=TRUE), htmlSpecial('emsp'),
              "<span style='font-family:Verdana;font-size:", size, "%;'>",
-             units, "</span>") },
+             htmlTranslate(units, greek=TRUE), "</span>") },
   rightAlign  = function(x)
     paste0("<div style='float: right; text-align: right;'>",
            x, "</div>"),
@@ -550,8 +568,34 @@ bottom: -1ex;
 unicodeshow = function(x, surr=TRUE, append=FALSE) {
   if(surr) x <- paste0('&', x, ';')
   cat('<meta charset="utf-8">', paste(x, collapse=''), '<br>', file='/tmp/z.html', append=append)
-}
+},
 
+## Function to intersperse markdown with knitr chunk output, especially
+## for chunks producing plotly graphics.  The typical use is to intersperse
+## figure captions and table of contents entries produced by putHcap()
+## with plotly graphics.  md is a list of character vectors, one element
+## per chunk, and robj is a list of R objects to print
+## Accounts for markdown being in caption text; knitr processes this
+## See stackoverflow.com/questions/51803162
+mdchunk = function(md=rep('', length(robj)), robj,
+                   cnames=NULL, w=NULL, h=NULL) {
+    bn <- paste0('c', round(runif(1, 0, 1e6)))
+    n <- length(md)
+    if(length(robj) != n) stop('robj and md must have same length')
+    opts <- 'echo=FALSE'
+    if(length(w)) opts <- c(paste0('fig.width=' , w), opts)
+    if(length(h)) opts <- c(paste0('fig.height=', h), opts)
+    opts <- paste(opts, collapse=',')
+    if(! length(cnames)) cnames <- paste0(bn, 1 : n)
+    for(i in 1 : n) {
+      cn <- cnames[i]
+      .obj. <- robj[[i]]
+      k <- c(md[[i]], paste0('```{r ', cn, ',', opts, '}'), '.obj.', '```')
+      ## Original solution had cat(trimws(...)) but this caused
+      ## section headings to be run into R output and markdown not recog.
+      cat(knitr::knit(text=knitr::knit_expand(text=k), quiet=TRUE))
+      }
+    }
 ),
 
 latex = list(
@@ -635,6 +679,9 @@ plotmath = list(
 htmlTranslate <- function(object, inn=NULL, out=NULL,
                            greek=FALSE, na='', code=htmlSpecialType(), ...)
 {
+  if(! length(object) || all(trimws(object) == ''))
+    return(object)
+  
   text <- ifelse(is.na(object), na, as.character(object))
 
   ## Must translate & first so won't be converted to &amp; when other

@@ -984,12 +984,12 @@ plot.summary.formula.reverse <-
         dotchart2(zi, groups=vnd, xlab=xlab, xlim=xlim, 
                   sort.=FALSE, pch=pch[i],
                   dotfont=dotfont[i],
-                  add=i>1, ...)
+                  add=i > 1, ...)
       else
         dotchart2(zi, groups=vnd, auxdata=ftstats,
                   xlab=xlab, xlim=xlim, sort.=FALSE,
                   pch=pch[i], dotfont=dotfont[i],
-                  add=i>1, ...)
+                  add=i > 1, ...)
     }
 
     if(main != '')
@@ -1707,7 +1707,9 @@ formatTestStats <- function(tr, multchoice=FALSE,
 
   ## tr=an element of testresults (created by summary.formula method='reverse')
   ## or summaryM
-  if(i > 1 && ! multchoice) stop('logic error')
+
+  if(any(i > 1) && ! multchoice) stop('logic error')
+  ## was i > 1; length mismatch
 
   specs <- mspecs[[lang]]
   spc   <- specs$space
@@ -1751,6 +1753,8 @@ formatTestStats <- function(tr, multchoice=FALSE,
   
   pval <- format.pval(pval, digits=pdig, eps=eps)
   plt  <- substring(pval,1,1) == '<'
+  if(any(plt) && lang == 'latex')
+    pval <- sub('<', '\\\\textless ', pval)
   
   if(lang != 'plain') {
     if(length(prtest) == 1) 
@@ -1896,7 +1900,7 @@ latex.summary.formula.reverse <-
                             outer.size=outer.size, msdsize=msdsize,
                             pdig=pdig, eps=eps, footnoteTest=gt1.test,
                             mspecs=mspecs)
-                              
+
     cstats <- rbind(cstats, cs)
     if(length(auxc) && nrow(cstats) > 1)
       auxc <- c(auxc, rep(NA, nrow(cs)-1))
