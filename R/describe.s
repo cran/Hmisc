@@ -72,7 +72,7 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
   n.unique <- length(x.unique)
   attributes(x) <- attributes(x.unique) <- atx
 
-  isnum <- (is.numeric(x) || isdat) && ! is.factor(x)
+  isnum <- (is.numeric(x) || isdot) && ! is.factor(x)  # was isdat
   timeUsed <- isdat && testDateTime(x.unique, 'timeVaries')
 
   z <- list(descript=descript, units=un, format=fmt)
@@ -92,7 +92,7 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
   }
   
   if(length(pd <- atx$partial.date)) {
-    if((nn <- length(pd$month))>0) {
+    if((nn <- length(pd$month)) > 0) {
       counts <- c(counts, nn)
       lab <- c(lab, "missing month")
     }
@@ -144,10 +144,11 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
     
     lab <- c(lab, "Mean")
     if(! weighted) {
-      gmd <- GiniMd(xnum)
-      counts <- c(counts, if(isdot) formatDateTime(gmd, atx, ! timeUsed)
-                          else
-                            format(gmd, ...))
+      gmd <- format(GiniMd(xnum), ...)
+      counts <- c(counts, gmd)
+#      counts <- c(counts, if(isdot) formatDateTime(gmd, atx, ! timeUsed)
+#                          else
+#                            format(gmd, ...))
       lab <- c(lab, "Gmd")
     }
   } else if(n.unique == 1) {
@@ -202,11 +203,20 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
             dist <- pret[2] - pret[1]
             r    <- range(pret)
             xnum <- r[1] + dist * round((xnum - r[1]) / dist)
+            z$roundedTo <- dist
           }
         }
-        values <- wtd.table(if(isnum) xnum else if(isdat) format(x) else x,
+#        values <- wtd.table(if(isnum) xnum else if(isdat) format(x) else x,
+#                            weights, normwt=FALSE, na.rm=FALSE)
+#        values <- wtd.table(if(isdot) format(x) else if(isnum) xnum else x,
+#                            weights, normwt=FALSE, na.rm=FALSE)
+        values <- wtd.table(if(isnum) xnum else x,
                             weights, normwt=FALSE, na.rm=FALSE)
-        values <- list(value=values$x, frequency=unname(values$sum.of.weights))
+        vx <- values$x
+        cx <- intersect(atx$class,
+                    c("Date", "POSIXt", "POSIXct", "dates", "times", "chron"))
+        class(vx) <- cx   # restores as date, time, etc.
+        values <- list(value=vx, frequency=unname(values$sum.of.weights))
       }
     z$values <- values
     
@@ -382,11 +392,12 @@ formatdescribeSingle <-
   
   is.standard <- length(v) && is.list(v) &&
                  all(names(v) == c('value', 'frequency'))
-
-  val.wide    <- length(v$value) && sum(nchar(as.character(v$value))) > 200
-  val.few     <- length(v$value) && (length(v$value) <= 20)
+  ## Added is.standard to next 2
+  val.wide    <- is.standard && length(v$value) &&
+    sum(nchar(as.character(v$value))) > 200
+  val.few     <- is.standard && length(v$value) && (length(v$value) <= 20)
   print.freq  <- is.standard && val.few && ! val.wide
-  print.ext   <- length(x$extremes) && ! print.freq
+  print.ext   <- length(x$extremes) ## && ! print.freq
 
   if(print.ext) {
     val  <- format(x$extremes)
@@ -402,7 +413,7 @@ formatdescribeSingle <-
         if(w + 2 <= wide) {
           low <- paste(blo, paste(val[1: 5], collapse=' '))
           hi  <- paste(bhi, paste(val[6:10], collapse=' '))
-          R <- c(R, fsize(paste(low, ', ', hi), size))
+          R <- c(R, fsize(paste(low, ', ', hi), pct=size))
         } else {
           low <- data.frame(name=blo, e1=val[1], e2=val[2], e3=val[3],
                             e4=val[4], e5=val[5])
@@ -471,6 +482,11 @@ formatdescribeSingle <-
       w <- strwrap(paste(w, collapse=', '), width=wide)
       R <- c(R, '', w)
     }
+    if(length(x$roundedTo))
+      R <- c(R, '',
+             paste('For the frequency table, variable is rounded to the nearest',
+                   format(x$roundedTo, scientific=3)))
+    
   } else if(length(v) && ! is.standard)
     R <- c(R, '', vbtm(v))
   
@@ -727,7 +743,7 @@ html.describe <-
 {
   at <- attributes(object)
 
-  m <- markupSpecs$html
+  m      <- markupSpecs$html
   center <- m$center
   bold   <- m$bold
   code   <- m$code
@@ -736,7 +752,7 @@ html.describe <-
   sskip  <- m$smallskip
   hrule  <- m$hrulethin
   fsize  <- m$size
-  mnb    <- function(x) m$color(x, 'MidnightBlue')
+  mnb    <- function(x) m$color(x, col='MidnightBlue')
 
   R <- c(m$unicode, m$style())   ## define thinhr (and others not needed here)
   
