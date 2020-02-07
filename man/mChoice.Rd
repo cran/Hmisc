@@ -101,11 +101,6 @@ is.mChoice(x)
   \item{...}{
     a series of vectors
   }
-  \item{sort.}{
-    By default, choice codes are sorted in ascending numeric
-    order.  Set \code{sort=FALSE} to preserve the original left to right
-    ordering from the input variables.
-  }
   \item{label}{
     a character string \code{label} attribute to attach to the matrix created
     by \code{mChoice}

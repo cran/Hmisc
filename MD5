@@ -1,7 +1,7 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-f366d8a39f68fab46658f36aa135477b *DESCRIPTION
+84352928c1fba539a2e5953af65c35ee *DESCRIPTION
 09b937e336fb5fd448b86bb55003aa55 *NAMESPACE
-da6837b9a5c802b8dc09efd6db169c37 *NEWS
+13c8ede16a5f3fdf4bb4b97bb7b304f2 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 62ef16fc333551d6c65f15dedfb5a697 *R/Cs.s
 85683865508739ff7a19b280e562ab67 *R/GiniMd.s
@@ -54,7 +54,7 @@ b70800bb3730a5b84500d43e97d951f4 *R/groupn.s
 23790f2ea8de02bdbb87ecd932ac22a8 *R/histSpikeg.s
 e79e72a4b25a7e30d32caf6b7a4b55c6 *R/histbackback.s
 3ba3c85100e05c090c8caec1d628a05e *R/hoeffd.s
-68d5c86aaa4a90f3873bddaf47854f9b *R/html.s
+1c4113c483c7a641a09d1164dadb3760 *R/html.s
 1759e437814916630a47a0128ae1fd83 *R/impute.s
 2d992948ec2ad38aa2c778882fd65e72 *R/in.operator.s
 e1bbabaa533c22a5378d1a4b645a80d2 *R/is.present.s
@@ -91,7 +91,7 @@ cf2866606281d01f39e99d3205f50ae3 *R/num.intercepts.s
 25fc3a3579da1d81be1209bea9e63d2b *R/plot.describe.s
 b5bd4df352979cba3dc380b3cb27d909 *R/plotlyM.r
 62e6fe8152bc03bb23f83ff687ae4cc2 *R/plsmo.s
-a5bb93cfed5d13dbf4a928330c0a1fe0 *R/popower.s
+36212fc98ce5a7f44a1ec0f76c0a3785 *R/popower.s
 9a1119c7949407c39968645e921a87a6 *R/print.char.list.s
 efe9a9a6c90594d1e7425cc46f2fc061 *R/pstamp.s
 620401a9617131be8b2d162fd0466ff7 *R/rcorr.cens.s
@@ -296,7 +296,7 @@ f63c0f3c73dcccef6e4a6da3167c21d4 *man/latexTabular.Rd
 e110de27ad37decbe96987691beb7555 *man/legendfunctions.Rd
 3e0817d289b96a7d59847a1144f5fa59 *man/list.tree.Rd
 7a3ad23a76192d3d91b2995a098bfabb *man/mApply.Rd
-6aaa5648e29fa7bbbffcc6abb94a003e *man/mChoice.Rd
+c61f4e7a7ff957fdc66278f53902f457 *man/mChoice.Rd
 c2c3d7fd7b6118a5480308fcacb57afa *man/makeNstr.Rd
 1f4cb5e4cb669550dc4aca2745280286 *man/mdb.get.Rd
 ad5ca5884567e50edeba874e3f6e0566 *man/mgp.axis.Rd
