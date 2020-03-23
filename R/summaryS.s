@@ -46,13 +46,15 @@ summaryS <- function(formula, fun=NULL,
     w <- summarize(y, w[by], fun, type='matrix', keepcolnames=TRUE)
     funlabel <- if(is.matrix(w$y)) colnames(w$y)[1]
   }
-
   gg <- function(x) if(is.character(x) || is.factor(x))
                       'categorical' else 'numeric'
   xlabels <- sapply(X, label)
   xlabels <- ifelse(xlabels == '', names(xlabels), xlabels)
   ylabels <- sapply(Y, label)
   ylabels <- ifelse(ylabels == '', names(ylabels), ylabels)
+
+  for(n in names(w))  # takes care of R change stringsAsFactors=FALSE
+    if(is.character(w[[n]])) w[[n]] <- factor(w[[n]])
 
   structure(w, class=c('summaryS', 'data.frame'),
             formula=formula, fun=fun,
@@ -365,20 +367,18 @@ plotp.summaryS <-
   funlabel <- if(! length(funlabel) && length(at$funlabel))
                 at$funlabel else funlabel
   funlabel <- htmlTranslate(funlabel, greek=TRUE)
-  
   ly <- length(ylabels)
   ylab    <- ylabels
   for(i in 1 : length(ylab))
     ylab[i] <- labelPlotmath(ylabels[i], yunits[i], html=TRUE)
 
   aform <- function(n) as.formula(paste('~', n))
-  fmt <- function(x) htmlSN(x, digits=digits)
+  fmt   <- function(x) htmlSN(x, digits=digits)
   
   ptype <- if(length(fun)) {  # used to always be 'dot'
     if(length(sfun)) 'xy.special' else 'dot'
            } else 'xy'
   if(length(sfun)) ptype <- 'xy.special'
-  
   if(ptype %in% c('xy', 'xy.special') && ! any(xtype == 'numeric'))
     stop('must have a numeric x variable to make x-y plot')
 
@@ -459,7 +459,7 @@ plotp.summaryS <-
   xlab <- labelPlotmath(xlabels[xn], xunits[xn], html=TRUE)
 
   gp <- length(groups)
-  gr <- if(gp) X[[groups]] else factor(rep('', length(x)))
+  gr <- if(gp) X[[groups]] else factor(rep('', nrow(X)))
 
   if(ptype == 'xy') {
     if(nstat > 0 && ! gp) X <- cbind(X, tracename=statnames[1])

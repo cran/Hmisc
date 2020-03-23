@@ -175,7 +175,7 @@ is.mChoice(x)
   \email{f.harrell@vanderbilt.edu}
 }
 \seealso{
-  \code{\link{label}}
+  \code{\link{label}}, \code{\link{combplotp}}
 }
 \examples{
 options(digits=3)

@@ -381,6 +381,10 @@ markupSpecs <- list(html=list(
              invis, '</span>')
   },
 
+  expcolld = function(vis, invis)
+    paste0('<details><summary>', vis, ## htmlSpecial('blackdowntriangle'),
+           '</summary>', invis, '</details>'),
+
   uncover = function(before, options, envir) {
     ## https://stackoverflow.com/questions/44866287
     ## usage: knitrSet(lang='markdown')  # issues knit_hooks$set(uncover=uncover)
@@ -597,7 +601,25 @@ mdchunk = function(md=rep('', length(robj)), robj,
       ## section headings to be run into R output and markdown not recog.
       cat(knitr::knit(text=knitr::knit_expand(text=k), quiet=TRUE))
       }
-    }
+    },
+## Function to define css for putting a background around a character string
+## to make it look more like a button
+## Usage: <p class="cssbutton">Text inside button</p>
+cssbutton = function(color='DarkBlue', background='LightBlue', size='115%')
+ htmltools::HTML('
+<style>
+.rbutton {
+ font-family: Times;
+ font-size:', size, ';
+ color:', color, ';
+ background-color:', background, ';
+}
+</style>'),
+## Function to high details using <details>...</details>
+## Usage: `r cssbutton()` ... `r hideDetails('button text', ...)` ... </details>
+hideDetails = function(txt)
+ htmltools::HTML('
+<details><summary><p class="rbutton">', txt, '</p></summary>')
 ),
 
 latex = list(
