@@ -689,9 +689,38 @@ plain = list(
   varlabel = function(label, units='', ...)
     if(units == '') label else  paste0(label, '  [', units, ']'),
   times  = 'x',
+  plminus = '+/-',
   color = function(x, ...) x
 ),
 
+markdown = list(
+  tof = function(file=.Options$FigCapFile, level=2, number=FALSE) {
+    if(! length(file) || file == '') stop('figure captions file not defined')
+    r <- readLines(file)
+    if(! length(r)) return()
+    r <- read.csv(file, header=FALSE)
+    names(r) <- c('label', 'figref', 'scap')
+    n <- nrow(r)
+    ## Sort in descending order so last takes precendence if dups
+    r   <- r[nrow(r) : 1, ]
+    isdup <- duplicated(r$label)
+    r      <- r[! isdup, ]
+    r      <- r[nrow(r) : 1, ]
+    figref <- r[[2]]
+    scap   <- r[[3]]
+    head <- c('',
+              '<a name="LOF"></a>',
+              '',
+              paste(substring('####', 1, level), 'List of Figures',
+                    if(! number) '{-}'),
+              '',
+              '| **Figure** | **Description** |',
+              '|:---|:---|')
+    w <- c(head, paste0('| ', figref, ' | ', scap, ' |'))
+    paste0(w, '\n')
+    }
+
+  ),
 plotmath = list(
   varlabel = function(label, units='', ...)
     labelPlotmath(label, units)
