@@ -27,7 +27,8 @@ differences in mean or median on the original scale.
 proportions stratified by a grouping variable (and optionally a stratification variable), with an optional
 additional graph showing what the proportions would be had proportional
 odds held and an odds ratio was applied to the proportions in a
-reference group.
+reference group.  If the result is passed to \code{ggplotly}, customized
+tooltip hover text will appear.
 
 \code{propsTrans} uses \code{\link{ggplot2}} to plot all successive
 transition proportions.  \code{formula} has the state variable on the
@@ -56,8 +57,10 @@ multEventChart(formula, data=NULL, absorb=NULL, sortbylast=FALSE,
 \arguments{
 \item{p}{
 a vector of marginal cell probabilities which must add up to one.
-The \code{i}th element specifies the probability that a patient will be
-in response level \code{i}, averaged over the two treatment groups.
+For \code{popower} and \code{posamsize}, The \code{i}th element specifies the probability that a patient will be
+in response level \code{i}, averaged over the two treatment groups.  For
+\code{pomodm}, \code{p} is the vector of cell probabilities to be
+translated under a given odds ratio.
 }
 \item{odds.ratio}{
 the odds ratio to be able to detect.  It doesn't
@@ -67,7 +70,8 @@ variable value.  The value of the function specifies the odds ratio to
 apply to the refernce group to get all other group's expected proportions
 were proportional odds to hold against the first group.  Normally the
 function should return 1.0 when its \code{x} argument corresponds to the
-\code{ref} group.}
+\code{ref} group.  For \code{pomodm} is the odds ratio to apply to
+convert the given cell probabilities.}
 \item{n}{
 total sample size for \code{popower}.  You must specify either \code{n} or
 \code{n1} and \code{n2}.  If you specify \code{n}, \code{n1} and
@@ -199,6 +203,8 @@ set.seed(1)
 d   <- expand.grid(time=1:3, reps=1:30)
 d$y <- sample(letters[1:5], nrow(d), replace=TRUE)
 propsPO(y ~ time, data=d, odds.ratio=function(time) c(1, 2, 4)[time])
+# To show with plotly, save previous result as object p and then:
+# plotly::ggplotly(p, tooltip='text')
 
 # Add a stratification variable and don't consider an odds ratio
 d   <- expand.grid(time=1:5, sex=c('female', 'male'), reps=1:30)
