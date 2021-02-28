@@ -21,10 +21,11 @@ Instead, you can specify \code{stick=TRUE} not use color but to encode
 	black lines.
 
 The result can also be passed to \code{ggplotly}.  Actual cell
-frequencies are added to the hover text in that case.
+frequencies are added to the hover text in that case using the
+\code{label} \code{ggplot2} aesthetic.
 }
 \usage{
-ggfreqScatter(x, y, bins=50, g=10, cuts=NULL,
+ggfreqScatter(x, y, by=NULL, bins=50, g=10, cuts=NULL,
               xtrans = function(x) x,
               ytrans = function(y) y,
               xbreaks = pretty(x, 10),
@@ -38,6 +39,8 @@ ggfreqScatter(x, y, bins=50, g=10, cuts=NULL,
 \arguments{
 \item{x}{x-variable}
 \item{y}{y-variable}
+\item{by}{an optional vector used to make separate plots for each
+	distinct value using \code{facet_wrap()}}
 \item{bins}{for continuous \code{x} or \code{y} is the number of bins to
 	create by rounding.  Ignored for categorical variables.  If a
 	2-vector, the first element corresponds to \code{x} and the second to

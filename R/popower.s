@@ -166,8 +166,11 @@ propsPO <- function(formula, odds.ratio=NULL, ref=NULL, data=NULL,
   names(d) <- c('y', 'x', sn)
   ## ggplot2 bar chart puts first category at the top
   ## Let's put it at the bottom
-  d$y  <- factor(d$y, levels=rev(levels(as.factor(d$y))))
 
+  revo <- function(z) {
+    z <- as.factor(z)
+    factor(z, levels=rev(levels(as.factor(z))))
+    }
   
   # For each x compute the vector of proportions of y categories
   # Assume levels are in order
@@ -204,7 +207,7 @@ propsPO <- function(formula, odds.ratio=NULL, ref=NULL, data=NULL,
 
     plegend <- guides(fill=guide_legend(title=yl))
     if(! length(odds.ratio)) {
-      gg <- ggplot(pm, aes(x=as.factor(x), y=prop, fill=factor(y), text=txt)) +
+      gg <- ggplot(pm, aes(x=as.factor(x), y=prop, fill=revo(y), label=txt)) +
         geom_col() + plegend + xlab(xl) + ylab('Proportion')
       return(gg)
     }
@@ -213,7 +216,7 @@ propsPO <- function(formula, odds.ratio=NULL, ref=NULL, data=NULL,
     pm <- melt(p, id=c('x', 's'), variable.name='y', value.name='prop')
     pm <- atxt(pm, pm$s)
     plegend <- guides(fill=guide_legend(title=yl))
-    gg <- ggplot(pm, aes(x=as.factor(x), y=prop, fill=factor(y), text=txt)) +
+    gg <- ggplot(pm, aes(x=as.factor(x), y=prop, fill=revo(y), label=txt)) +
         facet_wrap(~ s, ncol=ncol, nrow=nrow) +
         geom_col() + plegend + xlab(xl) + ylab('Proportion')
     return(gg)
@@ -226,19 +229,19 @@ propsPO <- function(formula, odds.ratio=NULL, ref=NULL, data=NULL,
   propfirstx <- as.numeric(sub(' .*', '', pfx)) /
                 as.numeric(sub('.* ', '', pfx))
   
-  g <- function(x) {
+  .g. <- function(x) {
     w <- pomodm(p=propfirstx, odds.ratio=odds.ratio(x))
     names(w) <- levels(y)
     w
   }
-  pa <- d[, as.list(g(x)), by=x]
+  pa <- d[, as.list(.g.(x)), by=x]
   pma <- melt(pa, id=1, variable.name='y', value.name='prop')
   pma <- atxt(pma, or=TRUE)
   w <- rbind(cbind(type=1, pm),
              cbind(type=2, pma))
   w$type <- factor(w$type, 1 : 2,
                    c('Observed', 'Asssuming Proportional Odds'))
-  ggplot(w, aes(x=as.factor(x), y=prop, fill=factor(y), text=txt)) +
+  ggplot(w, aes(x=as.factor(x), y=prop, fill=revo(y), label=txt)) +
     geom_col() +
     facet_wrap(~ type, nrow=2) +
     plegend + xlab(xl) + ylab('Proportion')
@@ -246,7 +249,8 @@ propsPO <- function(formula, odds.ratio=NULL, ref=NULL, data=NULL,
 
 utils::globalVariables(c('.', 'prop'))
 
-propsTrans <- function(formula, data=NULL, maxsize=12, ncol=NULL, nrow=NULL) {
+propsTrans <- function(formula, data=NULL, labels=NULL, arrow='\u2794',
+                       maxsize=12, ncol=NULL, nrow=NULL) {
   v  <- all.vars(formula)
   d  <- model.frame(formula, data=data)
   y  <- as.factor(d[[v[1]]])
@@ -260,8 +264,12 @@ propsTrans <- function(formula, data=NULL, maxsize=12, ncol=NULL, nrow=NULL) {
   nt <- length(times)
 
   itrans <- integer(0)
-  Prev   <- Cur <- character(0)
+  Prev   <- Cur <- Frac <- character(0)
   prop   <- numeric(0)
+
+  mu    <- markupSpecs$html
+  arrowbr <- paste0(' ', arrow, '<br>')
+  arrow   <- paste0(' ', arrow, ' ')
 
   for(it in 2 : nt) {
     prev <- cur <- rep(NA, nid)
@@ -270,11 +278,19 @@ propsTrans <- function(formula, data=NULL, maxsize=12, ncol=NULL, nrow=NULL) {
     j <- x == times[it]
     prev[id[i]] <- as.character(y[i])
     cur [id[j]] <- as.character(y[j])
-    props <- as.data.frame(prop.table(table(prev, cur)))
-    Prev  <- c(Prev, as.character(props$prev))
-    Cur   <- c(Cur,  as.character(props$cur))
-    prop  <- c(prop, props$Freq)
-    k     <- length(props$Freq)
+    tab   <- table(prev, cur)
+    rowf  <- rowSums(tab)
+    tab   <- as.data.frame(tab)
+    tab$denom <- rowf[tab$prev]
+    tab$prop  <- tab$Freq / tab$denom
+    Prev  <- c(Prev, as.character(tab$prev))
+    Cur   <- c(Cur,  as.character(tab$cur))
+    prop  <- c(prop, tab$Freq / tab$denom)
+    Frac  <- c(Frac, paste0(round(tab$Freq / tab$denom, 3),
+                            mu$lspace,
+                            mu$frac(tab$Freq, tab$denom, size=90)))
+
+    k     <- length(tab$Freq)
     itrans <- c(itrans, rep(it, k))
   }
 
@@ -282,10 +298,25 @@ propsTrans <- function(formula, data=NULL, maxsize=12, ncol=NULL, nrow=NULL) {
   Cur   <- factor(Cur,  levels(y))
   trans <- factor(itrans, 2 : nt,
                   labels=paste0(xlab, ' ',
-                                times[1 : (nt - 1)], ' - ', times[2 : nt]))
-  w <- data.frame(trans, Prev, Cur, prop)
+                                times[1 : (nt - 1)], arrow, times[2 : nt]))
+  transp <- factor(itrans, 2 : nt,
+                  labels=paste0(xlab, ' ',
+                                times[1 : (nt - 1)], arrow, times[2 : nt]))
   
-  ggplot(w, aes(x=Prev, y=Cur, size=prop)) +
+  w <- data.frame(trans, transp, Prev, Cur, prop, Frac,
+                  txt=if(! length(labels))
+                        ifelse(Prev == Cur,
+                         paste0('Stay at:', as.character(Prev)),
+                         paste0(as.character(Prev),
+                               arrowbr, as.character(Cur)))
+                  else
+                    ifelse(Prev == Cur,
+                      paste0('Stay at:', labels[as.integer(Prev)]),
+                      paste0(labels[as.integer(Prev)],
+                             arrowbr, labels[as.integer(Cur)])))
+  w$txt <- paste0(w$transp, '<br>', w$txt, '<br>', w$Frac)
+  
+  ggplot(w, aes(x=Prev, y=Cur, size=prop, label=txt)) +
     facet_wrap(~ trans, ncol=ncol, nrow=nrow) +
     geom_point() + scale_size(range = c(0, maxsize)) + 
     xlab('Previous State') + ylab('Current State') +
