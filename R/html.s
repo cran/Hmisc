@@ -414,16 +414,37 @@ markupSpecs <- list(html=list(
         }
   },
   
-  session  = function(cite=TRUE, loadedOnly=FALSE) {
+  session  = function(cite=TRUE, loadedOnly=FALSE, style=NULL) {
     si <- sessionInfo()
     if(! loadedOnly) si$loadedOnly <- NULL
-    w <- c('<pre>',
+    # Need to default to html because non-RStudio knitting to .md
+    # will not know ultimate output format
+    if(! length(style))
+      style <- if(knitr::is_html_output() ) 'html'  else
+               if(knitr::is_latex_output()) 'latex' else 'html'
+    tt <- function(x) switch(style,
+                             text = x,
+                             html = paste0('<tt>', x, '</tt>'),
+                             latex = paste0('\\texttt{', x, '}'))
+    w <- c(if(style == 'html') '<pre>',
+           if(style == 'latex') toLatex(si, locale=FALSE) else
            capture.output(print(si, locale=FALSE)),
-           '</pre>',
-           if(cite) 'To cite R in publication use:',
-           if(cite) capture.output(print(citation(), style='html')))
+           if(style == 'html') '</pre>',
+           if(cite) 'To cite R in publications use:',
+           if(cite) capture.output(print(citation(), style=style)))
+    if(cite) {
+      s <- search()
+      for(pac in c('Hmisc', 'rms', 'rmsb', 'hreport', 'VGAM',
+                   'data.table', 'ggplot2', 'rstan', 'survival')) {
+        if(paste0('package:', pac) %in% s) {
+          w <- c(w, paste0('\nTo cite the ', tt(pac),
+                           ' package in publications use:\n'))
+          w <- c(w, capture.output(print(citation(pac)[1], style=style)))
+          }
+        }
+      }
     w <- paste0(w, '\n')
-    htmltools::HTML(w)
+    if(style == 'html') htmltools::HTML(w) else knitr::asis_output(w)
   },
   installcsl = function(cslname, rec=FALSE) {
     if(rec) {
@@ -750,7 +771,7 @@ markdown = list(
   # Function to print an object or inline text or both,
   # verbatim quoting if needed (results='asis') in effect in chunk
   # Inline text is printed with cat()
-  pr <- function(x='', obj=NULL, inline=NULL) {
+  pr = function(x='', obj=NULL, inline=NULL) {
     r <- knitr::opts_current$get('results')
     asis <- length(r) && r == 'asis'
     if(asis) cat('\n```')

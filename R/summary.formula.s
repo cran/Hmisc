@@ -800,8 +800,8 @@ plot.summary.formula.response <-
     main <- at$funlab
 
   nw      <- length(which)
-  pch     <- rep(pch, length=if(superposeStrata)ns else nw)
-  dotfont <- rep(dotfont, length=nw)
+  pch     <- rep(pch, length.out=if(superposeStrata)ns else nw)
+  dotfont <- rep(dotfont, length.out=nw)
   opar <- par(no.readonly=TRUE)
 
   if(reset.par)
@@ -906,8 +906,8 @@ plot.summary.formula.reverse <-
           else 'Percentages','Stratified by',
           obj$group.label)
 
-  pch     <- rep(pch, length=nw)
-  dotfont <- rep(dotfont, length=nw)
+  pch     <- rep(pch, length.out=nw)
+  dotfont <- rep(dotfont, length.out=nw)
   
   lab <- vnd <- z <- nmiss <- vnamd <- NULL
   type  <- obj$type; n <- obj$n
@@ -1661,7 +1661,7 @@ formatCons <- function(stats, nam, tr, group.freq, prmsd, sep='/',
       }
       if(prN)
         st[j] <-
-          paste0(st[j], outer.size(paste0(spc, math('N=', cqu[j, ncol(cqu)]))))
+          paste0(st[j], outer.size(paste0(spc, math(paste0('N=', cqu[j, ncol(cqu)])))))
     }
   } else {
     if(prmsd) {
@@ -2701,6 +2701,10 @@ catTestchisq=function(tab) {
        plotmathstat = 'chi[df]^2')
 }
 ordTestpo=function(group, x) {
+  
+  if (!requireNamespace("rms", quietly = TRUE))
+    stop("This function requires the 'rms' package.")
+  
   f <- rms::lrm(x ~ group)$stats
   list(P            = f['P'],
        stat         = f['Model L.R.'],

@@ -100,6 +100,9 @@ pomodm <- function(x=NULL, p, odds.ratio=1) {
 
 simRegOrd <- function(n, nsim=1000, delta=0, odds.ratio=1, sigma,
                       p=NULL, x=NULL, X=x, Eyx, alpha=0.05, pr=FALSE) {
+  if (!requireNamespace("rms", quietly = TRUE))
+    stop("This function requires the 'rms' package.")
+  
   if(length(x) && (length(x) != n))
     stop('x must be omitted or have length n')
 
@@ -151,6 +154,7 @@ propsPO <- function(formula, odds.ratio=NULL, ref=NULL, data=NULL,
   y  <- d[[v[1]]]
   yl <- label(y, default=v[1])
   y  <- as.factor(y)
+  d[[v[1]]] <- y
   x  <- d[[v[2]]]
   xl <- label(x, default=v[2])
   s  <- sn <- NULL
@@ -265,7 +269,7 @@ propsTrans <- function(formula, data=NULL, labels=NULL, arrow='\u2794',
 
   itrans <- integer(0)
   Prev   <- Cur <- Frac <- character(0)
-  prop   <- numeric(0)
+  prop   <- frq <- numeric(0)
 
   mu    <- markupSpecs$html
   arrowbr <- paste0(' ', arrow, '<br>')
@@ -281,8 +285,10 @@ propsTrans <- function(formula, data=NULL, labels=NULL, arrow='\u2794',
     tab   <- table(prev, cur)
     rowf  <- rowSums(tab)
     tab   <- as.data.frame(tab)
+#    tab   <- subset(tab, Freq > 0)
     tab$denom <- rowf[tab$prev]
     tab$prop  <- tab$Freq / tab$denom
+    frq   <- c(frq, tab$Freq)
     Prev  <- c(Prev, as.character(tab$prev))
     Cur   <- c(Cur,  as.character(tab$cur))
     prop  <- c(prop, tab$Freq / tab$denom)
@@ -302,8 +308,8 @@ propsTrans <- function(formula, data=NULL, labels=NULL, arrow='\u2794',
   transp <- factor(itrans, 2 : nt,
                   labels=paste0(xlab, ' ',
                                 times[1 : (nt - 1)], arrow, times[2 : nt]))
-  
-  w <- data.frame(trans, transp, Prev, Cur, prop, Frac,
+
+  w <- data.frame(trans, transp, Prev, Cur, prop, Frac, frq,
                   txt=if(! length(labels))
                         ifelse(Prev == Cur,
                          paste0('Stay at:', as.character(Prev)),
@@ -315,6 +321,7 @@ propsTrans <- function(formula, data=NULL, labels=NULL, arrow='\u2794',
                       paste0(labels[as.integer(Prev)],
                              arrowbr, labels[as.integer(Cur)])))
   w$txt <- paste0(w$transp, '<br>', w$txt, '<br>', w$Frac)
+  w <- subset(w, frq > 0)
   
   ggplot(w, aes(x=Prev, y=Cur, size=prop, label=txt)) +
     facet_wrap(~ trans, ncol=ncol, nrow=nrow) +

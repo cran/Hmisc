@@ -281,7 +281,7 @@ plot.summaryM <-
              'Stratified by',
              obj$group.label)
 
-    pch     <- rep(pch,     length=nw)
+    pch     <- rep(pch, length.out=nw)
   
     lab <- vnd <- z <- nmiss <- vnamd <- NULL
     type  <- obj$type; n <- obj$n
@@ -930,6 +930,10 @@ plotpsummaryM <-
            prtest = c('P', 'stat', 'df', 'name'), pdig = 3, eps = 0.001,
            height=NULL, width=NULL)
 {
+    
+  if (!requireNamespace("plotly"))
+    stop("This function requires the 'plotly' package.")
+    
   obj <- x
   vnames  <- match.arg(vnames)
   which   <- match.arg(which)

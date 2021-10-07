@@ -23,7 +23,8 @@ sas.get <-
            force.single=FALSE,
            pos,
            uncompress=FALSE,
-           defaultencoding="latin1")
+           defaultencoding="latin1",
+           var.case="lower")
 {
   if(force.single) stop('force.single does not work under R')
   dates. <- match.arg(dates.)
@@ -377,6 +378,13 @@ sas.get <-
     else atr$id <- id	
   }
 
+  if(var.case=="lower"){
+    names(ds)=tolower(names(ds))
+  }
+  if(var.case=="upper"){
+    names(ds)=toupper(names(ds))
+  }
+
   if(!is.null(FORMATS))
     atr$formats <- FORMATS
 
@@ -432,6 +440,8 @@ print.timePOSIXt <- function(x, ...) print(format(x, ...))
 ## Output format routine needed by chron for usual SAS date format
 ddmmmyy <- function(x)
 {
+  if (!requireNamespace("chron", quietly = TRUE))
+    stop("This function requires the 'chron' package.")
   y <- chron::month.day.year(trunc(unclass(x)), attr(x,"origin"))
   yr <- y$year
   m <- c("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct",
@@ -695,8 +705,6 @@ sas.get.macro <-
     "  %END;", "  END;", "if eof then PUT 'PUT; RUN;';", "run;", 
     "%include \"&temp1\";", "data _null_; set &_s_;", 
     " retain __delim 18 _bk_ -1; ", " file \"&temp1\" LRECL=4096;", 
-    " name=TRANSLATE(name,\".abcdefghijklmnopqrstuvwxyz\",", 
-    "\t\t     \"_ABCDEFGHIJKLMNOPQRSTUVWXYZ\");", 
     " format=TRANSLATE(format,\".abcdefghijklmnopqrstuvwxyz\",", 
     "                         \"_ABCDEFGHIJKLMNOPQRSTUVWXYZ\");", 
     " put name +_bk_ __delim IB1. type +_bk_ __delim IB1. length +_bk_ __delim IB1.",

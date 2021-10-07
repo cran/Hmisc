@@ -17,12 +17,17 @@ mdb.get <- function(file, tables=NULL, lowernames=FALSE, allow=NULL,
     end   <- grep('^\\);$', s) - 1
     s <- s[start:end]
     s <- strsplit(s, '\t')
-    vnames <- sapply(s, function(x)x[2])
+    vnames <- sapply(s, function(x) {
+      bracketed = x[2]
+      if(substr(bracketed, 1, 1) == '[')
+        substr(bracketed, 2, nchar(bracketed) - 1) else bracketed
+    })
     vnames <- makeNames(vnames, unique=TRUE, allow=allow)
     if(lowernames) vnames <- casefold(vnames)
     types  <- sapply(s, function(x)x[length(x)])
     datetime <- vnames[grep('DateTime', s)]
-    system(paste('mdb-export', mdbexportArgs, file, shQuote(tab), '>', f))
+    system2(command = 'mdb-export',
+            args = paste(mdbexportArgs, file, shQuote(tab)), stdout = f)
     d <- csv.get(f, datetimevars=datetime,
                  lowernames=lowernames, allow=allow,
                  dateformat=dateformat, ...)

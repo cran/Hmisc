@@ -1,9 +1,18 @@
 Package: Hmisc
-Version: 4.5-0
-Date: 2021-02-27
+Version: 4.6-0
+Date: 2021-10-05
 Title: Harrell Miscellaneous
-Author: Frank E Harrell Jr <fh@fharrell.com>, with
-  contributions from Charles Dupont and many others.
+Authors@R: 
+    c(person(given = "Frank E",
+           family = "Harrell Jr",
+           role = c("aut", "cre"),
+           email = "fh@fharrell.com",
+           comment = c(ORCID = "0000-0002-8271-5493")),
+			person(given = "Charles",
+			       family = "Dupont",
+						 role = "ctb",
+						 email = "charles.dupont@vumc.org",
+						 comment = "contributed several functions and maintains latex functions"))
 Maintainer: Frank E Harrell Jr <fh@fharrell.com>
 Depends: lattice, survival (>= 3.1-6), Formula, ggplot2 (>= 2.2)
 Imports: methods, latticeExtra, cluster, rpart, nnet, foreign, gtable,
@@ -19,10 +28,13 @@ Description: Contains many functions useful for data
 	and recoding variables.
 License: GPL (>= 2)
 LazyLoad: Yes
-URL: https://hbiostat.org/R/Hmisc/, https://github.com/harrelfe/Hmisc/
+URL: https://hbiostat.org/R/Hmisc/
 Encoding: UTF-8
 RoxygenNote: 7.1.1
 NeedsCompilation: yes
-Packaged: 2021-02-27 21:48:28 UTC; harrelfe
+Packaged: 2021-10-06 18:12:56 UTC; harrelfe
+Author: Frank E Harrell Jr [aut, cre] (<https://orcid.org/0000-0002-8271-5493>),
+  Charles Dupont [ctb] (contributed several functions and maintains latex
+    functions)
 Repository: CRAN
-Date/Publication: 2021-02-28 06:00:07 UTC
+Date/Publication: 2021-10-07 09:00:02 UTC
