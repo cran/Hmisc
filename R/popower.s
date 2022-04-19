@@ -96,7 +96,30 @@ pomodm <- function(x=NULL, p, odds.ratio=1) {
   xmed2 <- approx(rev(cumsum(rev(p))), x, xout=0.5)$y
   xmed  <- (xmed1 + xmed2) / 2
   c(mean=xbar, median=xmed)
+}
+
+simPOcuts <- function(n, nsim=10, odds.ratio=1, p) {
+  if(abs(sum(p) - 1.) > 1e-5)
+    stop('probabilities in p must sum to 1')
+  p0   <- p
+  p1   <- pomodm(p=p0, odds.ratio=odds.ratio)
+  lp   <- length(p)
+  yval <- if(length(names(p))) names(p) else as.character(1 : lp)
+  or <- matrix(NA, nrow=nsim, ncol=lp - 1,
+               dimnames=list(paste('Simulation', 1 : nsim),
+                             paste0('y>=', yval[-1])))
+  for(i in 1 : nsim) {
+    y0 <- sample(1 : lp, n / 2, prob=p0,  replace=TRUE)
+    y1 <- sample(1 : lp, n / 2, prob=p1,  replace=TRUE)
+    for(ycut in 2 : lp){
+      prop0 <- mean(y0 >= ycut)
+      prop1 <- mean(y1 >= ycut)
+      or[i, ycut - 1] <- (prop1 / (1. - prop1)) / (prop0 / (1. - prop0))
+    }
   }
+  or
+  }
+  
 
 simRegOrd <- function(n, nsim=1000, delta=0, odds.ratio=1, sigma,
                       p=NULL, x=NULL, X=x, Eyx, alpha=0.05, pr=FALSE) {

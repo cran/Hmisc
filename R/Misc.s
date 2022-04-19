@@ -1691,21 +1691,22 @@ knitrSet <-
            fig.align = if(! bd) 'center',
            fig.show  = 'hold',
            fig.pos   = if(! bd) 'htbp',
-           fig.lp    = if(! bd)
-                         paste('fig', basename, sep=':'),
+           fig.lp    = if(! bd) paste('fig', basename, sep=':'),
            dev       = switch(lang,
-                              latex='pdf', markdown='png', blogdown=NULL),
+                              latex='pdf', markdown='png',
+                              blogdown=NULL, quarto=NULL),
            tidy=FALSE, error=FALSE,
            messages=c('messages.txt', 'console'),
            width=61, decinline=5, size=NULL, cache=FALSE,
            echo=TRUE, results='markup', capfile=NULL,
-           lang=c('latex','markdown','blogdown')) {
+           lang=c('latex','markdown','blogdown','quarto')) {
 
   if(! requireNamespace('knitr')) stop('knitr package not available')
   
   messages <- match.arg(messages)
   lang     <- match.arg(lang)
-  bd       <- lang == 'blogdown'
+  options(knitrSet.lang = lang)
+  bd       <- lang %in% c('blogdown', 'quarto')
   
   ## Specify e.g. dev=c('pdf','png') or dev=c('pdf','postscript')
   ## to produce two graphics files for each plot
@@ -1780,9 +1781,14 @@ knitrSet <-
       
       cf <- function(before, options, envir) {
         if(before) return()
+        lang <- getOption('knitrSet.lang')
         label   <- knitr::opts_current$get('label')
-        figname <- paste0(options$fig.lp, label)
-        figref  <- paste0('\\@ref(', figname, ')')
+        prefx   <- if(lang == 'quarto') '' else options$fig.lp
+        figname <- paste0(prefx, label)
+        ## Quarto uses a chunk figure label convention fig-...
+        ## and figures are referenced by @fig-...
+        figref  <- if(grepl('^fig-', figname))
+                     paste0('@', figname) else paste0('\\@ref(', figname, ')')
         cap     <- options$fig.cap
         scap    <- options$fig.scap
         if(length(cap) && is.call(cap))   cap <- eval(cap)
@@ -1814,7 +1820,8 @@ knitrSet <-
   ## knitr doesn't like null fig.align etc.
     do.call(knitr::opts_chunk$set, w)
 
-  if(lang != 'latex') knitr::knit_hooks$set(uncover=markupSpecs$html$uncover)
+  if(lang %in% c('markdown', 'blogdown'))
+      knitr::knit_hooks$set(uncover=markupSpecs$html$uncover)
 
   hook_chunk = knitr::knit_hooks$get('chunk')
 
