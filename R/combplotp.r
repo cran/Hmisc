@@ -107,10 +107,12 @@ combplotp <- function(formula, data=NULL, subset, na.action=na.retain,
   g <- function(x) {
     i <- x > 0
     ifelse(sum(i) == 1, mdesc[names(x)[i]], 0)
-    }
+  }
+
   tiebr <- apply(f[, 1 : p], 1, g)
   i <- order(-f$Freq, -tiebr)
   f <- f[i, ]
+
 
   if(length(maxcomb) && maxcomb < nrow(f))     f <- f[1 : maxcomb, ]
   if(length(minfreq) && any(f$Freq < minfreq)) f <- f[f$Freq >= minfreq, ]
@@ -149,6 +151,8 @@ combplotp <- function(formula, data=NULL, subset, na.action=na.retain,
     nlongest <- nchar(longest)
     width    <- hdc(rep('X', n), per=23, low=450) + 8 * nlongest
   }
+  auto <- .Options$plotlyauto
+  if(length(auto) && auto) {height <- width <- NULL}
   P <- plotly::plot_ly(height=height, width=width)
   
   # Add grid lines to take control of their span

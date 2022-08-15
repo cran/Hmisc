@@ -59,7 +59,8 @@ curveRep(x, y, id, kn = 5, kxdist = 5, k = 5, p = 5,
 
 \method{print}{curveRep}(x, \dots)
 
-\method{plot}{curveRep}(x, which=1:length(res), method=c('all','lattice'),
+\method{plot}{curveRep}(x, which=1:length(res),
+                        method=c('all','lattice','data'),
                         m=NULL, probs=c(.5, .25, .75), nx=NULL, fill=TRUE,
                         idcol=NULL, freq=NULL, plotfreq=FALSE,
                         xlim=range(x), ylim=range(y),
@@ -106,7 +107,9 @@ curveSmooth(x, y, id, p=NULL, pr=TRUE)
 	x-distribution by sample size by cluster combinations.  Fewer may be
 	plotted by specifying \code{which}.  Specify \code{method='lattice'}
 	to show a lattice \code{xyplot} of a single sample size interval,
-	with x distributions going across and clusters going down.}
+	with x distributions going across and clusters going down.  To not
+	plot but instead return a data frame for a single sample size
+	interval, specify \code{method='data'}}
   \item{m}{the number of curves in a cluster to randomly sample if there
 	are more than \code{m} in a cluster.  Default is to draw all curves
 	in a cluster.  For \code{method = "lattice"} you can specify
@@ -195,7 +198,7 @@ curveSmooth(x, y, id, p=NULL, pr=TRUE)
 \seealso{\code{\link[cluster]{clara}},\code{\link[Hmisc]{dataRep}}}
 \examples{
 \dontrun{
-# Simulate 200 curves with pre-curve sample sizes ranging from 1 to 10
+# Simulate 200 curves with per-curve sample sizes ranging from 1 to 10
 # Make curves with odd-numbered IDs have an x-distribution that is random
 # uniform [0,1] and those with even-numbered IDs have an x-dist. that is
 # half as wide but still centered at 0.5.  Shift y values higher with
@@ -231,6 +234,14 @@ plot(w, 3, 'lattice', m=1)  # show a single "representative" curve
 plot(w, 3, 'lattice', m='quantiles', probs=c(.5,.1,.9))
 # Same plot but with much less grouping of x variable
 plot(w, 3, 'lattice', m='quantiles', probs=c(.5,.1,.9), nx=2)
+
+# Use ggplot2 for one sample size interval
+z <- plot(w, 2, 'data')
+ggplot(z, aes(x, y, color=curve)) + geom_line() +
+       facet_grid(distribution ~ cluster) +
+       theme(legend.position='none') +
+       labs(caption=z$ninterval[1])
+
 
 # Smooth data before profiling.  This allows later plotting to plot
 # smoothed representative curves rather than raw curves (which

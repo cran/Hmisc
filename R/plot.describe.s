@@ -1,15 +1,19 @@
 plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                           what=NULL, sort=c('ascending', 'descending', 'none'),
-                          n.unique=10, digits=5, ...) {
+                          n.unique=10, digits=5, bvspace=2, ...) {
 
   which <- match.arg(which)
   pty <- grType() == 'plotly' && requireNamespace("plotly")
+  auto <- .Options$plotlyauto
+  auto <- length(auto) && auto
   
   if(length(what)) x <- x[what]
 
   sort <- match.arg(sort)
 
   specs <- if(pty) markupSpecs$html else markupSpecs$plain
+
+  if(bvspace == 1) stop('bvspace may not be 1.0')
 
   format_counts <- function(s) {
     bl <- '                                     '
@@ -62,7 +66,7 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                           collapse=specs$br)
 
       y <- if(type == 'binary') 0 else 1 : length(freq)
-      y <- c(2, rep(1, length(freq) - 1))
+      y <- c(bvspace, rep(1, length(freq) - 1))
       ## extra 1 for between-variable spacing
 
       j <- switch(sort,
@@ -104,7 +108,7 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
       z$cumy <- cumsum(z$y)
       if(! pty) z$cumy <- - z$cumy
 
-      tly <- z$cumy[z$y == 2]
+      tly <- z$cumy[z$y == bvspace]
 
       if(! pty) {
         r <- range(z$Proportion)
@@ -137,12 +141,12 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
                              color=~ Missing, mode='markers',
                              hoverinfo='text',
                              type='scatter', name='',
-                             height=plotlyParm$heightDotchart(nrow(z)))
+                             height=if(! auto) plotlyParm$heightDotchart(nrow(z)))
            else
              plotly::plot_ly(z, x=~ Proportion, y=~ cumy, text=~ text,
                              mode='markers', hoverinfo='text',
                              type='scatter', name='',
-                             height=plotlyParm$heightDotchart(nrow(z)))
+                             height=if(! auto) plotlyParm$heightDotchart(nrow(z)))
       
         pcat <-
           plotly::add_trace(pcat,
@@ -154,7 +158,7 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
       tl <- seq(0, 1, by=0.05)
       ## X tick mark labels for multiples of 0.1
       tt <- ifelse(tl %% 0.1 == 0, as.character(tl), '')
-      tly <- z$cumy[z$y == 2]
+      tly <- z$cumy[z$y == bvspace]
       
       pcat <- plotly::layout(pcat,
                              xaxis=list(range=c(0,1.15), zeroline=TRUE,
@@ -241,8 +245,8 @@ plot.describe <- function(x, which=c('both', 'continuous', 'categorical'),
       curtail <- function(x) min(1000, max(x, 350))
       pcon <- if(! pty) g
               else
-                plotly::ggplotly(g, tooltip='text', width=800,
-                               height=curtail(60 + 25 * length(unam)))
+                plotly::ggplotly(g, tooltip='text', width=if(! auto) 800,
+                               height=if(! auto) curtail(60 + 25 * length(unam)))
 
 ## If don't run plot_ly, hovering will pop up all vertical points
 #      pcon <- if(any(z$missing > 0))

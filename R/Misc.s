@@ -1220,17 +1220,18 @@ convertPdate <- function(x, fracnn=0.3, considerNA=NULL) {
 
 getHdata <-
   function(file, what=c('data','contents','description','all'),
-           where='https://hbiostat.org/data/repo')
-  {
+           where='https://hbiostat.org/data/repo') {
     what <- match.arg(what)
     fn <- as.character(substitute(file))
-    ads <-
-      scan(paste(where,'Rcontents.txt',sep='/'),list(''),quiet=TRUE)[[1]]
-    a <- unlist(strsplit(ads,'.sav|.rda'))
-    if(missing(file))
-      return(a)
+    localrepo <- .Options$localHfiles
+    localrepo <- length(localrepo) && is.logical(localrepo) && localrepo
+    if(localrepo) where <- '~/web/data/repo'
     
-    wds <- paste(substitute(file),c('rda','sav'),sep='.')
+    ads <- readLines(paste0(where, '/Rcontents.txt'))
+    a <- unlist(strsplit(ads,'.sav|.rda'))
+    if(missing(file)) return(a)
+    
+    wds <- paste(substitute(file), c('rda','sav'), sep='.')
     if(!any(wds %in% ads))
       stop(paste(paste(wds, collapse=','),
                  'are not on the web site.\nAvailable datasets:\n',
@@ -1238,7 +1239,7 @@ getHdata <-
     wds <- wds[wds %in% ads]
     if(what %in% c('contents','all')) {
       w <- paste(if(fn=='nhgh')'' else 'C',fn,'.html',sep='')
-      browseURL(paste(where,w,sep='/'))
+      browseURL(paste(where, w, sep='/'))
     }
     
     if(what %in% c('description','all')) {
@@ -1249,7 +1250,7 @@ getHdata <-
         warning(paste('No description file available for',fn))
       else {
         w <- ades[i[1]]
-        browseURL(paste(where,w,sep='/'))
+        browseURL(paste(where, w, sep='/'))
       }
     }
     
@@ -1260,6 +1261,7 @@ getHdata <-
     if(length(f) > 1)
       warning(paste('More than one file matched; using the first:',
                     paste(f, collapse=', ')))
+    if(localrepo) return(invisible(load(f, .GlobalEnv)))
     tf <- tempfile()
     download.file(f, tf, mode='wb', quiet=TRUE)
     load(tf, .GlobalEnv)
@@ -1567,12 +1569,18 @@ getRs <- function(file=NULL,
                   guser='harrelfe', grepo='rscripts',
                   gdir='raw/master', dir=NULL,
                   browse=c('local', 'browser'), cats=FALSE,
-                  put=c('rstudio', 'source')) {
+                  put=c('source', 'rstudio')) {
   
   browse <- match.arg(browse)
   put    <- match.arg(put)
-  where  <- paste('https://github.com', guser, grepo, gdir, sep='/')
-  if(length(dir)) where <- paste(where, dir, sep='/')
+
+  localrepo <- .Options$localHfiles
+  localrepo <- length(localrepo) && is.logical(localrepo) && localrepo
+  if(localrepo) where <- '~/R/rscripts'
+  else {
+    where  <- paste('https://github.com', guser, grepo, gdir, sep='/')
+    if(length(dir)) where <- paste(where, dir, sep='/')
+    }
   
   trim <- function(x) sub('^[[:space:]]+','',sub('[[:space:]]+$','', x))
 
@@ -1653,32 +1661,18 @@ getRs <- function(file=NULL,
       }
     if(browse == 'local') pc(s)
     else
-      browseURL('https://github.com/harrelfe/rscripts/blob/master/contents.md')
+      browseURL(if(localrepo) '~/R/rscripts/contents.md'
+                else
+                  'https://github.com/harrelfe/rscripts/blob/master/contents.md')
     return(invisible(s))
   }
 
   if(put == 'source')
     return(invisible(source(paste(where, file, sep='/'))))
-    
-  download.file.HTTPS(paste(where, file, sep='/'), file)
-  os <- Sys.info()['sysname']
-  windowsRstudio <- function() {    # Written by Cole Beck
-    RSTUDIO_BIN <- file.path('C:','Program Files','RStudio','bin','rstudio.exe')
-    if(file.access(RSTUDIO_BIN, mode=1) == -1) {
-      opts <- system("where /r c: rstudio.exe", TRUE)
-      for(i in seq_along(opts)) {
-        RSTUDIO_BIN <- opts[i]
-        if(file.access(RSTUDIO_BIN, mode=1) == 0) return(RSTUDIO_BIN)
-      }
-      stop('rstudio cannot be found')
-    }
-    RSTUDIO_BIN
-  }
-  switch(os,
-         Linux   = system2('rstudio', file),
-         Windows = system2(windowsRstudio(), file),
-         system(paste('open -a rstudio', file)) )
-         ## assume everything else is Mac
+
+  if(localrepo) file.copy(paste(where, file, sel='/'), file)
+  else download.file.HTTPS(paste(where, file, sep='/'), file)
+  file.edit(file)
   invisible()
 }
 
@@ -1967,4 +1961,31 @@ restoreHattrib <- function(obj, attribs) {
     }
   }
   obj
+}
+
+if(FALSE) {
+Hglossary <-
+  list(Gmd=list('Gini\'s mean difference', 'a measure of dispersion defined as the mean absolute difference over all possible pairs of different observations.  It is more robust than the standard deviation.', 'https://www.researchgate.net/publication/5182211_Gini\'s_Mean_Difference_A_Superior_Measure_of_Variability_for_Non-Normal_Distributions'),
+       Info=list('Information index', 'a measure of the information content in a numeric variable relative to the information in a continuous numeric variable with no ties.  The lowest value of Info occurs in a very imbalanced binary variable.  Info comes from the approximate formula for the variance of a log odds ratio for a proportional odds model/Wilcoxon test, due to Whitehead (1993). Info is the ratio of the variance if there no ties in the data to the variance for the frequency distribution of observed values.', 'http://hbiostat.org/bib/r2.html')
+       )
+
+rHglossary <- function(x, html=TRUE, collapse=TRUE) {
+  nams <- names(Hglossary)
+  i <- which(tolower(nams) == tolower(x))
+  if(! length(i))
+    stop(paste(x, 'is not defined in Hglossary'))
+  w     <- Hglossary[[i]]
+  sname <- nams[i]
+  lname <- w[[1]]
+  def   <- w[[2]]
+  href  <- w[[3]]
+  if(html) {
+    lname <- paste0('<a href="', href[1], '">', lname, '</a>')
+    if(length(href) > 1)
+      def <- paste0(def, ' <a href="', href[2], '">More information</a>')
+  }
+  if(collapse) paste0('<details><summary>', sname, '</summary>',
+                             lname, ': ', def, '</details>')
+  else paste0(sname, ': ', lname, ', ', def)
+}
 }
