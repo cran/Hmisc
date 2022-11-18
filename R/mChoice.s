@@ -1,7 +1,6 @@
-# $Id$
 mChoice <- function(..., label='', 
                     sort.levels=c('original','alphabetic'),
-                    add.none=FALSE, drop=TRUE)
+                    add.none=FALSE, drop=TRUE, ignoreNA=TRUE)
 {
   sort.levels <- match.arg(sort.levels)
   dotlist <- list(...)
@@ -9,20 +8,18 @@ mChoice <- function(..., label='',
   if (drop)
     lev <- unique(as.character(unlist(dotlist)))
   else
-    lev <- unique(unlist(lapply(dotlist, function(x)levels(as.factor(x)))))
-
+    lev <- unique(unlist(lapply(dotlist, function(x) levels(as.factor(x)))))
+  if(ignoreNA) lev <- setdiff(lev, NA)
   if(sort.levels=='alphabetic') lev <- sort(lev)
 
   lev <- setdiff(lev,'')
 
   vcall <- as.character(sys.call())[-1]
-
-  dotlist <- lapply(dotlist, FUN=match, table=lev, nomatch=0)
-
+  dotlist <- lapply(dotlist, FUN=match, table=lev) #, nomatch=0)
+  
   g <- function(...) {
     set <- c(...)
     set <- set[!is.na(set)]
-
     if(!length(set)) return('')
 
     paste(sort(unique(set)), collapse=';')
@@ -155,6 +152,13 @@ as.double.mChoice <- function(x, drop=FALSE, ...) {
   X
 }
 
+nmChoice <- function(object) {
+  y <- gsub('[^;]', '', object)
+  nchoices <- nchar(y) + 1
+  nchoices[object == ''] <- 0
+  nchoices
+}
+
 summary.mChoice <- function(object, ncombos=5, minlength=NULL,
                             drop=TRUE, ...) {
   nunique <- length(unique(object))
@@ -209,7 +213,8 @@ match.mChoice <- function(x, table, nomatch = NA,
 # inmChoice <- function(x, values) {
 #  match.mChoice(values, x, nomatch=0) > 0
 # }
-inmChoice <- function(x, values) {
+inmChoice <- function(x, values, condition=c('any', 'all')) {
+  condition <- match.arg(condition)
   lev <- attr(x, 'levels')
   if(is.character(values)) {
     v <- match(values, lev)
@@ -219,12 +224,34 @@ inmChoice <- function(x, values) {
   }
   x <- paste(';', unclass(x), ';', sep='')
   values <- paste(';', values, ';', sep='')
-  res <- rep(FALSE, length(x))
+  res <- rep(condition != 'any', length(x))
   for(j in 1:length(values)) {
     i <- grep(values[j], x)
-    if(length(i)) res[i] <- TRUE
+    if(length(i)) {
+      if(condition == 'any') res[i] <- TRUE
+      else
+        res[-i] <- FALSE
+      } else if(condition == 'all') res[] <- FALSE
   }
   res
 }
 
+inmChoicelike <- function(x, values, condition=c('any', 'all'),
+                          ignore.case=FALSE, fixed=FALSE) {
+  condition <- match.arg(condition)
+  if(! is.character(values)) stop('values must be a character vector')
+  x <- as.character(x)
+  res <- rep(condition != 'any', length(x))
+  for(j in 1 : length(values)) {
+    i <- grep(values[j], x, ignore.case=ignore.case, fixed=fixed)
+    if(length(i)) {
+      if(condition == 'any') res[i] <- TRUE
+      else
+        res[-i] <- FALSE
+      } else if(condition == 'all') res[] <- FALSE
+  }
+  res
+}
+
+      
 is.mChoice <- function(x) inherits(x, 'mChoice')

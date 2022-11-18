@@ -237,20 +237,22 @@ lm.fit.qr.bare <- function(x, y,
   res
 }
 
-all.is.numeric <- function(x, what=c('test','vector'),
+all.is.numeric <- function(x, what=c('test','vector','nonnum'),
                            extras=c('.','NA'))
 {
   what <- match.arg(what)
   x <- sub('[[:space:]]+$', '', x)
   x <- sub('^[[:space:]]+', '', x)
-  xs <- x[x %nin% c('',extras)]
-  if(! length(xs)) return(if(what == 'test') FALSE else x)
-  isnum <- suppressWarnings(!any(is.na(as.numeric(xs))))
-  if(what=='test')
-    isnum
-  else if(isnum)
-    as.numeric(x)
-  else x
+  xs <- x[x %nin% c('', extras)]
+  if(! length(xs) || all(is.na(x)))
+    return(switch(what, test = FALSE, vector=x, nonnum=x[0]))
+  isnon <- suppressWarnings(! is.na(xs) & is.na(as.numeric(xs)))
+  isnum <- ! any(isnon)
+  # suppressWarnings below handles extras present in x
+  switch(what,
+         test   = isnum,
+         vector = if(isnum) suppressWarnings(as.numeric(x)) else x,
+         nonnum = xs[isnon])
 }
 
 Lag <- function(x, shift=1)
@@ -1672,7 +1674,9 @@ getRs <- function(file=NULL,
 
   if(localrepo) file.copy(paste(where, file, sel='/'), file)
   else download.file.HTTPS(paste(where, file, sep='/'), file)
-  file.edit(file)
+  if(requireNamespace('rstudioapi', quietly=TRUE) &&
+     rstudioapi::isAvailable()) rstudioapi::navigateToFile(file)
+  else file.edit(file)
   invisible()
 }
 
@@ -1836,7 +1840,7 @@ knitrSet <-
 
 
 grType <- function() {
-	if('plotly' %nin% utils::installed.packages()[,1]) return('base')
+  if(! length(find.package('plotly', quiet=TRUE))) return('base')
 	if(length(g <- .Options$grType) && g == 'plotly') 'plotly' else 'base'
 }
 
@@ -1949,15 +1953,18 @@ keepHattrib <- function(obj) {
 }
 
 restoreHattrib <- function(obj, attribs) {
+  nam <- names(obj)
   for(n in names(attribs)) {
     a <- attribs[[n]]
     if(length(a)) {
       sv <- n == '.single.variable.'
-      x <- if(sv) obj else obj[[n]]
-      if(length(a$label)) label(x) <- a$label
-      if(length(a$units)) units(x) <- a$units
-      if(sv) return(x)
-      obj[[n]] <- x
+      if(sv || n %in% nam) {
+        x <- if(sv) obj else obj[[n]]
+        if(length(a$label)) label(x) <- a$label
+        if(length(a$units)) units(x) <- a$units
+        if(sv) return(x)
+        obj[[n]] <- x
+      }
     }
   }
   obj

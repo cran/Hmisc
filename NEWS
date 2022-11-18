@@ -1,4 +1,19 @@
-Changes in version 4.7-1 (2022-08-13}
+Changes in version 4.7-2 (2022-11-18)
+   * grType: changed to use find.package() instead of the slow installed.packages() (thanks: Uwe Ligges)
+   * latex.default: changed to by default omit the LaTeX comment; specify options(omitlatexcom=FALSE) to get original behavior
+   * ggplot.transcan: corrected color/color assignments; thanks: David Norris
+   * restoreHattrib: fixed to ignore attributes for variables that are not in obj
+   * popower: fixed URL for Live Free or Dichotomize
+   * getRs: improved to use rstudioapi to load the file into a script editor window
+   * mChoice: added ignoreNA argument and made new default behavior ignoreNA=TRUE unlike the prior versions; made value (appearing with semicolons) null instead of 0 when no choice was selected, which makes option add.none finally work
+   * mChoice: added condition argument to intersect all values instead of unioning them
+   * mChoicelike: new function like inmChoice but allowing matching on pieces of labels and optionally ignoring the case
+   * nmChoice: new function to compute the number of choices that were made per observation
+   * describe: fixed length > 1 problem with check for timeDate class
+   * Merge: better error message if unexpected variable from non-id-variable overlap
+   * all.is.numeric: corrected to return TRUE is the only non-NA values after converting to numeric were originally NA, addedd what='nonnum' argument
+
+Changes in version 4.7-1 (2022-08-13)
    * plot.describe: added bvspace argument to control spacing between categorical variables
    * getRs: changed default put argument to 'source', changed RStudio code
    * html.contents.data.frame: changed long space to &emsp; to render in more browser

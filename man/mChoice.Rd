@@ -6,6 +6,8 @@
 \alias{as.character.mChoice}
 \alias{as.double.mChoice}
 \alias{inmChoice}
+\alias{inmChoicelike}
+\alias{nmChoice}
 \alias{match.mChoice}
 \alias{[.mChoice}
 \alias{print.summary.mChoice}
@@ -50,8 +52,11 @@
   contains at least one of the codes or value labels in the second
   argument.
 
-  \code{match.mChoice} creats an integer vector of the indexes of all
+  \code{match.mChoice} creates an integer vector of the indexes of all
   elements in \code{table} which contain any of the speicified levels
+
+	\code{nmChoice} returns an integer vector of the number of choices
+	that were made
 
   \code{is.mChoice} returns \code{TRUE} is the argument is a multiple
   choice variable.
@@ -59,7 +64,7 @@
 \usage{
 mChoice(\dots, label='',
         sort.levels=c('original','alphabetic'), 
-        add.none=FALSE, drop=TRUE)
+        add.none=FALSE, drop=TRUE, ignoreNA=TRUE)
 
 \method{format}{mChoice}(x, minlength=NULL, sep=";", \dots)
 
@@ -78,7 +83,12 @@ mChoice(\dots, label='',
 
 match.mChoice(x, table, nomatch=NA, incomparables=FALSE)
 
-inmChoice(x, values)
+inmChoice(x, values, condition=c('any', 'all'))
+
+inmChoicelike(x, values, condition=c('any', 'all'),
+              ignore.case=FALSE, fixed=FALSE)
+
+nmChoice(object)
 
 is.mChoice(x)
 
@@ -120,6 +130,8 @@ is.mChoice(x)
     set \code{drop=FALSE} to keep unused factor levels as columns of the matrix
     produced by \code{mChoice}
   }
+  \item{ignoreNA}{set to \code{FALSE} to keep any \code{NA}s present in
+data as a real level.  Prior to Hmisc 4.7-2 \code{FALSE} was the default.}
   \item{x}{
     an object of class \code{"mchoice"} such as that created by
     \code{mChoice}.  For \code{is.mChoice} is any object.
@@ -154,16 +166,25 @@ is.mChoice(x)
   \item{values}{
     a scalar or vector.  If \code{values} is integer, it is
     the choice codes, and if it is a character vector, it is assumed to
-    be value labels.
+    be value labels.  For \code{inmChoicelike} \code{values} must be
+    character strings which are pieces of choice labels.
   }
+  \item{condition}{set to \code{'all'} for \code{inmChoice} to require
+that all choices in \code{values} be present instead of the default of
+any of them present.}
+  \item{ignore.case}{set to \code{TRUE} to have \code{inmChoicelike}
+ignore case in the data when matching on \code{values}}
+  \item{fixed}{see \code{grep}}
 }
 \value{
   \code{mChoice} returns a character vector of class \code{"mChoice"}
   plus attributes \code{"levels"} and \code{"label"}.
   \code{summary.mChoice} returns an object of class
-  \code{"summary.mChoice"}.  \code{inmChoice} returns a logical vector.
+  \code{"summary.mChoice"}.  \code{inmChoice} and \code{inmChoicelike}
+  return a logical vector.
   \code{format.mChoice} returns a character vector, and
   \code{as.double.mChoice} returns a binary numeric matrix.
+  \code{nmChoice} returns an integer vector
 }
 \author{
   Frank Harrell
@@ -198,12 +219,16 @@ Symptoms
 print(Symptoms, long=TRUE)
 format(Symptoms[1:5])
 inmChoice(Symptoms,'Headache')
+inmChoicelike(Symptoms, 'head', ignore.case=TRUE)
 levels(Symptoms)
 inmChoice(Symptoms, 3)
+# Find all subjects with either of two symptoms
 inmChoice(Symptoms, c('Headache','Hangnail'))
 # Note: In this example, some subjects have the same symptom checked
 # multiple times; in practice these redundant selections would be NAs
 # mChoice will ignore these redundant selections
+# Find all subjects with both symptoms
+inmChoice(Symptoms, c('Headache', 'Hangnail'), condition='all')
 
 meanage <- N <- numeric(5)
 for(j in 1:5) {

@@ -1,9 +1,6 @@
 #include "R.h"
 
-void sort2(np,ra,rb)
-int *np;
-double ra[];
-int rb[];
+void sort2(int *np, double ra[], int rb[])
 {
   int l,j,ir,i,n,rrb,*xrb;
   double rra,*xra;
@@ -46,10 +43,7 @@ int rb[];
 }
 
 
-void crank(np, w)
-int *np;
-double w[];
-
+void crank(int *np, double w[])
 {
   int n,j=1,ji,jt;
   double rank,*xw;
@@ -73,10 +67,7 @@ double w[];
 }
 
 
-void F77_SUB(rank)(np, x, w, ix, r)
-int *np, ix[];
-double x[],r[],w[];
-
+void F77_SUB(rank)(int *np, double x[], double w[], int ix[], double r[])
 {
   int n, *xix, i;
   double *xx, *xr, *xw;
