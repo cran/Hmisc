@@ -1,6 +1,6 @@
 Package: Hmisc
-Version: 4.7-2
-Date: 2022-11-18
+Version: 4.8-0
+Date: 2023-02-08
 Title: Harrell Miscellaneous
 Authors@R: 
     c(person(given = "Frank E",
@@ -17,7 +17,7 @@ Maintainer: Frank E Harrell Jr <fh@fharrell.com>
 Depends: lattice, survival (>= 3.1-6), Formula, ggplot2 (>= 2.2)
 Imports: methods, latticeExtra, cluster, rpart, nnet, foreign, gtable,
         grid, gridExtra, data.table, htmlTable (>= 1.11.0), viridis,
-        htmltools, base64enc
+        htmltools, base64enc, colorspace
 Suggests: acepack, chron, rms, mice, rstudioapi, tables, knitr, plotly
         (>= 4.5.6), rlang, plyr, VGAM
 Description: Contains many functions useful for data
@@ -32,9 +32,9 @@ URL: https://hbiostat.org/R/Hmisc/
 Encoding: UTF-8
 RoxygenNote: 7.1.2
 NeedsCompilation: yes
-Packaged: 2022-11-18 21:34:48 UTC; harrelfe
+Packaged: 2023-02-08 20:53:24 UTC; harrelfe
 Author: Frank E Harrell Jr [aut, cre] (<https://orcid.org/0000-0002-8271-5493>),
   Charles Dupont [ctb] (contributed several functions and maintains latex
     functions)
 Repository: CRAN
-Date/Publication: 2022-11-18 23:10:06 UTC
+Date/Publication: 2023-02-09 09:50:11 UTC

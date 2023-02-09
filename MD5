@@ -1,13 +1,13 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-82b2ae379b6767250be8cb87fa3de2d1 *DESCRIPTION
-5992b9f2844076f7afd6b4e6bfd6f3d5 *NAMESPACE
-63e15b1afbf17d92df36ef95a76e7e19 *NEWS
+b704fa1d479fd53b516a877a4b300e98 *DESCRIPTION
+5aa8af7dc99f902a2be93674d36e6ea2 *NAMESPACE
+c4f9638ecada092b6b73794884395207 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 8fdbfa3b900cbbb42d94898093ec7fa5 *R/Cs.s
 85683865508739ff7a19b280e562ab67 *R/GiniMd.s
 7d0b0014572f85d46fa6a3417707344c *R/Key.s
 10afe48276f47fe7b9cbeba8b151ee42 *R/Merge.r
-0091bb7f60a12a811825db0b06fb01ef *R/Misc.s
+d760f061a1cfdcad79d25c6cdd0158e6 *R/Misc.s
 081320dfb53e3362cfb0918952b60cce *R/R2Measures.r
 9043da0ab6b8288636bb399cdb0f89bf *R/abs.error.pred.s
 bdf1cbb1952b1cdf53a296a6d29ecb08 *R/areg.s
@@ -31,7 +31,7 @@ bf85aff597a763e41e6a14d53359d30d *R/curveRep.s
 97dc5dcc48cb719088b817833067352c *R/dataRep.s
 ec8af558be91e1fa3415f1a99dd469b2 *R/dates.s
 3f02d2486d14e095a96fe5ee10e483c7 *R/deff.s
-7c467c898b81b927a07e19bfbc50ffc5 *R/describe.s
+a181473ec89160b204ae28fe41a44de8 *R/describe.s
 6cb5b3a77860b605f102bb528e84a071 *R/discrete.s
 510723f9ba799696bf0196fc231e2ca2 *R/dotchart3.s
 14ad428dacb6bed7013fdef6c05d9239 *R/dotchartpl.s
@@ -57,7 +57,7 @@ b70800bb3730a5b84500d43e97d951f4 *R/groupn.s
 6d786e3f436d4e577c92132d3daf5282 *R/histSpikeg.s
 e79e72a4b25a7e30d32caf6b7a4b55c6 *R/histbackback.s
 3ba3c85100e05c090c8caec1d628a05e *R/hoeffd.s
-46ced07dd63edb7a614e80dc52c6acf0 *R/html.s
+8e0a609468cd1506b2a506ba5bdca8e2 *R/html.s
 1759e437814916630a47a0128ae1fd83 *R/impute.s
 2d992948ec2ad38aa2c778882fd65e72 *R/in.operator.s
 e1bbabaa533c22a5378d1a4b645a80d2 *R/is.present.s
@@ -131,7 +131,7 @@ b42e6d7953adef86625842fa4bdbe291 *R/strwrap.s
 055ef617ac4b0362b6466e6436ba69fb *R/subplot.s
 14e533b635192fae8b28ca81b9c86f5d *R/substi.s
 e07fc01209369b3132178c5f5c055220 *R/summary.formula.s
-bce06037b047d0b925be8250abb4431e *R/summaryM.s
+a2bba39104ecb43307450903b8132dd0 *R/summaryM.s
 f4e9b0484893f71186d0e527cfcab4b8 *R/summaryP.s
 dc27150ba262b8c3844ce46d36f1e492 *R/summaryRc.s
 0ce190af103865fe51ba98c7bc4dab9d *R/summaryS.s
@@ -233,7 +233,7 @@ ac4fff37fde2e6d0feae41ceda669399 *man/GiniMd.Rd
 2b084c69d1db718784be029130560d30 *man/Hmisc-internal.Rd
 a8d3213ffdeb74c3f50bb2d54a8b9ab5 *man/Lag.Rd
 352fb4122854747013fc8d3c96ddb360 *man/Merge.Rd
-10a02c80c651b8f03c017b614c749aea *man/Misc.Rd
+eefc844ac2a73ffa305dd08206f823a2 *man/Misc.Rd
 c51df7edc25fd92fdd603738b777b384 *man/Overview.Rd
 e3273cfa3aa9e69c415b4ebcb10ada71 *man/R2Measures.Rd
 71a62f91bcd26f7cbfa9a2755bed0830 *man/Save.Rd
@@ -254,7 +254,7 @@ c6b61f5f8a001f8748635bde7ff92fb8 *man/binconf.Rd
 4202bd798ad52004eec93d91b0a8d945 *man/cnvrt.coords.Rd
 59655083adf88a21c7eab791e972fd0b *man/combplotp.Rd
 00db76a86189178fe8385d5aaeda346b *man/consolidate.Rd
-6b8d36b247951535c1946a96b42535d9 *man/contents.Rd
+5821a351aae1dff1a760c955846628a2 *man/contents.Rd
 fb3224eb96702359c56fa180ab230562 *man/cpower.Rd
 5673d004d5398e681cc11521217a38ca *man/csv.get.Rd
 f9f1ff7399b4801bca280156a77aec01 *man/curveRep.Rd
@@ -262,7 +262,7 @@ bf04215ba59da1200b2295fa160d6205 *man/cut2.Rd
 3eb4090f0c25a33dcf3452294ca80ec1 *man/data.frame.create.modify.check.Rd
 30aa19bbc67a730bfe65d71ecd473bb4 *man/dataRep.Rd
 1df7d66a5fcdc97254d4e70a8d487af4 *man/deff.Rd
-6677048042a047f9a4f92662d0c53f2f *man/describe.Rd
+ea26141f45470acc67108da4b46deffb *man/describe.Rd
 4c2942aab548faa49c5a389117b48b70 *man/discrete.Rd
 94748a0c9bb7d0290a8b2dc7f4a0bb7d *man/dotchart2.Rd
 67f28b3925d62e99e612e36532d3149f *man/dotchart3.Rd
@@ -373,7 +373,7 @@ ac3599e852460b9a3f9c1c656b01c2f8 *man/stata.get.Rd
 bbd0b4524bd9a4e350d6a7ad4aca3a0a *man/subplot.Rd
 6181f806d9bb937ccc0894d4e079378c *man/summarize.Rd
 954f0d9af2d6644d7b04736836e71fda *man/summary.formula.Rd
-a01ab9f672e9931ce0c07e97bafd84c1 *man/summaryM.Rd
+f545fe56c301c81a23e81cc2034a4561 *man/summaryM.Rd
 0b38201723a49b1bb44dce87f9d21b4c *man/summaryP.Rd
 ad31c9e52f4fc0991357792fb6395c60 *man/summaryRc.Rd
 e7824f82025464f03a7f880926417b55 *man/summaryS.Rd
