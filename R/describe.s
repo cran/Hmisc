@@ -14,7 +14,9 @@ describe.default <- function(x, descript, ...) {
 
 describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
                             listunique=0, listnchar=12,
-                            weights=NULL, normwt=FALSE, minlength=NULL, ...)
+                            weights=NULL, normwt=FALSE, minlength=NULL,
+                            shortmChoice=TRUE, rmhtml=FALSE,
+                            trans=NULL, lumptails=0.01, ...)
 {
   oldopt <- options('digits')
   options(digits=digits)
@@ -22,24 +24,31 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
 
   weighted <- length(weights) > 0
   if(! weighted) weights <- rep(1, length(x))
-  
-  special.codes <- attr(x, "special.miss")$codes
-  labx <- attr(x,"label")
+
+  atx <- attributes(x)
+
+  special.codes   <- atx$special.miss$codes
+  labx            <- atx$label
+  if(rmhtml) labx <- markupSpecs$html$totxt(labx)
+  # Remove trailing blank or .
+  labx <- trimws(labx)
+  labx <- trimws(sub('\\.$', '', labx))
   
   if(missing(descript)) descript <- as.character(sys.call())[2]
 
   if(length(labx) && labx != descript) descript <- paste(descript,":",labx)
 
-  un <- attr(x, "units")
+  un <- atx$units
   if(length(un) && un == '') un <- NULL
-
-  fmt <- attr(x, 'format')
+  
+  fmt <- atx$format
   if(length(fmt) && (is.function(fmt) || fmt == '')) fmt <- NULL
   
   if(length(fmt) > 1)
     fmt <- paste(as.character(fmt[[1]]), as.character(fmt[[2]]))
   
   present <- if(all(is.na(x))) rep(FALSE, length(x))
+  else if(is.mChoice(x))  trimws(as.character(x)) != '' & ! is.na(x)
   else if(is.character(x)) x != "" & x != " " & ! is.na(x)
   else ! is.na(x)
   
@@ -57,10 +66,11 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
     return(structure(list(), class="describe"))
   
   missing <- sum(weights[! present], na.rm=TRUE)
-  atx <- attributes(x)
   atx$names <- atx$dimnames <- atx$dim <- atx$special.miss <- NULL  
   
   atx$class <- atx$class[atx$class != 'special.miss']
+  cx <- intersect(atx$class,
+                  c("Date", "POSIXt", "POSIXct", "dates", "times", "chron"))
   
   isdot <- testDateTime(x,'either') # is date or time var
   isdat <- testDateTime(x,'both')   # is date and time combo var
@@ -72,13 +82,13 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
   n.unique <- length(x.unique)
   attributes(x) <- attributes(x.unique) <- atx
 
-  isnum <- (is.numeric(x) || isdot) && ! is.factor(x)  # was isdat
+  isnum    <- (is.numeric(x) || isdot) && ! is.factor(x)  # was isdat
   timeUsed <- isdat && testDateTime(x.unique, 'timeVaries')
 
   z <- list(descript=descript, units=un, format=fmt)
 
-  counts <- c(n,missing)
-  lab <- c("n","missing")
+  counts <- c( n,   missing)
+  lab    <- c("n", "missing")
 
   if(length(special.codes)) {
     tabsc <- table(special.codes)
@@ -104,7 +114,7 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
     
     if((nn <- length(pd$both)) > 0) {
       counts <- c(counts, nn)
-      lab <- c(lab,"missing month,day")
+      lab <- c(lab, "missing month,day")
     }
   }
 
@@ -144,16 +154,13 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
     
     lab <- c(lab, "Mean")
     if(! weighted) {
-      gmd <- format(GiniMd(xnum), ...)
+      gmd    <- format(GiniMd(xnum), ...)
       counts <- c(counts, gmd)
-#      counts <- c(counts, if(isdot) formatDateTime(gmd, atx, ! timeUsed)
-#                          else
-#                            format(gmd, ...))
-      lab <- c(lab, "Gmd")
+      lab    <- c(lab, "Gmd")
     }
   } else if(n.unique == 1) {
     counts <- c(counts, format(x.unique))
-    lab <- c(lab, "value")
+    lab    <- c(lab, "value")
   }
 
   if(n.unique >= 10 & isnum) {
@@ -187,45 +194,54 @@ describe.vector <- function(x, descript, exclude.missing=TRUE, digits=4,
 
   values <- NULL
   if(! x.binary) {
-    if(inherits(x,'mChoice'))
-      z$mChoice <- summary(x, minlength=minlength)
+    mch <- is.mChoice(x)
+    if(mch)
+      z$mChoice <- summary(x, short=shortmChoice, minlength=minlength)
     else
       if(n.unique <= listunique && ! isnum && ! is.factor(x) &&
          max(nchar(x)) > listnchar)
         values <- tableIgnoreCaseWhiteSpace(x)
     else
       if(isnum || n.unique <= 100) {
-        if(isnum) {
-          if(n.unique >= 100 ||
-             (n.unique > 20 && 
-              min(diff(sort(unique(xnum)))) < diff(range(xnum)) / 500)) {
-            pret <- pretty(xnum, if(n.unique >= 100) 100 else 500)
-            dist <- pret[2] - pret[1]
-            r    <- range(pret)
-            xnum <- r[1] + dist * round((xnum - r[1]) / dist)
-            z$roundedTo <- dist
-          }
+        if(isnum && n.unique > 2) {
+          binnedx      <- spikecomp(x, lumptails=lumptails, trans=trans,
+                                    tresult='roundeddata')
+          xnum         <- unclass(binnedx$x)
+          z$roundedTo  <- binnedx$roundedTo
+          shist        <- spikecomp(x, method='grid', lumptails=lumptails,
+                                    normalize=FALSE, trans=trans)
+          z$gridvalues <- list(values=shist$x, frequency=shist$y)
         }
-#        values <- wtd.table(if(isnum) xnum else if(isdat) format(x) else x,
-#                            weights, normwt=FALSE, na.rm=FALSE)
-#        values <- wtd.table(if(isdot) format(x) else if(isnum) xnum else x,
-#                            weights, normwt=FALSE, na.rm=FALSE)
         values <- wtd.table(if(isnum) xnum else x,
                             weights, normwt=FALSE, na.rm=FALSE)
         vx <- values$x
-        cx <- intersect(atx$class,
-                    c("Date", "POSIXt", "POSIXct", "dates", "times", "chron"))
         class(vx) <- cx   # restores as date, time, etc.
         values <- list(value=vx, frequency=unname(values$sum.of.weights))
       }
     z$values <- values
+    if(length(trans)) z$trans <- trans
     
-    if(n.unique >= 5) {
+    if(! isnum && ! length(values)) {
+      xtr <- trimws(x)
+      nc  <- nchar(xtr)
+      z$nchar <- c(min=min(nc), max=max(nc), mean=mean(nc))
+      xtab    <- table(xtr)
+      if(max(xtab) > 1) {
+        mxf <- max(xtab)
+        if(sum(xtab == mxf) == 1) {
+          wm     <- which.max(xtab)
+          z$mode <- c(names(xtab)[wm], paste0('n=', xtab[wm]))
+          }
+        }
+      }
+    
+    if(n.unique >= 5 && ! mch) {
       loandhi <- x.unique[c(1 : 5, (n.unique - 4) : n.unique)]
       extremes <-
         if(isdot && all(class(loandhi) %nin% 'timeDate')) {
           formatDateTime(unclass(loandhi), at=atx, roundDay=! timeUsed)
-        } else if(isnum) loandhi else format(format(loandhi), ...)
+        } else if(isnum) loandhi
+          else format(format(loandhi), ...)
       names(extremes) <- c("L1","L2","L3","L4","L5","H5","H4","H3","H2","H1")
       z$extremes <- extremes
       }
@@ -250,11 +266,11 @@ describe.matrix <- function(x, descript, exclude.missing=TRUE,
   d <- dim(x)
   missing.vars <- NULL
   for(i in 1:ncol(x)) {
-    z <- describe.vector(x[,i],nam[i],exclude.missing=exclude.missing,
-                         digits=digits,...)  #13Mar99
+    z <- describe.vector(x[,i], nam[i], exclude.missing=exclude.missing,
+                         digits=digits, ...)
     Z[[i]] <- z
     if(exclude.missing && length(z)==0)
-      missing.vars <- c(missing.vars,nam[i]) 
+      missing.vars <- c(missing.vars, nam[i]) 
   }
 
   attr(Z, 'descript') <- descript
@@ -265,7 +281,7 @@ describe.matrix <- function(x, descript, exclude.missing=TRUE,
 
 
 describe.data.frame <- function(x, descript, exclude.missing=TRUE,
-                                digits=4, ...)
+                                digits=4, trans=NULL, ...)
 {
   if(missing(descript))
     descript <- as.character(sys.call())[2]
@@ -279,20 +295,22 @@ describe.data.frame <- function(x, descript, exclude.missing=TRUE,
   for(xx in x) {
     mat <- is.matrix(xx)
     i <- i+1
+    xnam <- nam[i]
+    tran <- if(length(trans) && (xnam %in% names(trans))) trans[[xnam]]
     z <-
       if(mat) 
-        describe.matrix(xx,nam[i],exclude.missing=exclude.missing,
-                        digits=digits,...)
+        describe.matrix(xx, xnam, exclude.missing=exclude.missing,
+                        digits=digits, trans=tran, ...)
       else	  
-        describe.vector(xx,nam[i],exclude.missing=exclude.missing,
-                        digits=digits,...)
+        describe.vector(xx, xnam, exclude.missing=exclude.missing,
+                        digits=digits, trans=tran, ...)
     
     all.missing <- length(z)==0
     if(exclude.missing && all.missing)
-      missing.vars <- c(missing.vars, nam[i])
+      missing.vars <- c(missing.vars, xnam)
     else {
       Z <- c(Z, if(mat) z else list(z))
-      nams <- c(nams, if(mat) names(z) else nam[i])
+      nams <- c(nams, if(mat) names(z) else xnam)
     }
   }
   names(Z) <- nams
@@ -320,7 +338,7 @@ describe.formula <- function(x, descript, data, subset, na.action,
   if(missing(descript)) {
     ter <- attr(mf,"terms")
     d <- as.character(x)
-    if(attr(ter,"response")==1) d <- c(d[2],d[1],d[-(1:2)])
+    if(attr(ter,"response")==1) d <- c(d[2], d[1], d[-(1:2)])
     else d <- d[-1]
     d <- paste(d, collapse=" ")
     descript <- d
@@ -337,10 +355,31 @@ na.retain <- function(d) d
 
 
 print.describe <-
-  function(x, ...)
-{
+  function(x, which = c('both', 'categorical', 'continuous'), ...) {
+    mwhich <- missing(which)
+    which  <- match.arg(which)
+    
+    if(prType() == 'html' && mwhich) return(html.describe(x, ...))
 
-  if(prType() == 'html') return(html.describe(x, ...))
+    if(! mwhich) {
+      if(! requireNamespace('gt', quietly=TRUE))
+        stop('gt package must be installed to print describe results with which=')
+
+      if(! inherits(x[[1]], 'describe')) {
+        ## Enclose describe() for an individual variable inside a list
+        ## so that html_describe_* will work
+        nx <- sub(' :.*$', '', x$descript)
+        x <- structure(list(x),
+                       names      = nx,
+                       descript   = '')
+      }
+      return(
+        switch(which,
+               both        = list(Continuous =html_describe_con(x, ...),
+                                  Categorical=html_describe_cat(x, ...)),
+               categorical = html_describe_cat(x, ...),
+               continuous  = html_describe_con(x, ...) )   )
+    }
 
   at <- attributes(x)
   if(length(at$dimensions)) {
@@ -351,7 +390,7 @@ print.describe <-
     w <- paste(rep('-', .Options$width), collapse='')
     cat(w, '\n', sep='')
     for(z in x) {
-      if(length(z)==0)
+      if(length(z) == 0)
         next
       print.describe.single(z, ...)
       cat(w, '\n', sep='')
@@ -382,19 +421,20 @@ formatdescribeSingle <-
   vs       <- if(lang == 'latex' && lspace[2] != 0)
                 function() cat('\\vspace{', -lspace[2], 'ex}\n',
                                sep='') else function() {}
-
   vbtm <- if(lang == 'html')
-            function(x, omit1b=FALSE, ...)
-              htmlVerbatim(x, size=size, omit1b=omit1b, ...)
+            function(x, omit1b=FALSE, prlabel=NULL, ...)
+              htmlVerbatim(x, size=size, omit1b=omit1b,
+                           propts=list(prlabel=prlabel), ...)
           else
-            function(x, omit1b=NULL) capture.output(print(x, quote=FALSE, ...))
+            function(x, omit1b=NULL, prlabel=NULL)
+              capture.output(print(x, quote=FALSE, prlabel=prlabel, ...))
 
   R <- character(0)
   
   v <- x$values
 
   is.standard <- length(v) && is.list(v) &&
-                 all(names(v) == c('value', 'frequency'))
+                 all(names(v)[1:2] == c('value', 'frequency'))
   v_len <- if(is.standard) length(v$value)
   if(is.standard && v_len > 0L && v_len <= 20L) {
     # address GH issue #104
@@ -404,9 +444,17 @@ formatdescribeSingle <-
     print.freq <- sum(nchar(altv)) <= 200
   } else print.freq <- FALSE
   
-  print.ext   <- length(x$extremes) ## && ! print.freq
+  print.ext   <- length(x$extremes) && ! print.freq  ## && ! print.freq then ignored print.freq
   if(print.ext) {
-    val  <- format(x$extremes)
+    ## For printing 5 highest and lowest values
+    ntrans <- function(x) {
+      if(! is.numeric(x)) return(format(x))
+      y <- x[! is.na(x)]   # leave alone if integer
+      if(! length(x)) return(x)
+      if(all(y == round(y))) format(x) else format(as.character(signif(x)))
+    }
+
+    val  <- ntrans(x$extremes)
     w    <- nchar(paste(val, collapse=' '))
     R <- c(R, bv()); verb <- 1
     if(condense %in% c('extremes', 'both')) {
@@ -425,9 +473,10 @@ formatdescribeSingle <-
                             e4=val[4], e5=val[5])
           hi  <- data.frame(name=bhi, e1=val[6], e2=val[7], e3=val[8],
                             e4=val[9], e5=val[10])
-          tab <- html(rbind(low, hi, make.row.names=FALSE),
+          tab <- Hmisc::html(rbind(low, hi, make.row.names=FALSE),
                       align='r',
-                      header=NULL, border=0, size=size, file=FALSE)
+                      header=NULL, border=0, size=size, file=FALSE,
+                      disableq=TRUE)
           R <- c(R, tab)
         }
       }  # end lang='html'
@@ -498,7 +547,9 @@ formatdescribeSingle <-
   
   if(length(x$mChoice)) {
     R <- c(R, bv()); verb <- 1
-    R <- c(R, '', vbtm(x$mChoice, prlabel=FALSE))
+    ## print.summary.mChoice when options(prType='html') returns
+    ## html character string
+    R <- c(R, '', print(x$mChoice, render=FALSE))
   }
 
   if(lang == 'latex' && verb) R <- c(R, '\\end{verbatim}')
@@ -506,9 +557,7 @@ formatdescribeSingle <-
 }
 
 
-print.describe.single <-
-  function(x, ...)
-{
+print.describe.single <- function(x, ...) {
   wide <- .Options$width
   des  <- x$descript
   
@@ -803,10 +852,8 @@ html.describe <-
   rendHTML(R)
 }
 
-html.describe.single <-
-  function(object, size=85,
-           tabular=TRUE, greek=TRUE, ...)
-{
+html.describe.single <- function(object, size=85, tabular=TRUE,
+                                 greek=TRUE, ...) {
   m <- markupSpecs$html
   center <- m$center
   bold   <- m$bold
@@ -877,17 +924,16 @@ html.describe.single <-
   if(tabular) {
     d <- as.data.frame(as.list(object$counts))
     colnames(d) <- names(object$counts)
-    tab <- html(d, file=FALSE, align='c',
+    tab <- Hmisc::html(d, file=FALSE, align='c',
                 align.header='c', bold.header=FALSE,
                 col.header='MidnightBlue', border=0,
-                translate=TRUE, size=sz)
+                translate=TRUE, size=sz, disableq=TRUE)
     R <- c(R, tab)
   }
   else
     R <- c(R, htmlVerbatim(object$counts, size=sz))
 
-  
-  R <- c(R, formatdescribeSingle(object, lang='html', ...))
+   R <- c(R, formatdescribeSingle(object, lang='html', ...))
   R
 }
 
@@ -898,7 +944,7 @@ dataDensityString <- function(x, nint=30)
   x <- x[! is.na(x)]
   if(length(x) < 2) return('')
   r <- range(x)
-  x <- floor(nint * (x-r[1])/(r[2]-r[1]))
+  x <- floor(signif(nint * (x - r[1]) / (r[2] - r[1]), 12))
   x <- pmin(tabulate(x), 37)
   paste0(format(r[1]),' <',
         paste(substring(' 1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ',
@@ -1149,7 +1195,7 @@ html.contents.data.frame <-
     link <- link[, colnames(link) != 'NAs', drop=FALSE]
     adj <- adj[names(adj) != 'NAs']
   }
-  out <- html(cont, file=FALSE, rownames=TRUE,
+  out <- Hmisc::html(cont, file=FALSE, rownames=TRUE,
               link=link, border=2,
               col.just=adj, ...)
   R <- c(R, as.character(out), hrule)
@@ -1211,9 +1257,10 @@ html.contents.data.frame <-
         lev <- c(lev, l)
       }
       z <- cbind(Variable=lab, Levels=lev)
-      out <- html(z, file=FALSE,
+      out <- Hmisc::html(z, file=FALSE,
                   link=ifelse(lab=='','',paste('levels',v,sep='.')),
-                  linkCol='Variable', linkType='name', border=2,...)
+                  linkCol='Variable', linkType='name', border=2,
+                  ...)
       R <- c(R, as.character(out), hrule)
     }
   }
@@ -1224,8 +1271,9 @@ html.contents.data.frame <-
     names(longlab) <- NULL
     lab <- paste('longlab', nam, sep='.')
     z <- cbind(Variable=nam, 'Long Label'=longlab[i])
-    out <- html(z, file=FALSE,
-                link=lab, linkCol='Variable', linkType='name', ...)
+    out <- Hmisc::html(z, file=FALSE,
+                link=lab, linkCol='Variable', linkType='name',
+                ...)
     R <- c(R, as.character(out), hrule)
   }
   rendHTML(R)
@@ -1281,3 +1329,303 @@ print.contents.list <-
   print(cont)
   invisible()
 }
+
+
+html_describe_con <- function(x, sparkwidth=200,
+                              qcondense=TRUE, extremes=FALSE, ...) {
+
+  con   <- sapply(x, function(u) '.05' %in% names(u$counts))
+  if(! any(con)) {
+    message('no continuous variables in describe result')
+    return(invisible())
+  }
+  at    <- attributes(x)
+  if(at$descript == '') title <- subtitle <- ''
+  else {
+    title <- paste0('**`', at$descript, '` Descriptives**')
+  
+    subtitle <- paste(sum(con), 'Continous Variables of',
+                      at$dimensions[2], 'Variables,',
+                      at$dimensions[1], 'Observations')
+    }
+
+  x <- x[con]
+
+  subs <- function(a) {
+    a <- strsplit(a, ';')
+    s <- function(a) {
+      a <- paste0(' ', a, ' ')
+      # sprintf('<sub><sub><sub>%s</sub>%s</sub>%s</sub><large>%s</large><sub>%s<sub>%s<sub>%s</sub></sub></sub>', a[1], a[2], a[3], a[4], a[5], a[6], a[7])
+      sprintf('<font size="1">%s</font><font size="2">%s</font><font size="3">%s</font><font size="4"><strong>%s</strong></font><font size="3">%s</font><font size="2">%s</font><font size="1">%s</font>',
+              a[1], a[2], a[3], a[4], a[5], a[6], a[7])
+      }
+    sapply(a, s)
+  }
+  
+  g <- function(u) {
+    k <- u$counts
+    h <- function(z) if(length(z)) z else ''
+    a <- function(m) as.numeric(k[m])
+    r <- if(qcondense && is.numeric(k))
+              function(m) as.numeric(k[m])
+         else function(m) k[m]
+    first  <- function(z) if(grepl(' : ', z)) sub(' :.*$', '', z) else z
+    second <- function(z) if(grepl(' : ', z)) sub('.*? : ','', z) else ''
+    ntrans <- function(x)
+      if(! is.numeric(x) || all(x == round(x))) format(x)
+      else format(as.character(signif(x, 5)))
+    ext <- ntrans(u$extremes)
+    b <- data.frame(
+               Variable = first(u$descript),
+               Label    = second(u$descript),
+               Units    = h(u$units),
+               Format   = h(u$format),
+               n        = a('n'),
+               Missing  = a('missing'),
+               Distinct = a('distinct'),
+               Info     = a('Info'),
+               Mean     = k['Mean'],
+               Gmd      = k['Gmd'],
+               ' '      = ''      ,    # place for sparkline
+               '.05'    = r('.05'),
+               '.10'    = r('.10'),
+               '.25'    = r('.25'),
+               '.50'    = r('.50'),
+               '.75'    = r('.75'),
+               '.90'    = r('.90'),
+               '.95'    = r('.95'),
+               check.names=FALSE)
+    if(extremes)
+      b <- cbind(b, 
+                 Lower    = paste(ext[1:5], collapse=' '),
+                 Upper    = paste(ext[1:5], collapse=' ') )
+    b
+  }
+
+  u <- lapply(x, g)
+  a <- do.call('rbind', u)
+  if(all(a$Units  == ''))  a$Units  <- NULL
+  if(all(a$Format == ''))  a$Format <- NULL
+
+  if(qcondense) {
+    quantcols <- grep('^\\.', names(a))
+    Q <- rep('', nrow(a))
+    for(v in quantcols) Q <- paste0(Q, if(v > quantcols[1]) ';',
+                                    ' ', trimws(a[, v]), ' ')
+    a$Quantiles <- Q
+    a <- a[, - quantcols]
+  }
+  else a$Quantiles <- NULL
+
+  ## Using gridvalues, create sparkline for every variable
+  ## If the variable was transformed, also put in the leftmost tooltip
+  ## the name of the transformation
+  
+  g <- function(x) {
+    trans <- x$trans
+    lo <- if(length(trans))
+            paste0('Transformation for<br>histogram:', trans[[1]])
+    
+    gv <- x$gridvalues
+    val <- gsub('; ', '<br>', gv$values)
+    spikespark(val, gv$frequency, ttlow=lo, w=sparkwidth, cumulative=TRUE,
+               xpre='')
+  }
+
+  sparks <- sapply(x, g)
+  quantcols <- grep('^\\.', names(a))
+
+  ## Need to leave extra space around sparkline or tooltip will not
+  ## show on the right end
+  ## col_width(' ' ~ gt::px(w + 20)) will not find w even with .list
+  sparkw <- as.formula(paste0("' ' ~ gt::px(", sparkwidth + 20, ")"))
+  
+  b <- gt::gt(a)                                             |>
+    gt::tab_header(title=gt::md(title), subtitle=subtitle)   |>
+    gt::tab_style(style=gt::cell_text(align='center'),
+                  locations=gt::cells_column_labels(
+                    columns=c(n, Missing, Distinct, Info, Mean, Gmd))) |>
+    gt::tab_style(style=gt::cell_text(size='small'),
+                  locations=gt::cells_body(columns=Label))   |>
+    gt::text_transform(locations=gt::cells_body(columns=' '),
+                       fn=function(x) sparks)                |>
+    gt::cols_width(sparkw)
+
+  if(qcondense) b <- b                                                      |>
+    gt::text_transform(locations=gt::cells_body(columns=Quantiles),
+                       fn=function(x) subs(x))                              |>
+    gt::cols_label(Quantiles = gt::html(paste0('Quantiles<br>',
+                                        subs('.05;.10;.25;.50;.75;.90;.95'))),
+                   Gmd       = gt::html("Gini\u2009<span style=\"text-decoration: overline\">|\u394|</span>"))  |>
+    gt::cols_align(align='center', columns=Quantiles)
+
+  else b <- b |>
+    gt::tab_style(style=gt::cell_text(size='small'),
+                  locations=gt::cells_body(columns=quantcols))
+
+  if('Units' %in% names(a))
+    b <- b |> gt::text_transform(locations=gt::cells_body(columns=Units),
+                                 fn=htmlTranslate) |>
+      gt::tab_style(style=gt::cell_text(size='small', style='italic'),
+                            locations=gt::cells_body(columns=Units))
+  b
+}
+
+
+html_describe_cat <- function(x, w=200, freq=c('chart', 'table'),
+                              sort=TRUE, ...) {
+  freq <- match.arg(freq)
+
+  con   <- sapply(x, function(u) '.05' %in% names(u$counts))
+  if(all(con)) {
+    message('no categorical variables in describe result')
+    return(invisible())
+  }
+  at    <- attributes(x)
+  if(at$descript == '') title <- subtitle <- ''
+  else {
+    title <- paste0('**`', at$descript, '` Descriptives**')
+  
+    subtitle <- paste(sum(! con), 'Categorical Variables of',
+                      at$dimensions[2], 'Variables,',
+                      at$dimensions[1], 'Observations')
+    }
+
+  x <- x[! con]
+  
+  g <- function(u) {
+    h <- function(z) if(length(z)) z else ''
+    a <- function(m) if(m %in% names(k)) as.numeric(k[m]) else NA
+    p <- function(m) if(m %in% names(k)) k[m] else NA
+    first  <- function(z) if(grepl(' : ', z)) sub(' :.*$', '', z) else z
+    second <- function(z) if(grepl(' : ', z)) sub('.*? : ','', z) else ''
+    k <- u$counts
+    x <- u$value$value
+    y <- u$value$frequency
+    type <- 'md'
+    if(! length(x)) {
+      ext <- u$extremes[c(1, 10)]
+      nc  <- u$nchar
+      if(length(nc)) {
+        nc  <- paste0('Min/Max/Mean Width: ', nc[1], ' / ', nc[2],
+                      ' / ', round(nc[3], 1))
+        tab <- paste0(ext[1], ' -  \n', ext[2], '  \n', nc)
+        if(length(u$mode))
+          tab <- paste0(tab, '  \nMode:', u$mode[1], ' (', u$mode[2], ')')
+        } else  tab <- paste(ext, collapse=' -  \n')
+      }
+    else { ## Create little markdown table or sparkline
+        if(freq == 'chart') {
+          type <- 'spark'
+          if(sort && ! is.numeric(x)) { i <- order(-y); x <- x[i]; y <- y[i] }
+          wi <- min(w, 5 + length(x) * (3 + 2))
+          tab <- spikespark(x, y, w=wi, barw=3, barspace=2)
+          } else {
+            tab <- c('| Category | Frequency | Proportion |',
+                     '|:---------|----------:|-----------:|',
+                     paste0('| ', x, ' | ', y, ' | ',
+                            format(round(y / sum(y), 3)), '|'))
+            tab <- paste(tab, collapse='\n')
+          }
+      }
+    
+    b <- data.frame(
+      Variable = first(u$descript),
+      Label    = second(u$descript),
+      Units    = h(u$units),
+      Format   = h(u$format),
+      n        = a('n'),
+      Missing  = a('missing'),
+      Distinct = a('distinct'),
+      Info     = a('Info'),
+      Sum      = a('Sum'),
+      Mean     = p('Mean'),
+      Gmd      = p('Gmd'),
+      tab      = tab,
+      type     = type,
+      check.names=FALSE)
+    b
+  }
+
+  u <- lapply(x, g)
+  a <- do.call('rbind', u)
+  ## For sparklines, change tab to a blank and move the html code to
+  ## vector spik
+  spik                     <- a$tab[a$type == 'spark']
+  a$tab[a$type == 'spark'] <- ''
+
+  for(i in c('Units', 'Format', 'Sum', 'Mean', 'Info', 'Gmd'))
+    if(all(is.na(a[[i]])) || all(a[[i]] == '')) a[[i]] <- NULL
+
+  center_cols <- intersect(names(a),
+                  c('n', 'Missing', 'Distinct', 'Info', 'Sum', 'Mean', 'Gmd'))
+  
+  b <- gt::gt(a) |>
+    gt::tab_header(title=gt::md(title), subtitle=subtitle) |>
+    gt::tab_style(style=gt::cell_text(align='center'),
+            locations=gt::cells_column_labels(columns=center_cols)) |>
+    gt::tab_style(style=gt::cell_text(size='small'),
+                  locations=gt::cells_body(columns=Label)) |>
+    gt::tab_style(style=gt::cell_text(size='x-small'),
+                  locations=gt::cells_body(columns=tab))   |>
+    gt::fmt_markdown(columns=tab, rows=type=='md')         |>
+    gt::text_transform(
+          fn=function(x) spik,
+          locations=gt::cells_body(columns=tab,
+                                   rows=type=='spark'))    |>
+    gt::cols_hide(columns=type)                            |>
+    gt::cols_align(align='left', columns=tab)              |>
+    gt::cols_label(tab = ' ')                              |>
+    gt::sub_missing(missing_text='')
+
+  if('Units' %in% names(a))
+    b <- b |> gt::tab_style(style=gt::cell_text(size='small', style='italic'),
+                            locations=gt::cells_body(columns=Units))
+  if('Gmd' %in% names(a))
+    b <- b |>
+      gt::cols_label(Gmd ~ gt::html("Gini\u2009<span style=\"text-decoration: overline\">|\u394|</span>"))
+
+  b
+}
+
+## Function to create a sparkline spike histogram
+spikespark <- function(x, y, ttlow=NULL, ttupper=NULL, cumulative=FALSE,
+                       w=200, barw=1, barspace=1, xpre='') {
+
+  if(! requireNamespace('sparkline', quietly=TRUE))
+    stop('sparkline packaged needed for sparklines with ',
+         'print(describe(), which=)')
+  if(! requireNamespace('htmlwidgets', quietly=TRUE))
+    stop('htmlwidgets package needed for sparklines with ',
+         'print(describe(), which=)')
+
+  ## Define javascript function to construct the tooltip
+  ## tip is assumed to be the complete tooltip including x value if wanted
+  tt <- function(tip)
+    htmlwidgets::JS(
+                   sprintf(
+                     "function(sparkline, options, field){
+       debugger;
+       return %s[field[0].offset];
+       }",
+       jsonlite::toJSON(tip) ) )
+
+    tip <- paste0(xpre, x,
+                  '<br>Proportion:', round(y / sum(y), 4),
+                ' (n=', y, ')')
+  if(cumulative) tip <- paste0(tip, '<br>Cumulative:',
+                               round(cumsum(y) / sum(y), 4))
+  n <- length(y)
+  tip[y == 0 & (1:n %nin% c(1, n))] <- ''
+  n   <- length(x)
+  if(length(ttlow))   tip[1] <- paste0(ttlow,   '<br><br>', tip[1])
+  if(length(ttupper)) tip[n] <- paste0(ttupper, '<br><br>', tip[n])
+  htmltools::HTML(
+               sparkline::spk_chr(values=y,
+                                  type='bar',
+                                  chartRangeMin=0, zeroColor='lightgray',
+                                  barWidth=barw, barSpacing=barspace, width=w,
+                                  tooltipFormatter=tt(tip)) )
+}
+
+utils::globalVariables(c('Units', 'Quantiles', 'tab', 'Distinct', 'Gmd', 'Info', 'n'))

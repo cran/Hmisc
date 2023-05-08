@@ -78,7 +78,13 @@ context of Quarto/Rmarkdown html and html notebook output.
 If \code{options(prType='html')} is in effect, calling \code{print} on
 an object that is the result of running \code{describe} on a data frame
 will result in rendering the HTML version.  If run from the console a
-browser window will open.
+browser window will open.  When \code{which} is specified to
+\code{print}, whether or not \code{prType='html'} is in effect, a
+\code{gt} package html table will be produced containing only 
+the types of variables requested.  When \code{which='both'} a list with
+element names \code{Continuous} and \code{Categorical} is produced,
+making it convenient for the user to print as desired, or to pass the
+list directed to the \code{qreport} \code{maketabs} function when using Quarto.
 
 The \code{plot} method is for \code{describe} objects run on data
 frames.  It produces spike histograms for a graphic of
@@ -111,7 +117,7 @@ output (but not in parameter names).
 
 When \code{weights} are not used, Gini's mean difference is computed for
 numeric variables.  This is a robust measure of dispersion that is the
-mean absolute difference between any pairs of observations.  In the
+mean absolute difference between any pairs of observations.  In simple
 output Gini's difference is labeled \code{Gmd}.
 
 \code{formatdescribeSingle} is a service function for \code{latex},
@@ -121,13 +127,14 @@ intended to be called by the user.
 \usage{
 \method{describe}{vector}(x, descript, exclude.missing=TRUE, digits=4,
          listunique=0, listnchar=12,
-         weights=NULL, normwt=FALSE, minlength=NULL, \dots)
+         weights=NULL, normwt=FALSE, minlength=NULL, shortmChoice=TRUE,
+         rmhtml=FALSE, trans=NULL, lumptails=0.01, \dots)
 \method{describe}{matrix}(x, descript, exclude.missing=TRUE, digits=4, \dots)
 \method{describe}{data.frame}(x, descript, exclude.missing=TRUE,
-    digits=4, \dots)
+    digits=4, trans=NULL, \dots)
 \method{describe}{formula}(x, descript, data, subset, na.action,
     digits=4, weights, \dots)
-\method{print}{describe}(x, \dots)
+\method{print}{describe}(x, which = c('both', 'categorical', 'continuous'), \dots)
 \method{latex}{describe}(object, title=NULL,
       file=paste('describe',first.word(expr=attr(object,'descript')),'tex',sep='.'),
       append=FALSE, size='small', tabular=TRUE, greek=TRUE,
@@ -190,7 +197,29 @@ formatdescribeSingle(x, condense=c('extremes', 'frequencies', 'both', 'none'),
   a numeric vector of frequencies or sample weights.  Each observation
   will be treated as if it were sampled \code{weights} times.
 }
-\item{minlength}{value passed to summary.mChoice.}
+\item{minlength}{value passed to summary.mChoice}
+\item{shortmChoice}{set to \code{FALSE} to have summary of
+	\code{mChoice} variables use actual levels everywhere, instead of
+	abbreviating to integers and printing of all original labels at the
+	top}
+\item{rmhtml}{set to \code{TRUE} to strip html from variable labels}
+\item{trans}{for \code{describe.vector} is a list specifying how to
+	transform \code{x} for constructing the frequency distribution used in
+	spike histograms.  The first element of the list is a character string
+	describing the transformation, the second is the transformation
+	function, and the third argument is the inverse of this function that
+	is used in labeling points on the original scale,
+	e.g. \code{trans=list('log', log, exp)}.  For
+	\code{describe.data.frame} \code{trans} is a list of such lists, with
+	the name of each list being name of the variable to which the
+	transformation applies.  See
+	\url{https://hbiostat.org/rmsc/impred.html#data} for an example.}
+\item{lumptails}{specifies the quantile to use (its complement is also
+	used) for grouping observations in the tails so that outliers have
+	less chance of distorting the variable's range for sparkline spike
+	histograms.  The default is 0.01, i.e., observations below the 0.01
+	quantile are grouped together in the leftmost bin, and observations
+	above the 0.99 quantile are grouped to form the last bin.}
 \item{normwt}{
   The default, \code{normwt=FALSE} results in the use of \code{weights} as
   weights in computing various statistics.  In this case the sample size
@@ -224,7 +253,21 @@ formatdescribeSingle(x, condense=c('extremes', 'frequencies', 'both', 'none'),
   information.  For \code{plot} methods, \dots is ignored.
   For \code{html} and \code{latex} methods, \dots is used to pass
 	optional arguments to \code{formatdescribeSingle}, especially the
-	\code{condense} argument.
+	\code{condense} argument.  For the \code{print} method when
+	\code{which=} is given, possible
+	arguments to use for tabulating continuous variable output are
+	\code{sparkwidth} (the width of the spike histogram sparkline in pixels,
+	defaulting to 200), \code{qcondense} (set to \code{FALSE} to devote
+	separate columns to all quantiles), \code{extremes} (set to
+	\code{TRUE} to print the 5 lowest and highest values in the table of
+	continuous variables).  For categorical variable output, the argument
+	\code{freq} can be used to specify how frequency tables are rendered:
+	\code{'chart'} (the default; an interactive sparkline frequency bar chart) or
+	\code{freq='table'} for small tables.  \code{sort} is another argument
+	passed to \code{html_describe_cat}.  For sparkline frequency charts
+	the default is to sort non-numeric categories in descending order of
+	frequency. 	Set \code{code=FALSE} to use the original data order.  The
+	\code{w} argument also applies to categorical variable output.
 	}
 \item{file}{
 name of output file (should have a suffix of .tex).  Default name is
@@ -268,11 +311,13 @@ the output.
 	scrollable box}
 \item{vname}{unused argument in \code{latex.describe.single}}
 \item{which}{specifies whether to plot numeric continuous or
-	binary/categorical variables, or both.  When \code{"both"} a list with 
-two elements is created.  Each element is a \code{ggplot2} or
-\code{plotly} object.  If 
-there are no variables of a given type, a single \code{ggplot2} or
-\code{plotly} object is returned, ready to print.} 
+	binary/categorical variables, or both.  When \code{"both"} a list with
+	two elements is created.  Each element is a \code{ggplot2} or
+	\code{plotly} object.  If there are no variables of a given type, a
+	single \code{ggplot2} or \code{plotly} object is returned, ready to
+	print.  For \code{print.describe} may be \code{"categorical"} or
+	\code{"continuous"}, causing a \code{gt} table to be created with the
+	categorical or continuous variable \code{describe} results.}  
 \item{what}{character or numeric vector specifying which variables to
 	plot; default is to plot all}
 \item{sort}{specifies how and whether variables are sorted in order of
@@ -300,7 +345,9 @@ analyzed. \code{latex} returns a standard \code{latex} object.  For numeric
 variables having at least 20 distinct values, an additional component
 \code{intervalFreq}.  This component is a list with two elements, \code{range}
 (containing two values) and \code{count}, a vector of 100 integer frequency
-counts.
+counts.  \code{print} with \code{which=} returns a `gt` table object.
+The user can modify the table by piping formatting changes, column
+removals, and other operations, before final rendering.
 }
 \details{
 If \code{options(na.detail.response=TRUE)}
@@ -332,7 +379,8 @@ Vanderbilt University
 \email{fh@fharrell.com}
 }
 \seealso{
-\code{\link{sas.get}}, \code{\link{quantile}}, \code{\link{GiniMd}},
+\code{\link{spikecomp}}, \code{\link{sas.get}}, \code{\link{quantile}},
+\code{\link{GiniMd}},
 \code{\link{table}}, \code{\link{summary}},
 \code{\link{model.frame.default}}, 
 \code{\link{naprint}}, \code{\link{lapply}}, \code{\link{tapply}},

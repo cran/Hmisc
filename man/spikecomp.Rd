@@ -4,22 +4,43 @@
 \alias{spikecomp}
 \title{spikecomp}
 \usage{
-spikecomp(x)
+spikecomp(
+  x,
+  method = c("tryactual", "simple", "grid"),
+  lumptails = 0.01,
+  normalize = TRUE,
+  y,
+  trans = NULL,
+  tresult = c("list", "segments", "roundeddata")
+)
 }
 \arguments{
 \item{x}{a numeric variable}
+
+\item{method}{specifies the binning and output method.  The default is \code{'tryactual'} and is intended to be used for spike histograms plotted in a way that allows for random x-coordinates and data gaps.  No binning is done if there are less than 100 distinct values and the closest distinct \code{x} values are distinguishable (not with 1/500th of the data range of each other).  Binning uses \code{pretty}.  When \code{trans} is specified to transform \code{x} to reduce long tails due to outliers, \code{pretty} rounding is not done, and \code{lumptails} is ignored.  \code{method='grid'} is intended for sparkline spike histograms drawn with bar charts, where plotting is done in a way that x-coordinates must be equally spaced.  For this method, extensive binning information is returned.  For either \code{'tryactual'} or \code{'grid'}, the default if \code{trans} is omitted is to put all values beyond the 0.01 or 0.99 quantiles into a single bin so that outliers will not create long nearly empty tails.  When \code{y} is specified, \code{method} is ignored.}
+
+\item{lumptails}{the quantile to use for lumping values into a single left and a single right bin for two of the methods}
+
+\item{normalize}{set to \code{FALSE} to not divide frequencies by maximum frequency}
+
+\item{y}{a vector of frequencies corresponding to \code{x} if you want the (\code{x}, \code{y}) pairs to be taken as a possibly irregular-spaced frequency tabulation for which you want to convert to a regularly-spaced tabulation like \code{count='tabulate'} produces.  If there is a constant gap between \code{x} values, the original pairs are return, with possible removal of \code{NA}s.}
+
+\item{trans}{a list with three elements: the name of a transformation to make on \code{x}, the transformation function, and the inverse transformation function.  The latter is used for \code{method='grid'}.  When \code{trans} is given \code{lumptails} is ignored.  \code{trans} applies only to \code{method='tryactual'}.}
+
+\item{tresult}{applies only to \code{method='tryactual'}.  The default \code{'list'} returns a list with elements \code{x}, \code{y}, and \code{roundedTo}.  \code{method='segments'} returns a list suitable for drawing line segments, with elements \verb{x, y1, y2}.  \code{method='roundeddata'} returns a list with elements \code{x} (non-tabulated rounded data vector after excluding \code{NA}s) and vector \code{roundedTo}.}
 }
 \value{
-a list with element \code{segments} which has elements \code{x}, \code{y1}, \code{y2}
+when \code{y} is specified, a list with elements \code{x} and \code{y}.  When \code{method='tryactual'} the returned value depends on \code{tresult}.  For \code{method='grid'}, a list with elements \code{x} and \code{y} and scalar element \code{roundedTo} containing the typical bin width.  Here \code{x} is a character string.
 }
 \description{
 Compute Elements of a Spike Histogram
 }
 \details{
-Derives the line segment coordinates need to draw a spike histogram.  This is useful for adding elements to \code{ggplot2} plots.
+Derives the line segment coordinates need to draw a spike histogram.  This is useful for adding elements to \code{ggplot2} plots.  Date/time variables are handled by doing calculations on the underlying numeric scale then converting back to the original class.  For them the left endpoint of the first bin is taken as the minimal data value instead of rounded using \code{pretty()}.
 }
 \examples{
 spikecomp(1:1000)
+spikecomp(1:1000, method='grid')
 }
 \author{
 Frank Harrell

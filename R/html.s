@@ -95,7 +95,7 @@ html.data.frame <-
            col.header='Black', border=2,
            width=NULL, size=100, translate=FALSE,
            append=FALSE, link=NULL, linkCol=1,
-           linkType=c('href','name'), ...)
+           linkType=c('href','name'), disableq=FALSE, ...)
 {
   linkType <- match.arg(linkType)
   mu <- markupSpecs$html
@@ -105,6 +105,8 @@ html.data.frame <-
   align.header <- tr[align.header]
 
   trans <- if(translate) htmlTranslate else function(x) x
+
+  disableq <- if(disableq) ' data-quarto-disable-processing="true"' else ''
   
   x   <- as.matrix(object)
 #  for(i in 1:ncol(x)) {
@@ -141,7 +143,7 @@ html.data.frame <-
            '}',
            '</style>')
           
-  R <- c(sty, paste0('<table class="', sn, '"',
+  R <- c(sty, paste0('<table', disableq, ' class="', sn, '"',
                      if(length(width) == 1)
                        paste0(' width="', width, '"'),
                      if(border == 1) ' border="0"',
@@ -230,12 +232,16 @@ htmlVerbatim <- function(..., size = 75, width = 85,
   propts <- c(propts, list(quote=FALSE))
   for(x in list(...)) {
     z <- capture.output(do.call('print', c(list(x), propts)))
-    if(omit1b && gsub(' ', '', z[1]) == '') z <- z[-1]
+    if(omit1b && trimws(z[1]) == '')         z <- z[-1]
+    if(omit1b) z[length(z)] <- sub('\n$', '', z[length(z)])
     w <- c(w, z)
     }
   options(op)
-  w <- c(w, if(scroll) '</textarea>' else '</pre>')
-  w <- paste0(w, '\n')
+
+  ## Remove trailing \n which is not needed since </pre> will follow
+  lw <- length(w)
+  if(lw > 1) w[-lw] <- paste0(w[-lw], '\n')
+  w <- c(w, if(scroll) '</textarea>\n' else '</pre>\n')
   htmltools::HTML(w)
 }
 
@@ -639,7 +645,23 @@ cssbutton = function(color='DarkBlue', background='LightBlue', size='115%')
 ## Usage: `r cssbutton()` ... `r hideDetails('button text', ...)` ... </details>
 hideDetails = function(txt)
  htmltools::HTML('
-<details><summary><p class="rbutton">', txt, '</p></summary>')
+<details><summary><p class="rbutton">', txt, '</p></summary>'),
+
+totxt = function(txt, full=FALSE) {
+  if(full) {
+    if(! requireNamespace('htm2txt', quietly=FALSE))
+      stop('markupSpecs$html$totxt with full=TRUE requires htm2txt package')
+    return(htm2txt::htm2txt(txt))
+    }
+  rem <- c('<p>', '</p>', '</div>', '</span>', '<p .*?>', '<div .*?>',
+           '<span .*?>', '<br>', '<br />', '\\n', 'strong>', '</strong>',
+           '<tbody>', '</tbody>', '<tr>', '</tr>', '<td.*?>', '<font.*?>',
+           '<u>', '</u>', '<ul>', '</ul>', '<li>', '</li>', '</td>',
+           '<h[1-9] .*?>', '</h[1-9]>', '<b>', '</b>', '<table>', '</table>',
+           '<em>', '</em>')
+  for(a in rem) txt <- gsub(a, '', txt)
+  txt
+  }
 ),
 
 latex = list(

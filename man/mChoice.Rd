@@ -45,7 +45,11 @@
   frequencies of the top 5 combinations, information about which other
   choices are present when each given choice is present, and the
   frequency distribution of the number of choices per observation.  This
-  \code{summary} output is used in the \code{describe} function.
+  \code{summary} output is used in the \code{describe} function.  The
+  \code{print} method returns an html character string if
+  \code{options(prType='html')} is in effect if \code{render=FALSE} or
+  renders the html otherwise.  This is used by \code{print.describe} and
+  is most effective when \code{short=TRUE} is specified to \code{summary}.
 
   \code{in.mChoice} creates a logical vector the same length as \code{x}
   whose elements are \code{TRUE} when the observation in \code{x}
@@ -75,9 +79,10 @@ mChoice(\dots, label='',
 
 \method{as.character}{mChoice}(x, ...)
 
-\method{summary}{mChoice}(object, ncombos=5, minlength=NULL, drop=TRUE, ...)
+\method{summary}{mChoice}(object, ncombos=5, minlength=NULL,
+  drop=TRUE, short=FALSE, ...)
 
-\method{print}{summary.mChoice}(x, prlabel=TRUE, ...)
+\method{print}{summary.mChoice}(x, prlabel=TRUE, render=TRUE, ...)
 
 \method{[}{mChoice}(x, ..., drop=FALSE)
 
@@ -131,7 +136,8 @@ is.mChoice(x)
     produced by \code{mChoice}
   }
   \item{ignoreNA}{set to \code{FALSE} to keep any \code{NA}s present in
-data as a real level.  Prior to Hmisc 4.7-2 \code{FALSE} was the default.}
+data as a real level.  Prior to Hmisc 4.7-2 \code{FALSE} was the
+default.}
   \item{x}{
     an object of class \code{"mchoice"} such as that created by
     \code{mChoice}.  For \code{is.mChoice} is any object.
@@ -155,14 +161,18 @@ data as a real level.  Prior to Hmisc 4.7-2 \code{FALSE} was the default.}
     \code{format} and \code{summary}.  Specify a positive integer to use
     abbreviation in those functions.  See \code{\link{abbreviate}}.
   }
-  \item{sep}{
-    character to use to separate levels when formatting
-  }
+  \item{short}{set to \code{TRUE} to have \code{summary.mChoice} use
+integer choice numbers in its tables, and to print the choice level
+definitions at the top}
+  \item{sep}{character to use to separate levels when formatting}
   \item{prlabel}{
     set to \code{FALSE} to keep
     \code{print.summary.mChoice} from printing the variable label and
-    number of unique values
+    number of unique values.  Ignore for html output.
   }
+  \item{render}{applies of \code{options(prType='html')} is in
+  effect. Set to \code{FALSE} to return the html text instead of
+  rendering the html.}
   \item{values}{
     a scalar or vector.  If \code{values} is integer, it is
     the choice codes, and if it is a character vector, it is assumed to
@@ -184,7 +194,9 @@ ignore case in the data when matching on \code{values}}
   return a logical vector.
   \code{format.mChoice} returns a character vector, and
   \code{as.double.mChoice} returns a binary numeric matrix.
-  \code{nmChoice} returns an integer vector
+  \code{nmChoice} returns an integer vector.
+  \code{print.summary.mChoice} returns an html character string if
+  \code{options(prType='html')} is in effect.
 }
 \author{
   Frank Harrell

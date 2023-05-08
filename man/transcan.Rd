@@ -80,7 +80,7 @@
   last imputation, with \code{coefficients} replaced by the average of
   the \code{n.impute} coefficient vectors and with a component
   \code{var} equal to the imputation-corrected variance-covariance
-  matrix.  \code{fit.mult.impute} can also use the object created by the
+  matrix using Rubin's rule.  \code{fit.mult.impute} can also use the object created by the
   \code{\link[mice]{mice}} function in the \pkg{mice} library to draw the
   multiple imputations, as well as objects created by
   \code{\link{aregImpute}}.  The following components of fit objects are
@@ -104,6 +104,16 @@
 	\code{n.impute} or \code{B} (number of bootstraps) as high as usual,
 	as the total number of repetitions will be \code{n.impute * B}.
   
+  \code{fit.mult.impute} can incorporate robust sandwich variance estimates into
+  Rubin's rule if \code{robust=TRUE}.
+
+	For \code{ols} models fitted by \code{fit.mult.impute} with stacking,
+	the \eqn{R^2} measure in the stacked model fit is OK, and
+	\code{print.ols} computes adjusted \eqn{R^2} using the real sample
+	size so it is also OK because \code{fit.mult.compute} corrects the
+	stacked error degrees of freedom in the stacked fit object to reflect
+	the real sample size. 
+
   The \code{\link{summary}} method for \code{transcan} prints the function
   call, \eqn{R^2} achieved in transforming each variable, and for each
   variable the coefficients of all other transformed variables that are
@@ -196,7 +206,11 @@ transcan(x, method=c("canonical","pc"),
        list.out=FALSE, pr=TRUE, check=TRUE, \dots)
 
 fit.mult.impute(formula, fitter, xtrans, data, n.impute, fit.reps=FALSE,
-                dtrans, derived, fun, vcovOpts=NULL, pr=TRUE, subset, fitargs)
+                dtrans, derived, fun, vcovOpts=NULL,
+                robust=FALSE, cluster, robmethod=c('huber', 'efron'),
+                method=c('ordinary', 'stack', 'only stack'),
+                funstack=TRUE, lrt=FALSE,
+                pr=TRUE, subset, fitargs)
 
 \method{predict}{transcan}(object, newdata, iter.max=50, eps=0.01, curtail=TRUE,
         type=c("transformed","original"),
@@ -261,7 +275,17 @@ invertTabulated(x, y, freq=rep(1,length(x)),
     use \code{method="canonical"} or any abbreviation thereof, to use
     canonical variates (the default). \code{method="pc"} transforms a
     variable instead so as to maximize the correlation with the first
-    principal component of the other variables.
+    principal component of the other variables.  For
+		\code{fit.mult.impute}, \code{method} specifies whether to use
+		standard multiple imputation (the default \code{method='ordinary'})
+		or whether to get final coefficients from stacking all 
+		completed datasets and fitting one model.  Stacking is required if
+		likelihood ratio tests accounting for imputation are to be done.
+		\code{method='stack'} means to do regular MI and stacking, which
+		results in more valid standard errors of coefficient estimates.
+		\code{method='only stack'} means that model fits are not done on
+		individual completed datasets, and standard errors will not be very
+		accurate.
   }
   \item{categorical}{
     a character vector of names of variables in \code{x} which are
@@ -611,8 +635,25 @@ invertTabulated(x, y, freq=rep(1,length(x)),
 		for retaining all intercepts
 		(\code{vcovOpts=list(intercepts='all')}) instead of just the middle
 		one.}
+  \item{robust}{set to \code{TRUE} to have \code{fit.mult.impute} call the
+    \code{rms} package \code{robcov} function on each fit on a
+    completed dataset.  When \code{cluster} is given, \code{robust} is
+    forced to \code{TRUE}.}
+  \item{cluster}{a vector of cluster IDs that is the same length of the number
+    of rows in the dataset being analyzed.  When specified, \code{robust} is
+    assumed to be \code{TRUE}, and the \code{rms} \code{robcov} function is 
+    called with the \code{cluster} vector given as its second argument.}
+  \item{robmethod}{see the \code{robcov} function's \code{method}
+		argument}
+	\item{funstack}{set to \code{FALSE} to not run \code{fun} on the
+		stacked dataset, making an \code{n.impute}+1 element of
+		\code{funresults}}
+	\item{lrt}{set to \code{TRUE} to have \code{method, fun, fitargs} set
+		appropriately automatically so that \code{processMI} can be used to
+		get likelihood ratio tests}
 	\item{fitargs}{a list of extra arguments to pass to \code{fitter},
-		used especially with \code{fun}}
+		used especially with \code{fun}.  When \code{robust=TRUE} the arguments
+    \code{x=TRUE, y=TRUE} are automatically added to \code{fitargs}.}
   \item{type}{
     By default, the matrix of transformed variables is returned, with
     imputed values on the transformed scale.  If you had specified
@@ -660,7 +701,7 @@ invertTabulated(x, y, freq=rep(1,length(x)),
  \item{regcoef.only}{
    set to \code{TRUE} to make \code{vcov.default} delete positions in
    the covariance matrix for any non-regression coefficients (e.g., log
-   scale parameter from \code{\link[rms]{psm}} or \code{\link{survreg}})
+   scale parameter from \code{\link[rms]{psm}} or \code{\link[survival]{survreg}})
  }
  \item{intercepts}{this is primarily for \code{\link[rms]{orm}}
 	 objects.  Set to \code{"none"} to discard all intercepts from the
@@ -748,6 +789,13 @@ invertTabulated(x, y, freq=rep(1,length(x)),
   corresponding to the diagonal of the variance matrix.  The class
   \code{"fit.mult.impute"} is prepended to the other classes produced by
   the fitting function.
+
+	When \code{method} is not \code{'ordinary'}, i.e., stacking is used,
+	\code{fit.mult.impute} returns a modified fit object that is computed
+	on all completed datasets combined, with most all statistics that are
+	functions of the sample size corrected to the real sample size.
+	Elements in the fit such as \code{residuals} will have length equal to
+	the real sample size times the number of imputations.
 
 	\code{fit.mult.impute} stores \code{intercepts} attributes in the
 	coefficient matrix and in \code{var} for \code{orm} fits.
@@ -937,7 +985,8 @@ invertTabulated(x, y, freq=rep(1,length(x)),
   \code{\link[acepack]{avas}}, \code{\link{cancor}},
   \code{\link{prcomp}}, \code{\link{rcspline.eval}},
   \code{\link{lsfit}}, \code{\link{approx}}, \code{\link{datadensity}},
-  \code{\link[mice]{mice}}, \code{\link[ggplot2]{ggplot}}
+  \code{\link[mice]{mice}}, \code{\link[ggplot2]{ggplot}},
+	\code{\link[rms]{processMI}}
 }
 \examples{
 \dontrun{
@@ -1128,6 +1177,18 @@ val <- lapply(r, function(x) x$validate)
 cal <- lapply(r, function(x) x$calibrate)
 # See rms processMI and https://hbiostat.org/rmsc/validate.html#sec-val-mival
 }
+
+\dontrun{
+# Account for within-subject correlation using the robust cluster sandwich
+# covariance estimate in conjunction with Rubin's rule for multiple imputation
+# rms package must be installed
+a <- aregImpute(..., data=d)
+f <- fit.mult.impute(y ~ x1 + x2, lrm, a, n.impute=30, data=d, cluster=d$id)
+# Get likelihood ratio chi-square tests accounting for missingness
+a <- aregImpute(..., data=d)
+h <- fit.mult.impute(y ~ x1 + x2, lrm, a, n.impute=40, data=d, lrt=TRUE)
+processMI(h, which='anova')   # processMI is in rms
+}
 }
 \keyword{smooth}
 \keyword{regression}
@@ -1135,4 +1196,3 @@ cal <- lapply(r, function(x) x$calibrate)
 \keyword{methods}
 \keyword{models}
 \concept{bootstrap}
-% Converted by Sd2Rd version 1.21.
