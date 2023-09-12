@@ -1355,7 +1355,6 @@ html_describe_con <- function(x, sparkwidth=200,
     a <- strsplit(a, ';')
     s <- function(a) {
       a <- paste0(' ', a, ' ')
-      # sprintf('<sub><sub><sub>%s</sub>%s</sub>%s</sub><large>%s</large><sub>%s<sub>%s<sub>%s</sub></sub></sub>', a[1], a[2], a[3], a[4], a[5], a[6], a[7])
       sprintf('<font size="1">%s</font><font size="2">%s</font><font size="3">%s</font><font size="4"><strong>%s</strong></font><font size="3">%s</font><font size="2">%s</font><font size="1">%s</font>',
               a[1], a[2], a[3], a[4], a[5], a[6], a[7])
       }
@@ -1466,7 +1465,7 @@ html_describe_con <- function(x, sparkwidth=200,
   if('Units' %in% names(a))
     b <- b |> gt::text_transform(locations=gt::cells_body(columns=Units),
                                  fn=htmlTranslate) |>
-      gt::tab_style(style=gt::cell_text(size='small', style='italic'),
+      gt::tab_style(style=gt::cell_text(size='small', font='arial'),
                             locations=gt::cells_body(columns=Units))
   b
 }
@@ -1579,7 +1578,7 @@ html_describe_cat <- function(x, w=200, freq=c('chart', 'table'),
     gt::sub_missing(missing_text='')
 
   if('Units' %in% names(a))
-    b <- b |> gt::tab_style(style=gt::cell_text(size='small', style='italic'),
+    b <- b |> gt::tab_style(style=gt::cell_text(size='small', font='arial'),
                             locations=gt::cells_body(columns=Units))
   if('Gmd' %in% names(a))
     b <- b |>
