@@ -1083,11 +1083,13 @@ xless <-
 {
   ## Usage: xless(x) - uses print method for x, puts in persistent window with
   ## xless using name of x as title (unless title= is specified)
+  ## If running under MacOS, use the system open command instead of xless
 	file <- tempfile()
   	sink(file)
   	print(x, ...)
   	sink()
-  	cmd <- paste('xless -title "',title,'" -geometry "90x40" "',
+  	cmd <- if(Sys.info()['sysname'] == 'Darwin') paste('open -a TextEdit', file) else
+    paste('xless -title "',title,'" -geometry "90x40" "',
                file,'" &',sep='')
     system(cmd)
 invisible()
@@ -1293,7 +1295,7 @@ hdquantile <- function(x, probs=seq(0, 1, 0.25), se=FALSE,
 
   a <- outer((0:n)/n, ps,
              function(x,p,m) pbeta(x, p*m, (1-p)*m), m=m)
-  w <- a[-1,] - a[-m,]
+  w <- a[-1,,drop=FALSE] - a[-m,,drop=FALSE]
 
   r <- drop(x %*% w)
   rp <- range(probs)
@@ -1321,7 +1323,7 @@ if(weights)
   l <- n - 1
   a <- outer((0:l)/l, ps,
              function(x,p,m) pbeta(x, p*m, (1-p)*m), m=m)
-  w <- a[-1,] - a[-n,]
+  w <- a[-1,,drop=FALSE] - a[-n,,drop=FALSE]
 
   storage.mode(x) <- 'double'
   storage.mode(w) <- 'double'

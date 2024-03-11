@@ -58,6 +58,14 @@ ebpcomp <- function(x, qref=c(.5, .25, .75),
 ##' @examples
 ##' spikecomp(1:1000)
 ##' spikecomp(1:1000, method='grid')
+##' \dontrun{
+##' On a data.table d use ggplot2 to make spike histograms by country and sex groups
+##' s <- d[, spikecomp(x, tresult='segments'), by=.(country, sex)]
+##' ggplot(s) + geom_segment(aes(x=x, y=y1, xend=x, yend=y2, alpha=I(0.3))) +
+##'    scale_y_continuous(breaks=NULL, labels=NULL) + ylab('') +
+##'    facet_grid(country ~ sex)
+##' }
+
 spikecomp <- function(x, method=c('tryactual', 'simple', 'grid'),
                       lumptails=0.01, normalize=TRUE, y, trans=NULL,
                       tresult=c('list', 'segments', 'roundeddata')) {
@@ -147,7 +155,7 @@ spikecomp <- function(x, method=c('tryactual', 'simple', 'grid'),
     return(
     switch(tresult,
            list     = list(x = x, y = y, roundedTo = d),
-           segments = list(x = x, y1 = rep(0., length(y)), y2 = y,
+           segments = list(x = as.vector(x), y1 = rep(0., length(y)), y2 = as.vector(y),
                            roundedTo = d) ) )
   }
 
