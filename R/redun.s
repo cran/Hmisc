@@ -14,13 +14,23 @@ redun <- function(formula, data=NULL, subset=NULL,
        length(list(...))) data <- dataframeReduce(data, ...)
 
     Terms <- terms(formula, specials='I', data=data)
+    # model.frame does not remove variables with a minus sign in front
+    # of their names, but these are not in term.labels
+    allvars  <- setdiff(as.character(attr(Terms, 'variables')), 'list')
+    keptvars <- attr(Terms, 'term.labels')
+    if(length(allvars) > length(keptvars)) {
+      formula <- as.formula(paste('~', paste(keptvars, collapse='+')))
+      Terms   <- terms(formula, specials='I', data=data)
+    }
+
     m     <- list(formula=formula, data=data, subset=subset,
                   na.action=na.delete)
     data      <- do.call('model.frame', m)
+    data      <- data[attr(Terms, 'term.labels')]
     nam       <- names(data)
     linear    <- nam[attr(Terms,'specials')$I]
     na.action <- attr(data, 'na.action')
-    if(pr) cat(n, 'observations used in analysis\n')
+    if(pr) naprint(na.action)
   } else {
     if(! is.matrix(formula))
       stop("formula must be a numeric matrix when it's not an actual formula")
@@ -80,8 +90,7 @@ redun <- function(formula, data=NULL, subset=NULL,
             vtype[ni] <- if(vtype[ni] == 'q') 'r' else 'l'
         }
   }
-
-  toofew <- nam[!enough]
+  toofew <- nam[! enough]
   if(length(toofew))
     {
       p <- sum(enough)
@@ -136,8 +145,10 @@ redun <- function(formula, data=NULL, subset=NULL,
       if(type=='adjusted')
         {
           dof <- sum(k) + ny - 1
-          R2  <- max(0, 1 - (1 - R2) * (n  -1) / (n - dof - 1))
+          R2  <- max(0, 1 - (1 - R2) * (n - 1) / (n - dof - 1))
         }
+      ycoef  <- f$ycoef[, 1]
+      yscore <- matxv(Y, ycoef) * sqrt(n - 1) - sum(ycoef * f$ycenter)
     ## If variable to possibly remove is categorical with more than 2
     ## categories (more than one dummy variable) make sure ALL frequent
     ## categories are redundant (not just the linear combination of
@@ -161,7 +172,7 @@ redun <- function(formula, data=NULL, subset=NULL,
               }
           }
       }
-      R2
+      list(R2=R2, yscore=yscore)
     }
 
   if(iterms)
@@ -186,21 +197,23 @@ redun <- function(formula, data=NULL, subset=NULL,
 
   In <- 1:p; Out <- integer(0)
   r2r <- numeric(0)
-  r2l <- list()
+  r2l <- scores <- list()
 
   for(i in 1:p) {
     if(pr) cat('Step',i,'of a maximum of', p, '\r')
     ## For each variable currently on the right hand side ("In")
     ## find out how well it can be predicted from all the other "In" variables
     if(length(In) < 2) break
-    Rsq <- In*0
+    Rsq <- In * 0
     l <- 0
     for(j in In)
       {
         l <- l + 1
         k <- setdiff(In, j)
-        Rsq[l] <- fcan(k, j, X, st, en, vtype, tlinear, type,
+        fc <- fcan(k, j, X, st, en, vtype, tlinear, type,
                        allcat, r2, minfreq)
+        Rsq[l] <- fc$R2
+        if(! length(scores[[nam[j]]])) scores[[nam[j]]] <- fc$yscore
       }
     if(i==1) {Rsq1 <- Rsq; names(Rsq1) <- nam[In]}
     if(max(Rsq) < r2) break
@@ -217,9 +230,10 @@ redun <- function(formula, data=NULL, subset=NULL,
         l <- 0
         for(j in Out)
           {
-            l <- l+1
-            r2later[l] <-
-              fcan(k, j, X, st, en, vtype, tlinear, type, allcat, r2, minfreq)
+            l  <- l+1
+            fc <- fcan(k, j, X, st, en, vtype, tlinear, type, allcat, r2, minfreq)
+            r2later[l] <- fc$R2
+            if(! length(scores[[nam[j]]])) scores[[nam[j]]] <- fc$yscore
           }
         if(min(r2later) < r2) break
       }
@@ -240,7 +254,7 @@ redun <- function(formula, data=NULL, subset=NULL,
                  vtype=vtype, tlinear=tlinear,
                  allcat=allcat, minfreq=minfreq, nk=nk, df=xdf,
                  cat.levels=cat.levels,
-                 r2=r2, type=type),
+                 r2=r2, type=type, scores=do.call('cbind', scores)),
             class='redun')
 }
 
@@ -294,7 +308,7 @@ print.redun <- function(x, digits=3, long=TRUE, ...)
   prcvec(x$In)
   w <- x$r2later
   vardel <- names(x$rsquared)
-  if(!long)
+  if(! long)
     {
       print(data.frame('Variable Deleted'=vardel,
                        'R^2'=round(x$rsquared,digits),
