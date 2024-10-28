@@ -1,7 +1,7 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-77dbeb98ec3ce4c4f0f2afdd5144db1a *DESCRIPTION
-567cedef1920aa3944bac88ae5e528ff *NAMESPACE
-39f3a27fdffa3badf4b28934948e4064 *NEWS
+16e2d134d31f23bb056c142bd79ed34d *DESCRIPTION
+5155c825bd5b38425b18e7928c7dfefb *NAMESPACE
+eb8c726e113ab88278b6f2198926acc5 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 8fdbfa3b900cbbb42d94898093ec7fa5 *R/Cs.s
 314b24f935cf8e2ee7a677ed26479b83 *R/GiniMd.s
@@ -35,7 +35,7 @@ c04e31869fdc5107eb6af6886eadb566 *R/cpower.s
 97dc5dcc48cb719088b817833067352c *R/dataRep.s
 ec8af558be91e1fa3415f1a99dd469b2 *R/dates.s
 3f02d2486d14e095a96fe5ee10e483c7 *R/deff.s
-1356fda7b10bcc8bb85c32b64e25896f *R/describe.s
+0cc7d70f97385be3c9e5942357e4b4e0 *R/describe.s
 6cb5b3a77860b605f102bb528e84a071 *R/discrete.s
 3c7e7885dccb0e283f96f91fe1b170ba *R/dotchart3.s
 3d1c3094a57c0fcf886f87367b539d86 *R/dotchartpl.s
@@ -102,6 +102,7 @@ dd4806066d614756cd8be2bef6bad3dd *R/na.keep.s
 abc0f1c38d72a9bf3e59ce9d194c71ee *R/nobsY.s
 27019e9e90730ac0b25014b51d68ec66 *R/nstr.s
 cf2866606281d01f39e99d3205f50ae3 *R/num.intercepts.s
+6dedd1730fffe3aa6d68658a227fabf0 *R/pMedian.r
 a50c8048a7546e224ca402d362c084cd *R/pairUpDiff.r
 215f9a06ffc6df02fb67576ad0da83b9 *R/panel.abwplot.s
 68d8bbb7b9e6f5fa975b37f2e1245291 *R/panel.bpplot.s
@@ -115,7 +116,7 @@ a9771408bed89b32b030653ea46a614f *R/princmp.r
 9a1119c7949407c39968645e921a87a6 *R/print.char.list.s
 5e6df449d8b6cd6f06693d7298d47150 *R/printL.r
 efe9a9a6c90594d1e7425cc46f2fc061 *R/pstamp.s
-21e5f0670676be1ba7b4b2ad135de5e7 *R/qcrypt.r
+e2cf58cc149b7d657e44a976f5e8f185 *R/qcrypt.r
 f3c43a8d39f1458c92a8d2d7df290d9a *R/r2describe.r
 2679a3e28310299f523e0ffb440db739 *R/rcorr.cens.s
 b9759f7459856f6eeb85e4ee3832f7ad *R/rcorr.s
@@ -225,6 +226,7 @@ a40f892874e68edf0c621971b200260d *inst/tests/latexTabular.r
 b0fc6d4900270c13a20eafd31293bc9c *inst/tests/latexpng.r
 0c6b7314112171894df7511e12398f05 *inst/tests/mChoice.r
 c0668a4323dcc6d83736668c00456d23 *inst/tests/minor.tick.r
+de29fe314e56e44256137d61652066e4 *inst/tests/pMedian.r
 ca3aeb15387cea45fb60b35bdd1b572b *inst/tests/panelbp.r
 39662c6cbeab67ca1544cb736ea64f70 *inst/tests/plot.summaryM.plotly.r
 badcf6388bfae0071da3c10a2b77bac6 *inst/tests/procmeans.txt
@@ -255,7 +257,7 @@ e1646179a6487ec47f043ba1125a5438 *inst/tests/wtd.r
 7e9e0d3131e1e1fc0e423359e1c829f6 *man/Cs.Rd
 cec2ab865d8b920cb20e4157dc2a3faf *man/Ecdf.Rd
 ac4fff37fde2e6d0feae41ceda669399 *man/GiniMd.Rd
-2b084c69d1db718784be029130560d30 *man/Hmisc-internal.Rd
+a40b9629c493e0d79c8d615968b05b45 *man/Hmisc-internal.Rd
 a8d3213ffdeb74c3f50bb2d54a8b9ab5 *man/Lag.Rd
 352fb4122854747013fc8d3c96ddb360 *man/Merge.Rd
 5924598d446057203533bc6ee2970150 *man/Misc.Rd
@@ -290,7 +292,7 @@ f76ccfc1d3e0558d9be0a4f89d6f8f62 *man/cut2.Rd
 3eb4090f0c25a33dcf3452294ca80ec1 *man/data.frame.create.modify.check.Rd
 30aa19bbc67a730bfe65d71ecd473bb4 *man/dataRep.Rd
 1df7d66a5fcdc97254d4e70a8d487af4 *man/deff.Rd
-6edbbe5d2ba26d80161640c46971f853 *man/describe.Rd
+6ec474869dfc2350b2d6b178751f8afc *man/describe.Rd
 4c2942aab548faa49c5a389117b48b70 *man/discrete.Rd
 94748a0c9bb7d0290a8b2dc7f4a0bb7d *man/dotchart2.Rd
 67f28b3925d62e99e612e36532d3149f *man/dotchart3.Rd
@@ -338,7 +340,7 @@ b785dbffdb86727e8650cf7e19df0377 *man/intMarkovOrd.Rd
 4831b433c139db936cecf4dff76b9a05 *man/labcurve.Rd
 fd6547343482e782269052b8ed6cc1c5 *man/label.Rd
 d0d1b03b264e6d6456c4e03e5e793c3f *man/latestFile.Rd
-bebcb911d2f805ec0079cf0d7e4c02c7 *man/latex.Rd
+99bcdc4206da2fedc3111efc1310bd97 *man/latex.Rd
 9c1dfa5242426105b1ca4669b0977997 *man/latexCheckOptions.Rd
 c4a248262270a156d9723212daba90ff *man/latexDotchart.Rd
 32f49f9726f15c0cae64179b3df74f20 *man/latexTabular.Rd
@@ -363,6 +365,7 @@ f9eb6868ac6e099103d654c1c1084b21 *man/nin.Rd
 be66aaec2a64401335915c4671d50918 *man/nobsY.Rd
 2f7e82883fd0be5a86a3bec4d4dc250a *man/nstr.Rd
 1d560c844c38c8f7289bb27e21efe171 *man/num.intercepts.Rd
+5aed2c0b67a2c5c52af1d39e60bcdb94 *man/pMedian.Rd
 76b1975307ab89cc2eb19f12040342ce *man/pairUpDiff.Rd
 ab8edbb03663977e40ac2ffa3025d39f *man/panel.bpplot.Rd
 b8247448b0c2c6d876ce693f23c9fe85 *man/partition.Rd
@@ -372,7 +375,7 @@ fd3bfeefd15a79c301f02a7c4631f8d1 *man/plotCorrM.Rd
 a3aed45d350c39121d61700f94e859cb *man/plotCorrPrecision.Rd
 88d93c5117d432cbe4ba996c5c74d0d8 *man/plotlyM.Rd
 81937c2b724d0ec42f817ebb88748e70 *man/plsmo.Rd
-66c7af813ac11f2bd92aebcc6ff33d3e *man/popower.Rd
+6a480cdaeb1dbf34525224011cbe17b9 *man/popower.Rd
 ddba6cfbe8781522fad083b7bc2c8b92 *man/princmp.Rd
 52be83076b1f0442cb5ab5c15bb16a3f *man/print.char.list.Rd
 0a25e1c6f349789159b7239ae0f0f620 *man/print.char.matrix.Rd
@@ -435,7 +438,7 @@ d9e66a07144bec4e7365da937119b5ea *man/symbol.freq.Rd
 996241a9c13b901a3d5133de1624b9ed *man/testCharDateTime.Rd
 ec1a45cd81fe0bb55b45eb5b0ead1e73 *man/tex.Rd
 6a55f6a9b70721cec9c3b8830bceaa0e *man/transace.Rd
-b598e89a3f72832bbe5a0e9dafb7c7c8 *man/transcan.Rd
+befd3ceb2cd8cec372ab9c079cbbac2a *man/transcan.Rd
 7e9eae90e12d52f637f46ce78bfc0c53 *man/translate.Rd
 76093ee37d83f9e13c9be04fbaaca9bd *man/trunc.POSIXt.Rd
 2a6ef4d194b66158058fcfe0055d718f *man/units.Rd
@@ -453,15 +456,16 @@ a7ee5852bd965cedb06b50e051df63b1 *man/windows/sas.get.Rd
 c63b3fa2193829f494e39d8cd557cd83 *man/yearDays.Rd
 c87ff598535f37eaf4c78f044e722b74 *man/ynbind.Rd
 8360e406703130bb09302a64a9638860 *src/Hmisc.c
-a8395ba413d746154d7e89ce07e1e11b *src/Hmisc.h
-06d9b6e7e6a7e22898fc0134691889b3 *src/cidxcn.f
-ac182f4144cfd7853f252be1e4b3d75b *src/cidxcp.f
-08ccfbf5a4efcc18c629a8f91abc6b78 *src/hoeffd.f
-781a196766abf3ebddc10bc658ff22a2 *src/init.c
-d6bc8b5ebd92a27f1c9e3522d46fa466 *src/jacklins.f
+feacb897c62776acb7e8ebffa7446262 *src/Hmisc.h
+72742560872c7a863b1aa9ce21160d4a *src/cidxcn.f90
+a519b7e05097490440cb744c57392de4 *src/cidxcp.f90
+1d61e62a27b2830ad58ac6645b11c5df *src/hlqest.f90
+3e94078aa23d484e0bd94375b813855e *src/hoeffd.f90
+23773dc91efdd1871530587df857ff02 *src/init.c
+1f84fad7c8d73e5839030ce4d2cf1f85 *src/jacklins.f90
 10538b0cf98c499976a5bb6d74a5195e *src/largrec.f
 2d0aa4a90313d361f628383dd5fcf7fb *src/mChoice.c
-703f73252fe6efaf8244b0713aaabe6b *src/maxempr.f
+9e3c72bd4e48c78170545e5e0c50d7be *src/maxempr.f90
 69d3a08b2cd911161ba22af68f97f611 *src/nstr.c
 5fd3cecbf580b3cb32f365f1f9036794 *src/ranksort.c
 df53032c14b9c8a41bfe9529411c7729 *src/ratfor/cidxcn.r
@@ -471,7 +475,7 @@ eec5235344d56eaaaff52805e71fdf30 *src/ratfor/jacklins.r
 daae316a69a5b013bdf334c4302725cd *src/ratfor/maxempr.r
 29402d28cea92baf7631bc7ba15be2d2 *src/ratfor/rcorr.r
 1e330cf030042a8aef488a254a6b1074 *src/ratfor/wclosest.r
-def0335461e456fdd3d966856a7a781c *src/rcorr.f
+1be4ba1903bae2d80ae7fb0b7e97a0b3 *src/rcorr.f90
 32839fee8ce62db43ef9b527256a8737 *src/sas/exportlib.sas
 6391fc48464e9b488b3626eaacbe967d *src/string_box.c
-46912e086e55a7d273443ff5a6e37bde *src/wclosest.f
+c6c9ebc7448e3c3fafdbac4c610344d4 *src/wclosest.f90
