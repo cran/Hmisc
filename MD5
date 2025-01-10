@@ -1,7 +1,7 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-df74a9421c220c563ae67dbae419e9f8 *DESCRIPTION
-9da4bbd920b9d9be1c624d8626377d4d *NAMESPACE
-0e010f452e79abafaa6572968e9236d8 *NEWS
+e6412f9df93acd7d9671b341640afb36 *DESCRIPTION
+26af57d6ec0085d698c0a8e4ee82cd7b *NAMESPACE
+1d44090df7cf7401fd0127d0d538c527 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 8fdbfa3b900cbbb42d94898093ec7fa5 *R/Cs.s
 314b24f935cf8e2ee7a677ed26479b83 *R/GiniMd.s
@@ -30,7 +30,7 @@ f77dbf71580e9bf653fadd0c2f491f85 *R/cnvrt.coords.s
 6ac4ca97488c406e4f513cec9be4be27 *R/consolidate.s
 c04e31869fdc5107eb6af6886eadb566 *R/cpower.s
 1d781cfa4d6123c2cb783ca714f3e315 *R/curveRep.s
-1fd003d75aabe1320e13a185c34b83b3 *R/cut2.s
+49e43c5261cdf4e3b9b1c225c331c47c *R/cut2.s
 25c501e1db065dacd0b7ebbc9918254e *R/data.frame.labelled.s
 97dc5dcc48cb719088b817833067352c *R/dataRep.s
 ec8af558be91e1fa3415f1a99dd469b2 *R/dates.s
@@ -101,7 +101,8 @@ dd4806066d614756cd8be2bef6bad3dd *R/na.keep.s
 3d905a724130e0e181a9d00ecd45b195 *R/na.pattern.s
 abc0f1c38d72a9bf3e59ce9d194c71ee *R/nobsY.s
 27019e9e90730ac0b25014b51d68ec66 *R/nstr.s
-cf2866606281d01f39e99d3205f50ae3 *R/num.intercepts.s
+4b4604d9b62ab103eec9eef18c90e067 *R/num.intercepts.s
+a5a26bf4ece26b9b707595a063f1bfd8 *R/ordGroupBoot.r
 6dedd1730fffe3aa6d68658a227fabf0 *R/pMedian.r
 a50c8048a7546e224ca402d362c084cd *R/pairUpDiff.r
 215f9a06ffc6df02fb67576ad0da83b9 *R/panel.abwplot.s
@@ -110,8 +111,8 @@ a50c8048a7546e224ca402d362c084cd *R/pairUpDiff.r
 98d59510ae9b6125f404f484281f94bf *R/plot.describe.s
 7afa7237d6203acbecd4d1b32f40a8c4 *R/plotCorrM.r
 7768f312916e3d893a0b97896dc0d253 *R/plotlyM.r
-877b726b53cff74158d1b319b6f0b412 *R/plsmo.s
-abee077f086dd6b61303a1fb0edc3960 *R/popower.s
+361419eeca9108cb009e1126283e2f5f *R/plsmo.s
+507d5adc6994ca6fffaeee1ab0bbfe2e *R/popower.s
 a9771408bed89b32b030653ea46a614f *R/princmp.r
 9a1119c7949407c39968645e921a87a6 *R/print.char.list.s
 5e6df449d8b6cd6f06693d7298d47150 *R/printL.r
@@ -174,7 +175,7 @@ c6b53e54357bba5bfa5437cc66eb9645 *R/varclus.s
 f944b2ef6a72dde4e6441b75a51f4405 *R/wtd.stats.s
 bd3a508012d473f9e0de02aa8519ebc2 *R/xYplot.s
 80493b82ba05f6c43b10f09df59d83c7 *R/xtfrm.labelled.s
-b72b2ab287d4c1af9d741022300a18bb *R/xy.group.s
+0bdfa14386b3d2bf55d4e37607d37a9e *R/xy.group.s
 1a0242a28b648a6eb2414ba6c86fa8d6 *R/ynbind.s
 4a9bc5cb2318131f4f6a177965555ef1 *R/zoom.s
 97a468f9be30b70f02ac809ce2fe8e17 *README.md
@@ -227,6 +228,7 @@ a40f892874e68edf0c621971b200260d *inst/tests/latexTabular.r
 b0fc6d4900270c13a20eafd31293bc9c *inst/tests/latexpng.r
 0c6b7314112171894df7511e12398f05 *inst/tests/mChoice.r
 c0668a4323dcc6d83736668c00456d23 *inst/tests/minor.tick.r
+54aed26f652e798340d9c1bf129d9d94 *inst/tests/ordGroupBoot.r
 de29fe314e56e44256137d61652066e4 *inst/tests/pMedian.r
 ca3aeb15387cea45fb60b35bdd1b572b *inst/tests/panelbp.r
 39662c6cbeab67ca1544cb736ea64f70 *inst/tests/plot.summaryM.plotly.r
@@ -289,7 +291,7 @@ c6b61f5f8a001f8748635bde7ff92fb8 *man/binconf.Rd
 fb3224eb96702359c56fa180ab230562 *man/cpower.Rd
 94dbc0d7bcea5846705ee54bedc888db *man/csv.get.Rd
 68b879767da3e838f48b4dac36576fb7 *man/curveRep.Rd
-f76ccfc1d3e0558d9be0a4f89d6f8f62 *man/cut2.Rd
+6d51b6467a0fe925a33191219b1fbed1 *man/cut2.Rd
 3eb4090f0c25a33dcf3452294ca80ec1 *man/data.frame.create.modify.check.Rd
 30aa19bbc67a730bfe65d71ecd473bb4 *man/dataRep.Rd
 1df7d66a5fcdc97254d4e70a8d487af4 *man/deff.Rd
@@ -365,7 +367,8 @@ bb9292b59a6e821c1ac815161d2e1196 *man/na.detail.response.Rd
 f9eb6868ac6e099103d654c1c1084b21 *man/nin.Rd
 be66aaec2a64401335915c4671d50918 *man/nobsY.Rd
 2f7e82883fd0be5a86a3bec4d4dc250a *man/nstr.Rd
-1d560c844c38c8f7289bb27e21efe171 *man/num.intercepts.Rd
+62f5f11538766e90066e6c60293024b1 *man/num.intercepts.Rd
+f55f76304f36da0a7d694432dd486981 *man/ordGroupBoot.Rd
 5aed2c0b67a2c5c52af1d39e60bcdb94 *man/pMedian.Rd
 76b1975307ab89cc2eb19f12040342ce *man/pairUpDiff.Rd
 ab8edbb03663977e40ac2ffa3025d39f *man/panel.bpplot.Rd
@@ -375,7 +378,7 @@ a2d7a25650d5cac6eb0559ebb958f5bf *man/plot.princmp.Rd
 fd3bfeefd15a79c301f02a7c4631f8d1 *man/plotCorrM.Rd
 a3aed45d350c39121d61700f94e859cb *man/plotCorrPrecision.Rd
 88d93c5117d432cbe4ba996c5c74d0d8 *man/plotlyM.Rd
-81937c2b724d0ec42f817ebb88748e70 *man/plsmo.Rd
+3efc920d21cf40ee48ba846da51d2da5 *man/plsmo.Rd
 6a480cdaeb1dbf34525224011cbe17b9 *man/popower.Rd
 ddba6cfbe8781522fad083b7bc2c8b92 *man/princmp.Rd
 52be83076b1f0442cb5ab5c15bb16a3f *man/print.char.list.Rd
@@ -454,16 +457,17 @@ a7ee5852bd965cedb06b50e051df63b1 *man/windows/sas.get.Rd
 583a620471e3172d5d4cc3838a65b957 *man/wtd.stats.Rd
 5b1ee124701694b2e4e3df44103890fa *man/xYplot.Rd
 13c3f8a542f16076e346f9d6cc7904c3 *man/xtfrm.labelled.Rd
-83b8f2732a6c378785187242ff93b26a *man/xy.group.Rd
+f4201e2abbe8b745abb7fcc98668332f *man/xy.group.Rd
 c63b3fa2193829f494e39d8cd557cd83 *man/yearDays.Rd
 c87ff598535f37eaf4c78f044e722b74 *man/ynbind.Rd
 8360e406703130bb09302a64a9638860 *src/Hmisc.c
 feacb897c62776acb7e8ebffa7446262 *src/Hmisc.h
 72742560872c7a863b1aa9ce21160d4a *src/cidxcn.f90
 a519b7e05097490440cb744c57392de4 *src/cidxcp.f90
+7e72cc8bd747b4f470f778f252818cc3 *src/cutgn.f90
 1d61e62a27b2830ad58ac6645b11c5df *src/hlqest.f90
 3e94078aa23d484e0bd94375b813855e *src/hoeffd.f90
-23773dc91efdd1871530587df857ff02 *src/init.c
+ae1123fc79ca93bcaf9d83fcaccff889 *src/init.c
 1f84fad7c8d73e5839030ce4d2cf1f85 *src/jacklins.f90
 10538b0cf98c499976a5bb6d74a5195e *src/largrec.f
 2d0aa4a90313d361f628383dd5fcf7fb *src/mChoice.c

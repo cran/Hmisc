@@ -1,6 +1,6 @@
 Package: Hmisc
-Version: 5.2-1
-Date: 2024-11-30
+Version: 5.2-2
+Date: 2025-01-10
 Title: Harrell Miscellaneous
 Authors@R: 
     c(person(given = "Frank E",
@@ -35,9 +35,9 @@ URL: https://hbiostat.org/R/Hmisc/
 Encoding: UTF-8
 RoxygenNote: 7.3.2
 NeedsCompilation: yes
-Packaged: 2024-12-01 22:11:31 UTC; harrelfe
+Packaged: 2025-01-10 13:14:35 UTC; harrelfe
 Author: Frank E Harrell Jr [aut, cre] (<https://orcid.org/0000-0002-8271-5493>),
   Charles Dupont [ctb] (contributed several functions and maintains latex
     functions)
 Repository: CRAN
-Date/Publication: 2024-12-02 11:20:02 UTC
+Date/Publication: 2025-01-10 23:30:03 UTC
