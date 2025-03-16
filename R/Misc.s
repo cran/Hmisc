@@ -8,19 +8,18 @@ if(!exists("NCOL", mode='function')) {
     if (is.array(x) && length(dim(x)) > 1 || is.data.frame(x)) ncol(x) else as.integer(1)
 }
 
-prn <- function(x, txt, file='')
+prn <- function(x, txt, file='', head=deparse(substitute(x), width.cutoff=500)[1])
 {
-  calltext <- as.character(sys.call())[2]
   if(file != '') sink(file, append=TRUE)
   
   if(!missing(txt)) {
-    if(nchar(txt) + nchar(calltext) +3 > .Options$width)
-      calltext <- paste('\n\n  ',calltext,sep='')
+    if(nchar(txt) + nchar(head) +3 > .Options$width)
+      head <- paste('\n\n  ', head, sep='')
     else
       txt <- paste(txt, '   ', sep='')
-    cat('\n', txt, calltext, '\n\n', sep='') 
+    cat('\n', txt, head, '\n\n', sep='') 
   }
-  else cat('\n',calltext,'\n\n',sep='')
+  else cat('\n', head, '\n\n',sep='')
   print(x)
   if(file != '') sink()
   invisible()
@@ -110,19 +109,36 @@ stepfun.eval <- function(x, y, xout, type=c("left","right"))
 }
 
 
-km.quick <- function(S, times, q)
+km.quick <- function(S, times, q, type=c('kaplan-meier', 'fleming-harrington', 'fh2'),
+                     interval=c('>', '>='), method=c('constant', 'linear'), fapprox=0, n.risk=FALSE)
 {
   sRequire('survival')
-  S <- S[!is.na(S),]
-  n <- nrow(S)
-  stratvar <- factor(rep(1,nrow(S)))
-  f <- survival::survfitKM(stratvar, S, se.fit=FALSE, conf.type='none')
-  tt <- c(0, f$time)
-  ss <- c(1, f$surv)
-  if(missing(times))
-    min(tt[ss <= q])
-  else
-    approx(tt, ss, xout=times, method='constant', f=0)$y
+  type     <- match.arg(type)
+  interval <- match.arg(interval)
+  method   <- match.arg(method)
+
+  S <- S[! is.na(S), ]
+  stratvar <- factor(rep(1, nrow(S)))
+  f <- if(attr(S, 'type') == 'right')
+    survival::survfitKM(stratvar, S, se.fit=FALSE, conf.type='none', type=type)
+    else survival::survfit(S ~ stratvar, se.fit=FALSE, conf.type='none')
+  nr <- if(n.risk) list(time=f$time, n.risk=f$n.risk)
+  if(missing(times) & missing(q)) {
+    time <- f$time[f$n.event > 1e-10]    # survfit.formula for left censoring
+    surv <- f$surv[f$n.event > 1e-10]    # creates a tiny nonzero value for n.event
+    if(interval == '>=') surv <- c(1e0, surv[-length(surv)])
+    res <- list(time=time, surv=surv)
+  } else {
+    tt <- c(0, f$time)
+    ss <- c(1, f$surv)
+    if(missing(times)) res <- min(tt[ss <= q])
+    else {
+      if(interval == '>=') {tt <- f$time; ss <- ss[-length(ss)]}
+      res <- approxExtrap(tt, ss, xout=times, method=method, f=fapprox)$y
+    }
+  }
+if(n.risk) attr(res, 'n.risk') <- nr
+res
 }
 
 oPar <- function()

@@ -83,9 +83,13 @@
 	running \code{data.table}.  \code{restoreHattrib} restores these attributes.
 
   \code{km.quick} provides a fast way to invoke \code{survfitKM} in the
-  \code{survival} package to get Kaplan-Meier estimates for a
+  \code{survival} package to efficiently get Kaplan-Meier or Fleming-Harrington estimates for a
   single stratum for a vector of time points (if \code{times} is given) or to
-  get a vector of survival time quantiles (if \code{q} is given).
+  get a vector of survival time quantiles (if \code{q} is given).  If neither is given,
+  the whole curve is returned in a list with objects \code{time} and \code{surv}, and
+  there is an option to consider an interval as pertaining to greater than or equal
+  to a specific time instead of the traditional greater than.  If the censoring is not 
+  right censoring, the more general \code{survfit} is called by \code{km.quick}.
 
 	\code{latexBuild} takes pairs of character strings and produces a
 	single character string containing concatenation of all of them, plus
@@ -208,7 +212,9 @@ htmlSpecialType()
 inverseFunction(x, y)
 james.stein(y, group)
 keepHattrib(obj)
-km.quick(S, times, q)
+km.quick(S, times, q,
+        type = c("kaplan-meier", "fleming-harrington", "fh2"),
+        interval = c(">", ">="), method=c('constant', 'linear'), fapprox=0, n.risk=FALSE)
 latexBuild(\dots, insert, sep='')
 lm.fit.qr.bare(x, y, tolerance, intercept=TRUE, xpxi=FALSE, singzero=FALSE)
 matxv(a, b, kint=1, bmat=FALSE)
@@ -293,7 +299,8 @@ xless(x, \dots, title)
   \item{times}{a numeric vector of times}
   \item{title}{a character string to title a window or plot.  Ignored for \code{xless} under MacOs.}
   \item{tolerance}{tolerance for judging singularity in matrix}
-  \item{type}{\code{"v"} for vertical, \code{"h"} for horizontal.}
+  \item{type}{\code{"v"} for vertical, \code{"h"} for horizontal. 
+  For \code{km.quick} specifies the type of survival estimator.}
   \item{w}{a numeric vector}
   \item{width}{width of confidence rectanges in user units, or see
 	\code{\link{strwrap}}} 
@@ -318,6 +325,10 @@ xless(x, \dots, title)
   \item{indent, exdent, prefix}{see \code{\link{strwrap}}}
   \item{simplify}{see \code{\link{sapply}}}
   \item{units}{see \code{\link{par}}}
+  \item{interval}{specifies whether to deal with probabilities of exceeding a value
+  (the default) or of exceeding or equalling the value}
+  \item{method,fapprox}{see \code{approx}}
+  \item{n.risk}{set to \code{TRUE} to include the number at risk in the result}
   \item{\dots}{arguments passed through to another function.  For
 		\code{latexBuild} represents pairs, with odd numbered elements being
 		character strings containing LaTeX code or a zero-length object to
