@@ -122,6 +122,8 @@ km.quick <- function(S, times, q, type=c('kaplan-meier', 'fleming-harrington', '
   f <- if(attr(S, 'type') == 'right')
     survival::survfitKM(stratvar, S, se.fit=FALSE, conf.type='none', type=type)
     else survival::survfit(S ~ stratvar, se.fit=FALSE, conf.type='none')
+  t0 <- f$t0
+  if(! length(t0)) t0 <- 0e0
   nr <- if(n.risk) list(time=f$time, n.risk=f$n.risk)
   if(missing(times) & missing(q)) {
     time <- f$time[f$n.event > 1e-10]    # survfit.formula for left censoring
@@ -129,7 +131,7 @@ km.quick <- function(S, times, q, type=c('kaplan-meier', 'fleming-harrington', '
     if(interval == '>=') surv <- c(1e0, surv[-length(surv)])
     res <- list(time=time, surv=surv)
   } else {
-    tt <- c(0, f$time)
+    tt <- c(t0, f$time)
     ss <- c(1, f$surv)
     if(missing(times)) res <- min(tt[ss <= q])
     else {
@@ -1095,19 +1097,19 @@ if(FALSE) {
 }
 
 xless <-
-  function(x, ..., title=substring(deparse(substitute(x)),1,40))
+  function(x, ..., title=substring(deparse(substitute(x)), 1, 40))
 {
   ## Usage: xless(x) - uses print method for x, puts in persistent window with
   ## xless using name of x as title (unless title= is specified)
   ## If running under MacOS, use the system open command instead of xless
-	file <- tempfile()
-  	sink(file)
-  	print(x, ...)
-  	sink()
-  	cmd <- if(Sys.info()['sysname'] == 'Darwin') paste('open -a TextEdit', file) else
-    paste('xless -title "',title,'" -geometry "90x40" "',
-               file,'" &',sep='')
-    system(cmd)
+  mac <- Sys.info()['sysname'] == 'Darwin'
+	file <- if(mac) paste(tempdir(), makeNames(title), sep='/') else tempfile()
+  capture.output(x, ..., file=file)
+  cmd <- if(mac)
+           paste('open -a TextEdit', file) else
+           paste('xless -title "', title, '" -geometry "90x40" "',
+                  file, '" &', sep='')
+  system(cmd)
 invisible()
 }
 
@@ -1934,7 +1936,7 @@ plotlyParm = list(
   },
 
   ## Colors for ordered levels
-  colOrdered = function(n=5, col=viridis::viridis) {
+  colOrdered = function(n=5, col=viridisLite::viridis) {
     if(! is.function(col)) rep(col, length.out=n)
     else col(n)
   },

@@ -538,13 +538,22 @@ formatdescribeSingle <-
       w <- strwrap(paste(w, collapse=', '), width=wide)
       R <- c(R, '', w)
     }
-    if(length(x$roundedTo))
+    if(length(x$roundedTo) && x$roundedTo != 0)
       R <- c(R, '',
              paste('For the frequency table, variable is rounded to the nearest',
                    format(x$roundedTo, scientific=3)))
     
-  } else if(length(v) && ! is.standard)
-    R <- c(R, '', vbtm(v))
+  } else if(length(v) && ! is.standard) {
+    if(inherits(v, 'table')) {
+      fval <- names(v)
+      freq <- unname(v)
+      prop <- round(freq / sum(freq), 3)
+      w <- sprintf('%s (%s, %s)', names(v), format(freq), format(prop))
+      R <- c(R, '', w)
+    } else {
+      R <- c(R, '', vbtm(v))
+    }
+  }
   
   if(length(x$mChoice)) {
     R <- c(R, bv()); verb <- 1
@@ -1587,7 +1596,6 @@ html_describe_cat <- function(x, w=200, freq=c('chart', 'table'),
   if('Gmd' %in% names(a))
     b <- b |>
       gt::cols_label(Gmd ~ gt::html("Gini\u2009<span style=\"text-decoration: overline\">|\u394|</span>"))
-saveRDS(b, '/tmp/b.rds')
   b
 }
 
