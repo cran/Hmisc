@@ -1,7 +1,7 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-7231f0746bc6bb621ba989e75622ea31 *DESCRIPTION
+084013f3f65b882064955abf5af9f21d *DESCRIPTION
 5963ab7e1754a701deda6ad64b3b7d52 *NAMESPACE
-685e9cf9e4fdf0d02cefad6d547b7988 *NEWS
+9973ef049846d3bafbabfbaf605d7965 *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 8fdbfa3b900cbbb42d94898093ec7fa5 *R/Cs.s
 b5bfe4ae6950ece451619109f3d46695 *R/Fdebug.r
@@ -55,7 +55,7 @@ f6f60ab400ea2df181948ccb799eccba *R/event.history.s
 c238614fb72943362407d74442bf236a *R/format.pval.s
 aace929824aad6ebdfba910950b6cc2b *R/ftu.s
 473bbef2ffd42d37d059d9a4c66fe8a4 *R/gbayes.s
-25b0b3622f0fc66a77fc9cfa6f1cf4e8 *R/gbayesSeqSim.r
+a3c833e4ab38e1dbe60f136ec2f2360f *R/gbayesSeqSim.r
 2800e27dbcdb3c79e9609483db401cbb *R/geom_stepconfint.r
 f76f66eae7faef0e445143d9e367619d *R/gettext.s
 769b009b031f6f656a0e9b748057bfae *R/ggMisc.s
@@ -104,7 +104,7 @@ dd4806066d614756cd8be2bef6bad3dd *R/na.keep.s
 3d905a724130e0e181a9d00ecd45b195 *R/na.pattern.s
 abc0f1c38d72a9bf3e59ce9d194c71ee *R/nobsY.s
 27019e9e90730ac0b25014b51d68ec66 *R/nstr.s
-4b4604d9b62ab103eec9eef18c90e067 *R/num.intercepts.s
+613e62fe5a29b86aa3ee9e7067820302 *R/num.intercepts.s
 a5a26bf4ece26b9b707595a063f1bfd8 *R/ordGroupBoot.r
 7f48f511de13de1934a2cc8a351cc0ae *R/pMedian.r
 a50c8048a7546e224ca402d362c084cd *R/pairUpDiff.r
@@ -314,7 +314,7 @@ b6b8b3105a3bea6a000bd44a1290d428 *man/ebpcomp.Rd
 04771822c60d38658c3720cd91bc2113 *man/errbar.Rd
 3bc08c67bb196770cb9ff90bdfa15672 *man/escapeRegex.Rd
 50ba2202ecd33f8244ac838560286b93 *man/estSeqMarkovOrd.Rd
-a6b8bff2b02dda6ebe943bd8b2044d65 *man/estSeqSim.Rd
+0a65ff7e390b5c287698b13d6930aac2 *man/estSeqSim.Rd
 b8c947ebb9ea63a9ecf543e9248a512b *man/event.chart.Rd
 6f9b356b12e05d93c091e033a7d3f4a8 *man/event.convert.Rd
 1beee8ab5e6bde656f0daaf7dfe1cbc5 *man/event.history.Rd
