@@ -1,6 +1,21 @@
+Changes in version 5.3-0 (2026-09-05)
+   * Added markupSpecs$typst to begin formal Typst support
+   * Added typst.r to hold internal Typst utility functions typstTranslate and typstAsis used by print.describe
+   * Added typstFunctions internal object, which is a list containing character strings with Typst function definitions such as spikehist
+   * Added typst support for print.summary.mChoice
+   * Added typst support for describe, triggered by options(prType='typst')
+   * latexSN: removed thin space to be compatible with Typst with pandoc's texmath processing
+   * rcspline.restate generated LaTeX markup: changed default value of after to 4 backslashes; avoid problem with double backslash at the end of a line gobbling [] in next line by including empty group {} with double backslash
+   * typstDotchart: new function, parallels latexDotchart
+   * typstFuntions: new object defining custom Typst functions used by certain methods
+   * knitrSet: added typst support
+   * pMedian: take na.rm=TRUE to also indicate removal of other non-numbers
+   * describe: also treat non-numbers as NA
+
 Changes in version 5.2-6 (2026-06-18)
    * Changed all length= to length.out= in seq() calls to avoid warnings
    * Improved movStats to avoid global variable for knots
+   * Changed qcrypt to use qs2 package instead of qs
 
 Changes in version 5.2-5 (2026-01-08)
    * num.intercepts: handled case where there is an info.matrix in the fit but it had only one intercept and was not partitioned; also cleaned up logic
