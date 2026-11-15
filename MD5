@@ -1,14 +1,14 @@
 16f8ea43efba90112351c5ecb33021c4 *COPYING
-e56eed18ddd72e1a9038489eeebf967e *DESCRIPTION
-2161321f44edad6415c92ab0eb9237b3 *NAMESPACE
-19c71015240c18adae2855a6289a597e *NEWS
+f46362d1bc5539b092b911459cf01070 *DESCRIPTION
+cf371a70484d4005646198b53c9dee96 *NAMESPACE
+1593a0cbe989aa89962075fb8488673b *NEWS
 76f90acbe9bf8ad2eaaa6b8813eb7c82 *R/AFirst.lib.s
 8fdbfa3b900cbbb42d94898093ec7fa5 *R/Cs.s
 b5bfe4ae6950ece451619109f3d46695 *R/Fdebug.r
 314b24f935cf8e2ee7a677ed26479b83 *R/GiniMd.s
 7d0b0014572f85d46fa6a3417707344c *R/Key.s
 10afe48276f47fe7b9cbeba8b151ee42 *R/Merge.r
-0ce1ba00a8ac23abee253029736b6263 *R/Misc.s
+460f52232ba0104d5d566b05a93fe2da *R/Misc.s
 081320dfb53e3362cfb0918952b60cce *R/R2Measures.r
 8dad28fed2d0f99cdee16b9c1ac67fbd *R/abd.r
 9043da0ab6b8288636bb399cdb0f89bf *R/abs.error.pred.s
@@ -31,7 +31,7 @@ f77dbf71580e9bf653fadd0c2f491f85 *R/cnvrt.coords.s
 6ac4ca97488c406e4f513cec9be4be27 *R/consolidate.s
 c04e31869fdc5107eb6af6886eadb566 *R/cpower.s
 1d781cfa4d6123c2cb783ca714f3e315 *R/curveRep.s
-49e43c5261cdf4e3b9b1c225c331c47c *R/cut2.s
+5d3669aa5fcc10e95be71f6fed4fd58a *R/cut2.s
 25c501e1db065dacd0b7ebbc9918254e *R/data.frame.labelled.s
 97dc5dcc48cb719088b817833067352c *R/dataRep.s
 ec8af558be91e1fa3415f1a99dd469b2 *R/dates.s
@@ -85,6 +85,7 @@ daa2d9a32f0b5db51f487dcb96ff58cc *R/label.s
 b160964c8423acea603c95a04c791084 *R/latexTabular.s
 67c8a6450a4ead25d7fe5a7944a40d12 *R/latexTherm.s
 f15937a81b1e2a57a9707f5fbdd6c878 *R/list.tree.s
+fe0deb24b07d4d8cf8638b6d1e8e4e09 *R/loess.surv.r
 ce608a6c653ec8c6fe828448f9a78eb6 *R/mApply.s
 8d4399871e425d3744000153e19bbb46 *R/mChoice.s
 e21c3cbb9b9c17b07223d4f805433395 *R/makeNstr.s
@@ -175,11 +176,13 @@ c1dba69a612fd6fb121adb946a77596e *R/tex.s
 847daf7fa4e67d6641c763a7873df93c *R/translate.s
 3958e6e8ad99f90c5963899f2d2699c5 *R/typst.r
 24de7b4ad00268585f0f6971a9c7a98e *R/typstDotchart.r
+260cf69af698dfeded11f335b9646db3 *R/unicodeSN.r
 72baa8606c0d8a92dacdd1a638f70c0c *R/units.s
 77c1963cc01ee8e706982a042b965522 *R/upData.s
 ec3a0500a5d1afab5b53b052532dcc40 *R/upFirst.s
 25b2e4d51ba3475a3e2bd22da07305ad *R/valueTags.s
 c6b53e54357bba5bfa5437cc66eb9645 *R/varclus.s
+9975a36e17ce43fcfee54845fd9174d8 *R/warn_once.r
 be888c73d4b232fac132eb2ddab3f08e *R/wtd.stats.s
 bd3a508012d473f9e0de02aa8519ebc2 *R/xYplot.s
 80493b82ba05f6c43b10f09df59d83c7 *R/xtfrm.labelled.s
@@ -187,6 +190,7 @@ bd3a508012d473f9e0de02aa8519ebc2 *R/xYplot.s
 1a0242a28b648a6eb2414ba6c86fa8d6 *R/ynbind.s
 4a9bc5cb2318131f4f6a177965555ef1 *R/zoom.s
 97a468f9be30b70f02ac809ce2fe8e17 *README.md
+21c9401b8c07f38d762ade4612fc4ffe *build/partial.rdb
 357fee92fdddd451d253d7a50836b510 *inst/CHANGELOG
 ba03163ea3c1f22c4a26a91477140822 *inst/THANKS
 d41d8cd98f00b204e9800998ecf8427e *inst/WISHLIST
@@ -273,7 +277,7 @@ ac4fff37fde2e6d0feae41ceda669399 *man/GiniMd.Rd
 a40b9629c493e0d79c8d615968b05b45 *man/Hmisc-internal.Rd
 a8d3213ffdeb74c3f50bb2d54a8b9ab5 *man/Lag.Rd
 352fb4122854747013fc8d3c96ddb360 *man/Merge.Rd
-3c21002bafee5953602f07ac9c86cf6e *man/Misc.Rd
+549e4e5c233da6bf734d14efdeae5dad *man/Misc.Rd
 c51df7edc25fd92fdd603738b777b384 *man/Overview.Rd
 e3273cfa3aa9e69c415b4ebcb10ada71 *man/R2Measures.Rd
 71a62f91bcd26f7cbfa9a2755bed0830 *man/Save.Rd
@@ -281,7 +285,7 @@ e3273cfa3aa9e69c415b4ebcb10ada71 *man/R2Measures.Rd
 6ed0de6a1ac299e867fea5c42fd49024 *man/addMarginal.Rd
 0307026cd58ecc62b3bae03fad3444a7 *man/addggLayers.Rd
 77a208cf321e5241f5e11e4dbb6d101e *man/all.is.numeric.Rd
-89bde30f0578686f86512ffe08e7e4be *man/approxExtrap.Rd
+d99f80ca6a26fb8c8032d48c93bc0b70 *man/approxExtrap.Rd
 03eed851f558773c200c8e2e09c9fff3 *man/areg.Rd
 dcc8a93cf111668be00d78e22f44f607 *man/aregImpute.Rd
 b6f41ce5607b746fe5cf9f80601c363e *man/biVar.Rd
@@ -362,6 +366,7 @@ c4a248262270a156d9723212daba90ff *man/latexDotchart.Rd
 26968e20d36b253fb7e88f2902f33ec5 *man/latexTherm.Rd
 e110de27ad37decbe96987691beb7555 *man/legendfunctions.Rd
 3e0817d289b96a7d59847a1144f5fa59 *man/list.tree.Rd
+7b7a493d7c947d7185421e52b3bf7983 *man/loess.surv.Rd
 a327d909648492c3e5b524888e27c35a *man/mApply.Rd
 316e0a9b1ae8773d36fac47286651eb2 *man/mChoice.Rd
 c2c3d7fd7b6118a5480308fcacb57afa *man/makeNstr.Rd
@@ -466,6 +471,7 @@ befd3ceb2cd8cec372ab9c079cbbac2a *man/transcan.Rd
 bca9d88920689fb7a6f3c59066a34827 *man/typstDotchart.Rd
 c32354880810e1b9de6de4509e37eb58 *man/typstFunctions.Rd
 585052e5cce23d10a449a95ca7a308a0 *man/typstTranslate.Rd
+317e298f3f4fce17407d96f0155224b6 *man/unicodeSN.Rd
 f96c75ccd181f46905cf268ed970950e *man/units.Rd
 4a2c2dedc27b7f7b12110666e8f1108f *man/unix/sas.get.Rd
 520aafa2af57171547f9d174e976d903 *man/upData.Rd
@@ -473,6 +479,7 @@ ff471a5b0ea40672a9f38901fcc4129d *man/upFirst.Rd
 26c8160a0663c12504eb2e33b6118c45 *man/valueTags.Rd
 d37883cd97dfed83cf84e92aa94705bf *man/varclus.Rd
 82dac06e1320048cccb93b0e5580ba3a *man/vlab.Rd
+cdf9f937ec15aba78eebeccdd7ccab0e *man/warn_once.Rd
 c02b0844712597c25cb18a84c1a069a2 *man/windows/sas.get.Rd
 583a620471e3172d5d4cc3838a65b957 *man/wtd.stats.Rd
 5b1ee124701694b2e4e3df44103890fa *man/xYplot.Rd
